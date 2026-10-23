@@ -42,7 +42,7 @@ jobs:
       - run: pip install -r requirements-dev.txt
       - run: ruff check .
       - run: ruff format --check .
-      - run: mypy app
+      - run: mypy app tests
       - run: pytest
       - name: Migrations apply to the main database
         run: alembic upgrade head

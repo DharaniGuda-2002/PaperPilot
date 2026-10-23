@@ -21,7 +21,7 @@ Backend (from `backend/`, with `.venv` active):
 ```bash
 pip install -r requirements-dev.txt
 ruff check . && ruff format --check .
-mypy app
+mypy app tests
 pytest                       # needs Postgres; see TEST_DATABASE_URL in .env.example
 alembic upgrade head
 uvicorn app.main:create_app --factory --reload

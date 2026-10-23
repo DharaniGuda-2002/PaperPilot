@@ -19,7 +19,7 @@ def limited_client(migrated_database: str, engine: Engine) -> Iterator[TestClien
     with TestClient(create_app(settings)) as client:
         yield client
     with engine.begin() as conn:
-        conn.execute(text("TRUNCATE investigations"))
+        conn.execute(text("TRUNCATE investigations, papers, paper_search_cache"))
 
 
 def test_limiter_allows_up_to_limit_then_recovers_after_window() -> None:

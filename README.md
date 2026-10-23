@@ -53,7 +53,7 @@ npm run dev                                     # http://localhost:5173, proxies
 | Area | Command (run inside the folder) |
 |---|---|
 | Backend lint/format | `ruff check . && ruff format --check .` |
-| Backend types | `mypy app` |
+| Backend types | `mypy app tests` |
 | Backend tests | `pytest` (needs the `db` container; uses a separate `paperpilot_test` database) |
 | Frontend | `npm run typecheck && npm run lint && npm test && npm run build` |
 | Color contrast | `npm run contrast` (WCAG 2.2 AA for every token pair the UI uses) |

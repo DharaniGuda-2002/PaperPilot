@@ -18,6 +18,14 @@ class Settings(BaseSettings):
     max_request_body_bytes: int = 16_384
     create_rate_limit_per_minute: int = 5  # per client IP, per API process
     daily_investigation_cap: int = 200  # across all clients, rolling 24 hours
+    paper_search_rate_limit_per_minute: int = 20  # per client IP, per API process
+
+    # OpenAlex. Without a key, calls share a small daily budget per outbound IP.
+    openalex_base_url: str = "https://api.openalex.org"
+    openalex_api_key: str | None = None
+    openalex_contact_email: str | None = None
+    paper_search_cache_hours: int = 24
+    daily_provider_call_cap: int = 500  # uncached searches per rolling 24 hours
 
     @field_validator("database_url")
     @classmethod

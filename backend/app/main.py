@@ -8,32 +8,49 @@ from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app.api import health, investigations
+from app.api import health, investigations, papers
 from app.core.config import Settings, get_settings
 from app.core.db import create_db_engine, create_session_factory
 from app.core.logging import configure_logging, correlation_id_var
 from app.core.rate_limit import SlidingWindowLimiter
+from app.papers.openalex import OpenAlexClient
+from app.papers.service import PaperProvider
 
 logger = logging.getLogger("app.request")
 
 CORRELATION_HEADER = "X-Request-ID"
 
 
-def create_app(settings: Settings | None = None) -> FastAPI:
+def create_app(
+    settings: Settings | None = None, paper_provider: PaperProvider | None = None
+) -> FastAPI:
     settings = settings or get_settings()
     configure_logging(settings.log_level)
     engine = create_db_engine(settings)
+    openalex = (
+        None
+        if paper_provider
+        else OpenAlexClient(
+            base_url=settings.openalex_base_url,
+            api_key=settings.openalex_api_key,
+            contact_email=settings.openalex_contact_email,
+        )
+    )
 
     @asynccontextmanager
     async def lifespan(_: FastAPI) -> AsyncIterator[None]:
         yield
         engine.dispose()
+        if openalex:
+            openalex.close()
 
     app = FastAPI(title="PaperPilot API", version="0.1.0", lifespan=lifespan)
     app.state.settings = settings
     app.state.engine = engine
     app.state.session_factory = create_session_factory(engine)
     app.state.create_limiter = SlidingWindowLimiter(settings.create_rate_limit_per_minute)
+    app.state.search_limiter = SlidingWindowLimiter(settings.paper_search_rate_limit_per_minute)
+    app.state.paper_provider = paper_provider or openalex
 
     app.add_middleware(
         CORSMiddleware,
@@ -85,4 +102,5 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     app.include_router(health.router)
     app.include_router(investigations.router)
+    app.include_router(papers.router)
     return app

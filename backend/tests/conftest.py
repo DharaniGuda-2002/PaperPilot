@@ -67,4 +67,4 @@ def client(migrated_database: str, engine: Engine) -> Iterator[TestClient]:
     with TestClient(create_app(settings)) as test_client:
         yield test_client
     with engine.begin() as conn:
-        conn.execute(text("TRUNCATE investigations"))
+        conn.execute(text("TRUNCATE investigations, papers, paper_search_cache"))

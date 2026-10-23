@@ -3,7 +3,9 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import create_engine
 
-import app.investigations.models  # noqa: F401  (registers tables on Base.metadata)
+# Model imports register tables on Base.metadata for autogenerate.
+import app.investigations.models
+import app.papers.models  # noqa: F401
 from app.core.config import get_settings
 from app.core.db import Base
 

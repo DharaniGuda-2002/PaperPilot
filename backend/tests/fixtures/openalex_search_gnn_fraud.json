@@ -1,0 +1,1683 @@
+{
+ "meta": {
+  "count": 27277,
+  "page": 1,
+  "per_page": 2
+ },
+ "results": [
+  {
+   "id": "https://openalex.org/W3022945404",
+   "doi": "https://doi.org/10.1145/3397271.3401253",
+   "display_name": "Alleviating the Inconsistency Problem of Applying Graph Neural Network to Fraud Detection",
+   "publication_year": 2020,
+   "authorships": [
+    {
+     "author_position": "first",
+     "author": {
+      "id": null,
+      "display_name": "Zhiwei Liu",
+      "orcid": null,
+      "observed_orcids": []
+     },
+     "institutions": [
+      {
+       "id": "https://openalex.org/I39422238",
+       "display_name": "University of Illinois Chicago",
+       "ror": "https://ror.org/02mpq6x41",
+       "country_code": "US",
+       "type": "education",
+       "lineage": [
+        "https://openalex.org/I39422238"
+       ]
+      }
+     ],
+     "countries": [
+      "US"
+     ],
+     "is_corresponding": false,
+     "raw_author_name": "Zhiwei Liu",
+     "raw_affiliation_strings": [
+      "University of Illinois at Chicago, Chicago, IL, USA"
+     ],
+     "raw_orcid": null,
+     "affiliations": [
+      {
+       "raw_affiliation_string": "University of Illinois at Chicago, Chicago, IL, USA",
+       "institution_ids": [
+        "https://openalex.org/I39422238"
+       ]
+      }
+     ]
+    },
+    {
+     "author_position": "middle",
+     "author": {
+      "id": null,
+      "display_name": "Yingtong Dou",
+      "orcid": null,
+      "observed_orcids": []
+     },
+     "institutions": [
+      {
+       "id": "https://openalex.org/I39422238",
+       "display_name": "University of Illinois Chicago",
+       "ror": "https://ror.org/02mpq6x41",
+       "country_code": "US",
+       "type": "education",
+       "lineage": [
+        "https://openalex.org/I39422238"
+       ]
+      }
+     ],
+     "countries": [
+      "US"
+     ],
+     "is_corresponding": false,
+     "raw_author_name": "Yingtong Dou",
+     "raw_affiliation_strings": [
+      "University of Illinois at Chicago, Chicago, IL, USA"
+     ],
+     "raw_orcid": null,
+     "affiliations": [
+      {
+       "raw_affiliation_string": "University of Illinois at Chicago, Chicago, IL, USA",
+       "institution_ids": [
+        "https://openalex.org/I39422238"
+       ]
+      }
+     ]
+    },
+    {
+     "author_position": "middle",
+     "author": {
+      "id": null,
+      "display_name": "Philip S. Yu",
+      "orcid": null,
+      "observed_orcids": []
+     },
+     "institutions": [
+      {
+       "id": "https://openalex.org/I39422238",
+       "display_name": "University of Illinois Chicago",
+       "ror": "https://ror.org/02mpq6x41",
+       "country_code": "US",
+       "type": "education",
+       "lineage": [
+        "https://openalex.org/I39422238"
+       ]
+      }
+     ],
+     "countries": [
+      "US"
+     ],
+     "is_corresponding": false,
+     "raw_author_name": "Philip S. Yu",
+     "raw_affiliation_strings": [
+      "University of Illinois at Chicago, Chicago, IL, USA"
+     ],
+     "raw_orcid": null,
+     "affiliations": [
+      {
+       "raw_affiliation_string": "University of Illinois at Chicago, Chicago, IL, USA",
+       "institution_ids": [
+        "https://openalex.org/I39422238"
+       ]
+      }
+     ]
+    },
+    {
+     "author_position": "middle",
+     "author": {
+      "id": null,
+      "display_name": "Yutong Deng",
+      "orcid": null,
+      "observed_orcids": []
+     },
+     "institutions": [
+      {
+       "id": "https://openalex.org/I139759216",
+       "display_name": "Beijing University of Posts and Telecommunications",
+       "ror": "https://ror.org/04w9fbh59",
+       "country_code": "CN",
+       "type": "education",
+       "lineage": [
+        "https://openalex.org/I139759216"
+       ]
+      }
+     ],
+     "countries": [
+      "CN"
+     ],
+     "is_corresponding": false,
+     "raw_author_name": "Yutong Deng",
+     "raw_affiliation_strings": [
+      "Beijing University of Posts and Telecommunications, Beijing, China"
+     ],
+     "raw_orcid": null,
+     "affiliations": [
+      {
+       "raw_affiliation_string": "Beijing University of Posts and Telecommunications, Beijing, China",
+       "institution_ids": [
+        "https://openalex.org/I139759216"
+       ]
+      }
+     ]
+    },
+    {
+     "author_position": "last",
+     "author": {
+      "id": null,
+      "display_name": "Hao Peng",
+      "orcid": null,
+      "observed_orcids": []
+     },
+     "institutions": [
+      {
+       "id": "https://openalex.org/I82880672",
+       "display_name": "Beihang University",
+       "ror": "https://ror.org/00wk2mp56",
+       "country_code": "CN",
+       "type": "education",
+       "lineage": [
+        "https://openalex.org/I82880672"
+       ]
+      }
+     ],
+     "countries": [
+      "CN"
+     ],
+     "is_corresponding": false,
+     "raw_author_name": "Hao Peng",
+     "raw_affiliation_strings": [
+      "Beihang University, Beijing, China"
+     ],
+     "raw_orcid": null,
+     "affiliations": [
+      {
+       "raw_affiliation_string": "Beihang University, Beijing, China",
+       "institution_ids": [
+        "https://openalex.org/I82880672"
+       ]
+      }
+     ]
+    }
+   ],
+   "primary_location": {
+    "id": "doi:10.1145/3397271.3401253",
+    "doi": "https://doi.org/10.1145/3397271.3401253",
+    "is_oa": false,
+    "landing_page_url": "https://doi.org/10.1145/3397271.3401253",
+    "pdf_url": null,
+    "source": {
+     "id": "https://openalex.org/S4363608773",
+     "display_name": "International ACM SIGIR Conference on Research and Development in Information Retrieval (SIGIR)",
+     "issn_l": null,
+     "issn": null,
+     "is_oa": false,
+     "is_in_doaj": false,
+     "is_core": false,
+     "listed_in": [],
+     "host_organization": null,
+     "host_organization_name": null,
+     "host_organization_lineage": [],
+     "host_organization_lineage_names": [],
+     "type": "conference"
+    },
+    "license": null,
+    "license_id": null,
+    "version": "publishedVersion",
+    "is_accepted": true,
+    "is_published": true,
+    "raw_source_name": "Proceedings of the 43rd International ACM SIGIR Conference on Research and Development in Information Retrieval",
+    "raw_type": "proceedings-article"
+   },
+   "open_access": {
+    "is_oa": true,
+    "oa_status": "green",
+    "oa_url": "https://arxiv.org/pdf/2005.00625",
+    "any_repository_has_fulltext": true
+   },
+   "best_oa_location": {
+    "id": "pmh:oai:arXiv.org:2005.00625",
+    "doi": null,
+    "is_oa": true,
+    "landing_page_url": "http://arxiv.org/abs/2005.00625",
+    "pdf_url": "https://arxiv.org/pdf/2005.00625",
+    "source": {
+     "id": "https://openalex.org/S4306400194",
+     "display_name": "arXiv (Cornell University)",
+     "issn_l": "2331-8422",
+     "issn": [
+      "2331-8422"
+     ],
+     "is_oa": true,
+     "is_in_doaj": false,
+     "is_core": false,
+     "listed_in": [],
+     "host_organization": "https://openalex.org/I205783295",
+     "host_organization_name": "Cornell University",
+     "host_organization_lineage": [
+      "https://openalex.org/I205783295"
+     ],
+     "host_organization_lineage_names": [],
+     "type": "repository"
+    },
+    "license": null,
+    "license_id": null,
+    "version": "submittedVersion",
+    "is_accepted": false,
+    "is_published": false,
+    "raw_source_name": null,
+    "raw_type": "text"
+   },
+   "cited_by_count": 357,
+   "abstract_inverted_index": {
+    "Graph-based": [
+     0
+    ],
+    "models": [
+     1
+    ],
+    "have": [
+     2,
+     20
+    ],
+    "been": [
+     3
+    ],
+    "widely": [
+     4
+    ],
+    "used": [
+     5
+    ],
+    "to": [
+     6,
+     11,
+     43,
+     95,
+     107,
+     125
+    ],
+    "fraud": [
+     7,
+     24,
+     164,
+     179
+    ],
+    "detection": [
+     8,
+     165,
+     180
+    ],
+    "tasks.": [
+     9,
+     166
+    ],
+    "Owing": [
+     10
+    ],
+    "the": [
+     12,
+     40,
+     45,
+     51,
+     54,
+     63,
+     73,
+     97,
+     102,
+     109,
+     117,
+     127,
+     137,
+     142,
+     148,
+     158,
+     170
+    ],
+    "development": [
+     13
+    ],
+    "of": [
+     14,
+     172,
+     184
+    ],
+    "Graph": [
+     15
+    ],
+    "Neural": [
+     16
+    ],
+    "Networks~(GNNs),": [
+     17
+    ],
+    "recent": [
+     18
+    ],
+    "works": [
+     19,
+     34
+    ],
+    "proposed": [
+     21
+    ],
+    "many": [
+     22
+    ],
+    "GNN-based": [
+     23,
+     178
+    ],
+    "detectors": [
+     25
+    ],
+    "based": [
+     26
+    ],
+    "on": [
+     27,
+     50,
+     153
+    ],
+    "either": [
+     28
+    ],
+    "homogeneous": [
+     29
+    ],
+    "or": [
+     30
+    ],
+    "heterogeneous": [
+     31
+    ],
+    "graphs.": [
+     32
+    ],
+    "These": [
+     33
+    ],
+    "leverage": [
+     35
+    ],
+    "existing": [
+     36
+    ],
+    "GNNs": [
+     37
+    ],
+    "and": [
+     38,
+     60,
+     78,
+     88,
+     130
+    ],
+    "aggregate": [
+     39
+    ],
+    "neighborhood": [
+     41
+    ],
+    "information": [
+     42
+    ],
+    "learn": [
+     44,
+     141
+    ],
+    "node": [
+     46,
+     113
+    ],
+    "embeddings,": [
+     47
+    ],
+    "which": [
+     48
+    ],
+    "relies": [
+     49
+    ],
+    "assumption": [
+     52
+    ],
+    "that": [
+     53,
+     157
+    ],
+    "neighbors": [
+     55,
+     129
+    ],
+    "share": [
+     56
+    ],
+    "similar": [
+     57
+    ],
+    "context,": [
+     58
+    ],
+    "features,": [
+     59
+    ],
+    "relations.": [
+     61
+    ],
+    "However,": [
+     62
+    ],
+    "inconsistency": [
+     64,
+     98,
+     159
+    ],
+    "problem": [
+     65,
+     160
+    ],
+    "incurred": [
+     66
+    ],
+    "by": [
+     67
+    ],
+    "fraudsters": [
+     68
+    ],
+    "is": [
+     69,
+     161,
+     189
+    ],
+    "hardly": [
+     70
+    ],
+    "investigated,": [
+     71
+    ],
+    "i.e.,": [
+     72
+    ],
+    "context": [
+     74,
+     103,
+     110
+    ],
+    "inconsistency,": [
+     75,
+     77,
+     104,
+     119,
+     139
+    ],
+    "feature": [
+     76,
+     118
+    ],
+    "relation": [
+     79,
+     138,
+     143
+    ],
+    "inconsistency.": [
+     80
+    ],
+    "In": [
+     81
+    ],
+    "this": [
+     82
+    ],
+    "paper,": [
+     83
+    ],
+    "we": [
+     84,
+     105,
+     120,
+     140
+    ],
+    "introduce": [
+     85
+    ],
+    "these": [
+     86
+    ],
+    "inconsistencies": [
+     87
+    ],
+    "design": [
+     89,
+     121
+    ],
+    "a": [
+     90,
+     122,
+     177
+    ],
+    "new": [
+     91
+    ],
+    "GNN": [
+     92
+    ],
+    "framework,": [
+     93
+    ],
+    "GraphConsis,": [
+     94
+    ],
+    "tackle": [
+     96
+    ],
+    "problem:": [
+     99
+    ],
+    "(1)": [
+     100
+    ],
+    "for": [
+     101,
+     116,
+     136
+    ],
+    "propose": [
+     106
+    ],
+    "combine": [
+     108
+    ],
+    "embeddings": [
+     111
+    ],
+    "with": [
+     112,
+     147,
+     182
+    ],
+    "features;": [
+     114
+    ],
+    "(2)": [
+     115
+    ],
+    "consistency": [
+     123
+    ],
+    "score": [
+     124
+    ],
+    "filter": [
+     126
+    ],
+    "inconsistent": [
+     128
+    ],
+    "generate": [
+     131
+    ],
+    "corresponding": [
+     132
+    ],
+    "sampling": [
+     133
+    ],
+    "probability;": [
+     134
+    ],
+    "(3)": [
+     135
+    ],
+    "attention": [
+     144
+    ],
+    "weights": [
+     145
+    ],
+    "associated": [
+     146
+    ],
+    "sampled": [
+     149
+    ],
+    "nodes.": [
+     150
+    ],
+    "Empirical": [
+     151
+    ],
+    "analysis": [
+     152
+    ],
+    "four": [
+     154
+    ],
+    "datasets": [
+     155
+    ],
+    "demonstrates": [
+     156
+    ],
+    "critical": [
+     162
+    ],
+    "in": [
+     163
+    ],
+    "Extensive": [
+     167
+    ],
+    "experiments": [
+     168
+    ],
+    "show": [
+     169
+    ],
+    "effectiveness": [
+     171
+    ],
+    "GraphConsis.": [
+     173
+    ],
+    "We": [
+     174
+    ],
+    "also": [
+     175
+    ],
+    "released": [
+     176
+    ],
+    "toolbox": [
+     181
+    ],
+    "implementations": [
+     183
+    ],
+    "SOTA": [
+     185
+    ],
+    "models.": [
+     186
+    ],
+    "The": [
+     187
+    ],
+    "code": [
+     188
+    ],
+    "available": [
+     190
+    ],
+    "at": [
+     191
+    ],
+    "\\urlhttps://github.com/safe-graph/DGFraud": [
+     192
+    ]
+   },
+   "type": "conference-paper",
+   "relevance_score": 172.29199
+  },
+  {
+   "id": "https://openalex.org/W4224319742",
+   "doi": "https://doi.org/10.1145/3485447.3512178",
+   "display_name": "AUC-oriented Graph Neural Network for Fraud Detection",
+   "publication_year": 2022,
+   "authorships": [
+    {
+     "author_position": "first",
+     "author": {
+      "id": "https://openalex.org/A5030240885",
+      "display_name": "Mengda Huang",
+      "orcid": null,
+      "observed_orcids": []
+     },
+     "institutions": [
+      {
+       "id": "https://openalex.org/I19820366",
+       "display_name": "Chinese Academy of Sciences",
+       "ror": "https://ror.org/034t30j35",
+       "country_code": "CN",
+       "type": "government",
+       "lineage": [
+        "https://openalex.org/I19820366"
+       ]
+      },
+      {
+       "id": "https://openalex.org/I4210090176",
+       "display_name": "Institute of Computing Technology",
+       "ror": "https://ror.org/0090r4d87",
+       "country_code": "CN",
+       "type": "facility",
+       "lineage": [
+        "https://openalex.org/I19820366",
+        "https://openalex.org/I4210090176"
+       ]
+      },
+      {
+       "id": "https://openalex.org/I4210165038",
+       "display_name": "University of Chinese Academy of Sciences",
+       "ror": "https://ror.org/05qbk4x57",
+       "country_code": "CN",
+       "type": "education",
+       "lineage": [
+        "https://openalex.org/I19820366",
+        "https://openalex.org/I4210165038"
+       ]
+      }
+     ],
+     "countries": [
+      "CN"
+     ],
+     "is_corresponding": false,
+     "raw_author_name": "Mengda Huang",
+     "raw_affiliation_strings": [
+      "Key Lab of Intelligent Information Processing of Chinese Academy of Sciences (CAS), Institute of Computing Technology, CAS, China and University of Chinese Academy of Sciences, China"
+     ],
+     "raw_orcid": null,
+     "affiliations": [
+      {
+       "raw_affiliation_string": "Key Lab of Intelligent Information Processing of Chinese Academy of Sciences (CAS), Institute of Computing Technology, CAS, China and University of Chinese Academy of Sciences, China",
+       "institution_ids": [
+        "https://openalex.org/I19820366",
+        "https://openalex.org/I4210090176",
+        "https://openalex.org/I4210165038"
+       ]
+      }
+     ]
+    },
+    {
+     "author_position": "middle",
+     "author": {
+      "id": "https://openalex.org/A5100355786",
+      "display_name": "Yang Liu",
+      "orcid": "https://orcid.org/0000-0002-0857-9905",
+      "observed_orcids": [
+       "https://orcid.org/0000-0002-0857-9905"
+      ]
+     },
+     "institutions": [
+      {
+       "id": "https://openalex.org/I19820366",
+       "display_name": "Chinese Academy of Sciences",
+       "ror": "https://ror.org/034t30j35",
+       "country_code": "CN",
+       "type": "government",
+       "lineage": [
+        "https://openalex.org/I19820366"
+       ]
+      },
+      {
+       "id": "https://openalex.org/I4210090176",
+       "display_name": "Institute of Computing Technology",
+       "ror": "https://ror.org/0090r4d87",
+       "country_code": "CN",
+       "type": "facility",
+       "lineage": [
+        "https://openalex.org/I19820366",
+        "https://openalex.org/I4210090176"
+       ]
+      },
+      {
+       "id": "https://openalex.org/I4210165038",
+       "display_name": "University of Chinese Academy of Sciences",
+       "ror": "https://ror.org/05qbk4x57",
+       "country_code": "CN",
+       "type": "education",
+       "lineage": [
+        "https://openalex.org/I19820366",
+        "https://openalex.org/I4210165038"
+       ]
+      }
+     ],
+     "countries": [
+      "CN"
+     ],
+     "is_corresponding": false,
+     "raw_author_name": "Yang Liu",
+     "raw_affiliation_strings": [
+      "Key Lab of Intelligent Information Processing of Chinese Academy of Sciences (CAS), Institute of Computing Technology, CAS, China and University of Chinese Academy of Sciences, China"
+     ],
+     "raw_orcid": null,
+     "affiliations": [
+      {
+       "raw_affiliation_string": "Key Lab of Intelligent Information Processing of Chinese Academy of Sciences (CAS), Institute of Computing Technology, CAS, China and University of Chinese Academy of Sciences, China",
+       "institution_ids": [
+        "https://openalex.org/I19820366",
+        "https://openalex.org/I4210090176",
+        "https://openalex.org/I4210165038"
+       ]
+      }
+     ]
+    },
+    {
+     "author_position": "middle",
+     "author": {
+      "id": "https://openalex.org/A5068007462",
+      "display_name": "Xiang Ao",
+      "orcid": "https://orcid.org/0000-0001-9633-8361",
+      "observed_orcids": [
+       "https://orcid.org/0000-0001-9633-8361"
+      ]
+     },
+     "institutions": [
+      {
+       "id": "https://openalex.org/I19820366",
+       "display_name": "Chinese Academy of Sciences",
+       "ror": "https://ror.org/034t30j35",
+       "country_code": "CN",
+       "type": "government",
+       "lineage": [
+        "https://openalex.org/I19820366"
+       ]
+      },
+      {
+       "id": "https://openalex.org/I4210090176",
+       "display_name": "Institute of Computing Technology",
+       "ror": "https://ror.org/0090r4d87",
+       "country_code": "CN",
+       "type": "facility",
+       "lineage": [
+        "https://openalex.org/I19820366",
+        "https://openalex.org/I4210090176"
+       ]
+      },
+      {
+       "id": "https://openalex.org/I4210165038",
+       "display_name": "University of Chinese Academy of Sciences",
+       "ror": "https://ror.org/05qbk4x57",
+       "country_code": "CN",
+       "type": "education",
+       "lineage": [
+        "https://openalex.org/I19820366",
+        "https://openalex.org/I4210165038"
+       ]
+      }
+     ],
+     "countries": [
+      "CN"
+     ],
+     "is_corresponding": false,
+     "raw_author_name": "Xiang Ao",
+     "raw_affiliation_strings": [
+      "Key Lab of Intelligent Information Processing of Chinese Academy of Sciences (CAS), Institute of Computing Technology, CAS, China and University of Chinese Academy of Sciences, China"
+     ],
+     "raw_orcid": null,
+     "affiliations": [
+      {
+       "raw_affiliation_string": "Key Lab of Intelligent Information Processing of Chinese Academy of Sciences (CAS), Institute of Computing Technology, CAS, China and University of Chinese Academy of Sciences, China",
+       "institution_ids": [
+        "https://openalex.org/I19820366",
+        "https://openalex.org/I4210090176",
+        "https://openalex.org/I4210165038"
+       ]
+      }
+     ]
+    },
+    {
+     "author_position": "middle",
+     "author": {
+      "id": "https://openalex.org/A5100723030",
+      "display_name": "Kuan Li",
+      "orcid": "https://orcid.org/0000-0002-3272-4084",
+      "observed_orcids": [
+       "https://orcid.org/0000-0002-3272-4084"
+      ]
+     },
+     "institutions": [
+      {
+       "id": "https://openalex.org/I19820366",
+       "display_name": "Chinese Academy of Sciences",
+       "ror": "https://ror.org/034t30j35",
+       "country_code": "CN",
+       "type": "government",
+       "lineage": [
+        "https://openalex.org/I19820366"
+       ]
+      },
+      {
+       "id": "https://openalex.org/I4210090176",
+       "display_name": "Institute of Computing Technology",
+       "ror": "https://ror.org/0090r4d87",
+       "country_code": "CN",
+       "type": "facility",
+       "lineage": [
+        "https://openalex.org/I19820366",
+        "https://openalex.org/I4210090176"
+       ]
+      },
+      {
+       "id": "https://openalex.org/I4210165038",
+       "display_name": "University of Chinese Academy of Sciences",
+       "ror": "https://ror.org/05qbk4x57",
+       "country_code": "CN",
+       "type": "education",
+       "lineage": [
+        "https://openalex.org/I19820366",
+        "https://openalex.org/I4210165038"
+       ]
+      }
+     ],
+     "countries": [
+      "CN"
+     ],
+     "is_corresponding": false,
+     "raw_author_name": "Kuan Li",
+     "raw_affiliation_strings": [
+      "Key Lab of Intelligent Information Processing of Chinese Academy of Sciences (CAS), Institute of Computing Technology, CAS, China and University of Chinese Academy of Sciences, China"
+     ],
+     "raw_orcid": null,
+     "affiliations": [
+      {
+       "raw_affiliation_string": "Key Lab of Intelligent Information Processing of Chinese Academy of Sciences (CAS), Institute of Computing Technology, CAS, China and University of Chinese Academy of Sciences, China",
+       "institution_ids": [
+        "https://openalex.org/I19820366",
+        "https://openalex.org/I4210090176",
+        "https://openalex.org/I4210165038"
+       ]
+      }
+     ]
+    },
+    {
+     "author_position": "middle",
+     "author": {
+      "id": null,
+      "display_name": "Jianfeng Chi",
+      "orcid": null,
+      "observed_orcids": []
+     },
+     "institutions": [
+      {
+       "id": "https://openalex.org/I45928872",
+       "display_name": "Alibaba Group (China)",
+       "ror": "https://ror.org/00k642b80",
+       "country_code": "CN",
+       "type": "company",
+       "lineage": [
+        "https://openalex.org/I45928872"
+       ]
+      }
+     ],
+     "countries": [
+      "CN"
+     ],
+     "is_corresponding": false,
+     "raw_author_name": "Jianfeng Chi",
+     "raw_affiliation_strings": [
+      "Alibaba Group, China"
+     ],
+     "raw_orcid": null,
+     "affiliations": [
+      {
+       "raw_affiliation_string": "Alibaba Group, China",
+       "institution_ids": [
+        "https://openalex.org/I45928872"
+       ]
+      }
+     ]
+    },
+    {
+     "author_position": "middle",
+     "author": {
+      "id": "https://openalex.org/A5012138678",
+      "display_name": "Jinghua Feng",
+      "orcid": "https://orcid.org/0000-0001-7289-5497",
+      "observed_orcids": [
+       "https://orcid.org/0000-0001-7289-5497"
+      ]
+     },
+     "institutions": [
+      {
+       "id": "https://openalex.org/I45928872",
+       "display_name": "Alibaba Group (China)",
+       "ror": "https://ror.org/00k642b80",
+       "country_code": "CN",
+       "type": "company",
+       "lineage": [
+        "https://openalex.org/I45928872"
+       ]
+      }
+     ],
+     "countries": [
+      "CN"
+     ],
+     "is_corresponding": false,
+     "raw_author_name": "Jinghua Feng",
+     "raw_affiliation_strings": [
+      "Alibaba Group, China"
+     ],
+     "raw_orcid": null,
+     "affiliations": [
+      {
+       "raw_affiliation_string": "Alibaba Group, China",
+       "institution_ids": [
+        "https://openalex.org/I45928872"
+       ]
+      }
+     ]
+    },
+    {
+     "author_position": "middle",
+     "author": {
+      "id": "https://openalex.org/A5038736812",
+      "display_name": "Hao Yang",
+      "orcid": "https://orcid.org/0000-0001-8861-7010",
+      "observed_orcids": [
+       "https://orcid.org/0000-0001-8861-7010"
+      ]
+     },
+     "institutions": [
+      {
+       "id": "https://openalex.org/I45928872",
+       "display_name": "Alibaba Group (China)",
+       "ror": "https://ror.org/00k642b80",
+       "country_code": "CN",
+       "type": "company",
+       "lineage": [
+        "https://openalex.org/I45928872"
+       ]
+      }
+     ],
+     "countries": [
+      "CN"
+     ],
+     "is_corresponding": false,
+     "raw_author_name": "Hao Yang",
+     "raw_affiliation_strings": [
+      "Alibaba Group, China"
+     ],
+     "raw_orcid": null,
+     "affiliations": [
+      {
+       "raw_affiliation_string": "Alibaba Group, China",
+       "institution_ids": [
+        "https://openalex.org/I45928872"
+       ]
+      }
+     ]
+    },
+    {
+     "author_position": "last",
+     "author": {
+      "id": "https://openalex.org/A5100734672",
+      "display_name": "Qing He",
+      "orcid": "https://orcid.org/0000-0001-8833-5398",
+      "observed_orcids": [
+       "https://orcid.org/0000-0001-8833-5398"
+      ]
+     },
+     "institutions": [
+      {
+       "id": "https://openalex.org/I19820366",
+       "display_name": "Chinese Academy of Sciences",
+       "ror": "https://ror.org/034t30j35",
+       "country_code": "CN",
+       "type": "government",
+       "lineage": [
+        "https://openalex.org/I19820366"
+       ]
+      },
+      {
+       "id": "https://openalex.org/I4210090176",
+       "display_name": "Institute of Computing Technology",
+       "ror": "https://ror.org/0090r4d87",
+       "country_code": "CN",
+       "type": "facility",
+       "lineage": [
+        "https://openalex.org/I19820366",
+        "https://openalex.org/I4210090176"
+       ]
+      },
+      {
+       "id": "https://openalex.org/I4210165038",
+       "display_name": "University of Chinese Academy of Sciences",
+       "ror": "https://ror.org/05qbk4x57",
+       "country_code": "CN",
+       "type": "education",
+       "lineage": [
+        "https://openalex.org/I19820366",
+        "https://openalex.org/I4210165038"
+       ]
+      }
+     ],
+     "countries": [
+      "CN"
+     ],
+     "is_corresponding": false,
+     "raw_author_name": "Qing He",
+     "raw_affiliation_strings": [
+      "Key Lab of Intelligent Information Processing of Chinese Academy of Sciences (CAS), Institute of Computing Technology, CAS, China and University of Chinese Academy of Sciences, China"
+     ],
+     "raw_orcid": null,
+     "affiliations": [
+      {
+       "raw_affiliation_string": "Key Lab of Intelligent Information Processing of Chinese Academy of Sciences (CAS), Institute of Computing Technology, CAS, China and University of Chinese Academy of Sciences, China",
+       "institution_ids": [
+        "https://openalex.org/I19820366",
+        "https://openalex.org/I4210090176",
+        "https://openalex.org/I4210165038"
+       ]
+      }
+     ]
+    }
+   ],
+   "primary_location": {
+    "id": "doi:10.1145/3485447.3512178",
+    "doi": "https://doi.org/10.1145/3485447.3512178",
+    "is_oa": true,
+    "landing_page_url": "https://doi.org/10.1145/3485447.3512178",
+    "pdf_url": "https://dl.acm.org/doi/pdf/10.1145/3485447.3512178",
+    "source": {
+     "id": "https://openalex.org/S4363608783",
+     "display_name": "ACM Web Conference (WWW)",
+     "issn_l": null,
+     "issn": null,
+     "is_oa": false,
+     "is_in_doaj": false,
+     "is_core": false,
+     "listed_in": [],
+     "host_organization": null,
+     "host_organization_name": null,
+     "host_organization_lineage": [],
+     "host_organization_lineage_names": [],
+     "type": "conference"
+    },
+    "license": null,
+    "license_id": null,
+    "version": "publishedVersion",
+    "is_accepted": true,
+    "is_published": true,
+    "raw_source_name": "Proceedings of the ACM Web Conference 2022",
+    "raw_type": "proceedings-article"
+   },
+   "open_access": {
+    "is_oa": true,
+    "oa_status": "bronze",
+    "oa_url": "https://dl.acm.org/doi/pdf/10.1145/3485447.3512178",
+    "any_repository_has_fulltext": false
+   },
+   "best_oa_location": {
+    "id": "doi:10.1145/3485447.3512178",
+    "doi": "https://doi.org/10.1145/3485447.3512178",
+    "is_oa": true,
+    "landing_page_url": "https://doi.org/10.1145/3485447.3512178",
+    "pdf_url": "https://dl.acm.org/doi/pdf/10.1145/3485447.3512178",
+    "source": {
+     "id": "https://openalex.org/S4363608783",
+     "display_name": "ACM Web Conference (WWW)",
+     "issn_l": null,
+     "issn": null,
+     "is_oa": false,
+     "is_in_doaj": false,
+     "is_core": false,
+     "listed_in": [],
+     "host_organization": null,
+     "host_organization_name": null,
+     "host_organization_lineage": [],
+     "host_organization_lineage_names": [],
+     "type": "conference"
+    },
+    "license": null,
+    "license_id": null,
+    "version": "publishedVersion",
+    "is_accepted": true,
+    "is_published": true,
+    "raw_source_name": "Proceedings of the ACM Web Conference 2022",
+    "raw_type": "proceedings-article"
+   },
+   "cited_by_count": 112,
+   "abstract_inverted_index": {
+    "Though": [
+     0
+    ],
+    "Graph": [
+     1
+    ],
+    "Neural": [
+     2
+    ],
+    "Networks": [
+     3
+    ],
+    "(GNNs)": [
+     4
+    ],
+    "have": [
+     5
+    ],
+    "been": [
+     6
+    ],
+    "successful": [
+     7
+    ],
+    "for": [
+     8,
+     34,
+     57,
+     111,
+     134,
+     153
+    ],
+    "fraud": [
+     9,
+     20,
+     58
+    ],
+    "detection": [
+     10,
+     59
+    ],
+    "tasks,": [
+     11
+    ],
+    "they": [
+     12
+    ],
+    "suffer": [
+     13
+    ],
+    "from": [
+     14
+    ],
+    "imbalanced": [
+     15
+    ],
+    "labels": [
+     16
+    ],
+    "due": [
+     17,
+     63
+    ],
+    "to": [
+     18,
+     22,
+     29,
+     64,
+     84,
+     114
+    ],
+    "limited": [
+     19
+    ],
+    "compared": [
+     21
+    ],
+    "the": [
+     23,
+     38,
+     65,
+     86,
+     121,
+     125,
+     165
+    ],
+    "overall": [
+     24
+    ],
+    "userbase.": [
+     25
+    ],
+    "This": [
+     26
+    ],
+    "paper": [
+     27
+    ],
+    "attempts": [
+     28
+    ],
+    "resolve": [
+     30
+    ],
+    "this": [
+     31,
+     80
+    ],
+    "label-imbalance": [
+     32
+    ],
+    "problem": [
+     33
+    ],
+    "GNNs": [
+     35
+    ],
+    "by": [
+     36,
+     71,
+     76,
+     145
+    ],
+    "maximizing": [
+     37,
+     53
+    ],
+    "AUC": [
+     39,
+     54,
+     87,
+     116,
+     150,
+     175
+    ],
+    "(Area": [
+     40
+    ],
+    "Under": [
+     41
+    ],
+    "ROC": [
+     42
+    ],
+    "Curve)": [
+     43
+    ],
+    "metric": [
+     44
+    ],
+    "since": [
+     45
+    ],
+    "it": [
+     46
+    ],
+    "is": [
+     47,
+     61,
+     132,
+     151
+    ],
+    "unbiased": [
+     48
+    ],
+    "with": [
+     49
+    ],
+    "label": [
+     50
+    ],
+    "distribution.": [
+     51
+    ],
+    "However,": [
+     52
+    ],
+    "on": [
+     55,
+     90,
+     118,
+     159
+    ],
+    "GNN": [
+     56,
+     91,
+     119
+    ],
+    "tasks": [
+     60
+    ],
+    "intractable": [
+     62
+    ],
+    "potential": [
+     66
+    ],
+    "polluted": [
+     67
+    ],
+    "topological": [
+     68
+    ],
+    "structure": [
+     69
+    ],
+    "caused": [
+     70
+    ],
+    "intentional": [
+     72
+    ],
+    "noisy": [
+     73
+    ],
+    "edges": [
+     74
+    ],
+    "generated": [
+     75
+    ],
+    "fraudsters.": [
+     77
+    ],
+    "To": [
+     78
+    ],
+    "alleviate": [
+     79
+    ],
+    "problem,": [
+     81
+    ],
+    "we": [
+     82
+    ],
+    "propose": [
+     83,
+     105
+    ],
+    "decouple": [
+     85
+    ],
+    "maximization": [
+     88,
+     117
+    ],
+    "process": [
+     89
+    ],
+    "into": [
+     92
+    ],
+    "a": [
+     93,
+     106,
+     146
+    ],
+    "classifier": [
+     94,
+     135
+    ],
+    "parameter": [
+     95,
+     136
+    ],
+    "searching": [
+     96
+    ],
+    "and": [
+     97,
+     138
+    ],
+    "an": [
+     98,
+     128,
+     139
+    ],
+    "edge": [
+     99,
+     154
+    ],
+    "pruning": [
+     100,
+     155
+    ],
+    "policy": [
+     101,
+     156
+    ],
+    "searching,": [
+     102,
+     137
+    ],
+    "respectively.": [
+     103
+    ],
+    "We": [
+     104
+    ],
+    "model": [
+     107
+    ],
+    "named": [
+     108
+    ],
+    "AO-GNN": [
+     109,
+     167
+    ],
+    "(Short": [
+     110
+    ],
+    "AUC-oriented": [
+     112,
+     129,
+     140
+    ],
+    "GNN),": [
+     113
+    ],
+    "achieve": [
+     115
+    ],
+    "under": [
+     120
+    ],
+    "aforementioned": [
+     122
+    ],
+    "framework.": [
+     123
+    ],
+    "In": [
+     124
+    ],
+    "proposed": [
+     126,
+     166
+    ],
+    "model,": [
+     127
+    ],
+    "stochastic": [
+     130
+    ],
+    "gradient": [
+     131
+    ],
+    "applied": [
+     133
+    ],
+    "reinforcement": [
+     141
+    ],
+    "learning": [
+     142
+    ],
+    "module": [
+     143
+    ],
+    "supervised": [
+     144
+    ],
+    "surrogate": [
+     147
+    ],
+    "reward": [
+     148
+    ],
+    "of": [
+     149
+    ],
+    "devised": [
+     152
+    ],
+    "searching.": [
+     157
+    ],
+    "Experiments": [
+     158
+    ],
+    "three": [
+     160
+    ],
+    "real-world": [
+     161
+    ],
+    "datasets": [
+     162
+    ],
+    "demonstrate": [
+     163
+    ],
+    "that": [
+     164
+    ],
+    "patently": [
+     168
+    ],
+    "outperforms": [
+     169
+    ],
+    "state-of-the-art": [
+     170
+    ],
+    "baselines": [
+     171
+    ],
+    "in": [
+     172
+    ],
+    "not": [
+     173
+    ],
+    "only": [
+     174
+    ],
+    "but": [
+     176
+    ],
+    "also": [
+     177
+    ],
+    "other": [
+     178
+    ],
+    "general": [
+     179
+    ],
+    "metrics,": [
+     180
+    ],
+    "e.g.": [
+     181
+    ],
+    "F1-macro,": [
+     182
+    ],
+    "G-means.": [
+     183
+    ]
+   },
+   "type": "conference-paper",
+   "relevance_score": 169.68819
+  }
+ ],
+ "group_by": []
+}
