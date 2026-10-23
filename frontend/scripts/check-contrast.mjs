@@ -30,7 +30,17 @@ const PAIRS = [
   ['color-error', 'color-bg-surface', TEXT, 'field error text'],
   ['color-focus-ring', 'color-bg-surface', NON_TEXT, 'focus ring on cards'],
   ['color-focus-ring', 'color-bg-page', NON_TEXT, 'focus ring on page'],
-  ['color-text-muted', 'color-bg-surface', NON_TEXT, 'text input boundary'],
+  ['color-text-muted', 'color-bg-surface', NON_TEXT, 'text input / secondary button boundary'],
+  ['color-brand-700', 'color-brand-50', TEXT, 'example chip'],
+  ['color-brand-700', 'color-brand-100', TEXT, 'example chip hover'],
+  ['color-brand-900', 'color-brand-100', TEXT, 'active sidebar link, step numbers'],
+  ['color-text-secondary', 'color-brand-50', TEXT, 'sidebar link hover'],
+  ['color-text-secondary', 'color-brand-50', TEXT, 'row metadata on hover'],
+  ['color-brand-700', 'color-brand-50', TEXT, 'row title on hover'],
+  ['color-text-secondary', 'color-bg-subtle', TEXT, 'sidebar preview note'],
+  ['color-text-secondary', 'color-bg-page', TEXT, 'landing nav and lead text'],
+  ['color-brand-600', 'color-bg-page', TEXT, 'hero accent text on page'],
+  ['color-brand-900', 'color-bg-page', TEXT, 'page titles on page'],
   // Not checked: border-default/border-strong are decorative dividers (no 3:1 requirement).
 ]
 

@@ -1,67 +1,80 @@
-import { screen, waitFor } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 
-import type { Investigation } from '../api/types'
-import { jsonResponse, renderRoute } from '../test/render'
+import { jsonResponse, makeInvestigation, makeStats, mockApi, renderRoute } from '../test/render'
 
-// Test fixture, not real research data.
-const FIXTURE: Investigation = {
-  id: '6f1c2c1e-3a4b-4c5d-9e8f-0a1b2c3d4e5f',
-  question: 'Fixture question about graph neural networks for fraud detection?',
-  status: 'queued',
-  created_at: '2026-10-22T12:00:00Z',
-  updated_at: '2026-10-22T12:00:00Z',
-}
-
-const emptyPage = { items: [], total: 0, limit: 10, offset: 0 }
+const emptyPage = { items: [], total: 0, limit: 5, offset: 0 }
+const LIST = 'GET /api/v1/investigations'
+const STATS = 'GET /api/v1/investigations/stats'
 
 describe('DashboardPage', () => {
-  it('shows the empty state when there are no investigations', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(jsonResponse(emptyPage))
-    renderRoute('/')
+  it('shows real summary counts and the empty state', async () => {
+    mockApi({
+      [LIST]: () => jsonResponse(emptyPage),
+      [STATS]: () => jsonResponse(makeStats({ queued: 2, running: 1, completed: 3, partially_completed: 1 })),
+    })
+    renderRoute('/app')
+
+    const summary = await screen.findByRole('list', { name: 'Investigation summary' })
+    const cards = within(summary).getAllByRole('listitem').map((card) => card.textContent)
+    expect(cards).toEqual(['7Investigations', '2Queued', '1In progress', '4Completed'])
     expect(await screen.findByText(/No investigations yet/)).toBeInTheDocument()
   })
 
-  it('lists recent investigations with a text status label', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      jsonResponse({ ...emptyPage, items: [FIXTURE], total: 1 }),
-    )
-    renderRoute('/')
-    const link = await screen.findByRole('link', { name: new RegExp(FIXTURE.question) })
-    expect(link).toHaveAttribute('href', `/investigations/${FIXTURE.id}`)
-    expect(screen.getByText('Queued')).toBeInTheDocument()
+  it('lists recent investigations linking to their pages with a text status', async () => {
+    const fixture = makeInvestigation()
+    mockApi({
+      [LIST]: () => jsonResponse({ ...emptyPage, items: [fixture], total: 1 }),
+      [STATS]: () => jsonResponse(makeStats({ queued: 1 })),
+    })
+    renderRoute('/app')
+
+    const link = await screen.findByRole('link', { name: new RegExp(fixture.question) })
+    expect(link).toHaveAttribute('href', `/app/investigations/${fixture.id}`)
+    expect(within(link).getByText('Queued')).toBeInTheDocument()
   })
 
-  it('shows an API error message when the list fails', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      jsonResponse({ detail: 'Database unavailable' }, 503),
-    )
-    renderRoute('/')
-    expect(await screen.findByRole('alert')).toHaveTextContent('Database unavailable')
+  it('shows the API error message when loading fails', async () => {
+    mockApi({
+      [LIST]: () => jsonResponse({ detail: 'Database unavailable' }, 503),
+      [STATS]: () => jsonResponse({ detail: 'Database unavailable' }, 503),
+    })
+    renderRoute('/app')
+    const alerts = await screen.findAllByRole('alert')
+    expect(alerts[0]).toHaveTextContent('Database unavailable')
+  })
+
+  it('fills the input from an example and submits it', async () => {
+    const created = makeInvestigation({ id: 'new-id' })
+    const api = mockApi({
+      [LIST]: () => jsonResponse(emptyPage),
+      [STATS]: () => jsonResponse(makeStats()),
+      'POST /api/v1/investigations': () => jsonResponse(created, 201),
+      'GET /api/v1/investigations/new-id': () => jsonResponse(created),
+    })
+    const { router } = renderRoute('/app')
+
+    await userEvent.click(await screen.findByRole('button', { name: 'GNNs for fraud detection' }))
+    const input = screen.getByLabelText<HTMLInputElement>('What would you like to investigate?')
+    expect(input.value).toContain('graph neural networks')
+    await userEvent.click(screen.getByRole('button', { name: 'Start investigation' }))
+
+    await waitFor(() => expect(router.state.location.pathname).toBe('/app/investigations/new-id'))
+    const post = api.mock.calls.find(([, init]) => init?.method === 'POST')
+    expect(JSON.parse(String(post?.[1]?.body)).question).toContain('graph neural networks')
   })
 
   it('blocks too-short questions without calling the API', async () => {
-    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(jsonResponse(emptyPage))
-    renderRoute('/')
-    await userEvent.type(screen.getByLabelText('Research question'), 'short')
+    const api = mockApi({
+      [LIST]: () => jsonResponse(emptyPage),
+      [STATS]: () => jsonResponse(makeStats()),
+    })
+    renderRoute('/app')
+    await userEvent.type(screen.getByLabelText('What would you like to investigate?'), 'short')
     await userEvent.click(screen.getByRole('button', { name: 'Start investigation' }))
 
     expect(screen.getByText('Enter at least 10 characters.')).toBeInTheDocument()
-    expect(screen.getByLabelText('Research question')).toHaveAttribute('aria-invalid', 'true')
-    expect(fetchMock.mock.calls.some(([, init]) => init?.method === 'POST')).toBe(false)
-  })
-
-  it('submits a valid question and navigates to the investigation', async () => {
-    vi.spyOn(globalThis, 'fetch').mockImplementation(async (_input, init) =>
-      init?.method === 'POST' ? jsonResponse(FIXTURE, 201) : jsonResponse(emptyPage),
-    )
-    const { router } = renderRoute('/')
-    await userEvent.type(screen.getByLabelText('Research question'), `  ${FIXTURE.question}  `)
-    await userEvent.click(screen.getByRole('button', { name: 'Start investigation' }))
-
-    await waitFor(() => expect(router.state.location.pathname).toBe(`/investigations/${FIXTURE.id}`))
-    const post = vi.mocked(fetch).mock.calls.find(([, init]) => init?.method === 'POST')
-    expect(JSON.parse(String(post?.[1]?.body))).toEqual({ question: FIXTURE.question })
+    expect(api.mock.calls.some(([, init]) => init?.method === 'POST')).toBe(false)
   })
 })

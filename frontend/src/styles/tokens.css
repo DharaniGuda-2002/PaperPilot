@@ -13,7 +13,7 @@
   --color-bg-surface: #FFFFFF;
   --color-bg-subtle: #F1F0EB;
 
-  /* Typography */
+  /* Text */
   --color-text-primary: #172B40;
   --color-text-secondary: #536273;
   --color-text-muted: #667587;
@@ -24,36 +24,35 @@
   --color-border-strong: #A9B6C4;
   --color-focus-ring: #326AA3;
 
-  /* Semantic status colors */
+  /* Semantic states */
   --color-success: #246B50;
   --color-success-bg: #E8F2EC;
-
   --color-warning: #875716;
   --color-warning-bg: #F7EEDC;
-
   --color-error: #A33430;
   --color-error-bg: #F9E9E7;
-
   --color-info: #315B83;
   --color-info-bg: #EAF0F6;
 
-  /* Layout */
+  /* Typography */
+  --font-sans: Inter, "Segoe UI", sans-serif;
+  --font-reading: Georgia, "Times New Roman", serif;
+
+  /* Shape and elevation */
   --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 12px;
+  --shadow-card: 0 1px 3px rgb(23 43 64 / 6%);
+  --shadow-overlay: 0 8px 24px rgb(23 43 64 / 12%);
 
+  /* Spacing */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
   --space-4: 16px;
   --space-6: 24px;
   --space-8: 32px;
-
-  --shadow-card: 0 1px 3px rgb(23 43 64 / 6%);
-  --shadow-overlay: 0 8px 24px rgb(23 43 64 / 12%);
-
-  --font-sans: Inter, "Segoe UI", sans-serif;
-  --font-reading: Georgia, "Times New Roman", serif;
+  --space-12: 48px;
 }
 
 html {

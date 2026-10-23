@@ -1,15 +1,24 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { api } from '../../api/client'
 
 const keys = {
   all: ['investigations'] as const,
-  list: (limit: number) => [...keys.all, 'list', limit] as const,
+  list: (limit: number, offset: number) => [...keys.all, 'list', limit, offset] as const,
+  stats: () => [...keys.all, 'stats'] as const,
   detail: (id: string) => [...keys.all, 'detail', id] as const,
 }
 
-export function useRecentInvestigations(limit = 10) {
-  return useQuery({ queryKey: keys.list(limit), queryFn: () => api.listInvestigations(limit) })
+export function useInvestigationList(limit = 10, offset = 0) {
+  return useQuery({
+    queryKey: keys.list(limit, offset),
+    queryFn: () => api.listInvestigations(limit, offset),
+    placeholderData: keepPreviousData,
+  })
+}
+
+export function useInvestigationStats() {
+  return useQuery({ queryKey: keys.stats(), queryFn: () => api.getInvestigationStats() })
 }
 
 export function useInvestigation(id: string) {
