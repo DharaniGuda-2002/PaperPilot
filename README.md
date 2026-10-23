@@ -4,9 +4,10 @@ An evidence-backed research investigation engine. Ask a technical research quest
 PaperPilot finds relevant papers, extracts reported evidence with source passages,
 flags experiments that cannot be fairly compared, and produces a traceable report.
 
-> **Status: Milestone 1 (foundation).** You can create and browse investigations
-> through a real API and database. Paper discovery, the Kafka pipeline, evidence
-> extraction, and reports are not built yet. See [docs/roadmap.md](docs/roadmap.md).
+> **Status: Milestone 2 (paper search).** You can search real papers through OpenAlex
+> and create and browse investigations. Linking papers to investigations (Kafka
+> pipeline), evidence extraction, and reports are not built yet.
+> See [docs/roadmap.md](docs/roadmap.md).
 
 **Live demo:** https://paperpilot-web-tfx4.onrender.com (free tier: first load after
 idle can take about a minute). API docs: https://paperpilot-api-2ykf.onrender.com/docs
@@ -83,11 +84,16 @@ scripts/    smoke test
 | GET | `/api/v1/investigations?limit=20&offset=0` | Newest first; `limit` 1–100 |
 | GET | `/api/v1/investigations/stats` | Total and count per status |
 | GET | `/api/v1/investigations/{id}` | 200, or 404 if unknown |
+| GET | `/api/v1/papers/search?q=...` | OpenAlex search; filters `from_year`, `to_year`, `open_access_only`, `sort` (`relevance`, `citations`, `newest`), `page`, `per_page` (≤25). Cached 24 h |
+| GET | `/api/v1/papers/{id}` | Stored paper metadata with provenance |
 | GET | `/health/live`, `/health/ready` | Liveness / readiness |
 
 ## Known limitations
 
-- No processing pipeline yet: investigations stay `queued`.
+- No processing pipeline yet: investigations stay `queued`, and search is separate
+  from investigations until M3.
+- Paper search depends on OpenAlex usage limits; see
+  [ADR 0005](docs/adr/0005-openalex-provider-and-search-cache.md).
 - No authentication. Creating investigations is rate limited per client and capped
   per day; see [docs/deployment.md](docs/deployment.md#public-demo-safeguards).
 - The public demo runs on free tiers (Render + Neon) and sleeps when idle; the first

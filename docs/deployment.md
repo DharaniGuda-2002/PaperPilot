@@ -49,6 +49,9 @@ Implemented before the first public deploy:
   default 5) and globally (`DAILY_INVESTIGATION_CAP`, default 200 per rolling 24 h).
   Both return 429 with `Retry-After`.
 - Request bodies over 16 KB return 413.
+- Paper search: 20 per minute per IP, a 24 h result cache, and a cap of 500 uncached
+  OpenAlex calls per rolling 24 h (`DAILY_PROVIDER_CALL_CAP`). Past the cap, new searches
+  return 503 and cached ones keep working.
 - The per-IP limiter is in memory and trusts the platform's `X-Forwarded-For`, so it is
   best-effort; the global DB-backed cap is the real backstop for the 1 GB database.
 - No expensive processing exists yet. Before M2+ adds external API calls, the caps must
@@ -62,7 +65,11 @@ Implemented before the first public deploy:
 2. **Render**: sign up at https://render.com with GitHub. Choose **New → Blueprint**,
    pick the `PaperPilot` repository, and confirm the two services from `render.yaml`.
 3. When Render asks for `DATABASE_URL`, paste the Neon string. Apply.
-4. Wait for both services to go live. If Render had to rename a service (name taken),
+4. **OpenAlex key (recommended):** create a free key at https://openalex.org/settings/api
+   and add it as `OPENALEX_API_KEY` in the `paperpilot-api` service's **Environment** tab.
+   Without it, searches share a $0.10/day budget with every other service on Render's
+   outbound IP and may fail with "provider unavailable".
+5. Wait for both services to go live. If Render had to rename a service (name taken),
    update `CORS_ORIGINS` and `VITE_API_BASE_URL` in `render.yaml` to the real URLs.
 
 ## Verifying a deployment
@@ -82,4 +89,5 @@ The smoke test creates one investigation. Record results in [roadmap.md](roadmap
 | Browser console shows a CORS error | `CORS_ORIGINS` does not match the frontend URL exactly | Set it to the frontend URL, no trailing slash |
 | Frontend shows "Could not reach the PaperPilot API" | API asleep and request timed out, or wrong `VITE_API_BASE_URL` | Reload after a minute; check the build env var and redeploy the static site |
 | 429 on create | Rate limit or daily cap reached | Expected; wait or raise the cap |
+| Search says the provider is unavailable | OpenAlex budget spent (often keyless on a shared IP) or outage | Add `OPENALEX_API_KEY`; check API logs for `openalex error response` |
 | Everything suspended mid-month | 750 free instance-hours used up | Wait for the next month; the local stack is unaffected |

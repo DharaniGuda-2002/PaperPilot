@@ -8,7 +8,7 @@ Each milestone is finished and verified before the next starts.
 - [x] M1 — Application foundation (local, CI, and public demo verified)
 - [x] UI redesign — landing page, sidebar app shell, dashboard with real status counts
       (2026-10-23; screens without backend data wait for their milestones)
-- [ ] M2 — Paper discovery (OpenAlex)
+- [ ] M2 — Paper discovery (OpenAlex) — search built and verified locally; public verification pending
 - [ ] M3 — Kafka pipeline (outbox, dispatcher, first idempotent consumer)
 - [ ] M4 — Distributed reliability (retries, DLQ, recovery, throughput)
 - [ ] M5 — Retrieval and evidence (PDFs, embeddings, hybrid search, extraction)

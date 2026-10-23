@@ -48,7 +48,7 @@ work is ready*, identified by IDs; it never holds the only copy of anything.
 | `app.api` | HTTP routing, request validation, status codes | M1 |
 | `app.investigations` | Investigation lifecycle and state machine | M1 (create/read) |
 | `app.core` | Settings, logging, DB engine/session | M1 |
-| `app.papers` | Metadata providers (OpenAlex), normalization | planned M2 |
+| `app.papers` | OpenAlex search client, normalization, cached search, paper storage | M2 |
 | `app.events` | Event envelopes, outbox, dispatcher, consumer base | planned M3 |
 | `app.workers` | Worker entry points | planned M3–M5 |
 | `app.documents` | Permitted document fetch, PDF text extraction, SSRF guard | planned M5 |
@@ -87,12 +87,25 @@ Implemented in M1 (`backend/migrations/versions/0001_*`):
 
 Index: `ix_investigations_created_at` (recent-investigations list, newest first).
 
+Implemented in M2 (`0002_*`):
+
+**papers** — normalized metadata from a provider. `unique(provider, provider_id)` makes
+upserts idempotent. `doi` is indexed but not unique, because providers sometimes hold
+duplicate records for one DOI. `metadata_fetched_at` records provenance. Open-access URLs
+are stored only if they are http(s).
+
+**paper_search_cache** — one row per distinct search request (sha256 of the normalized
+query and filters): ordered paper references with relevance scores, the provider total,
+and `fetched_at`. Rows younger than 24 h answer repeated searches without a provider call.
+Because each key is refreshed at most once per 24 h, counting rows with
+`fetched_at` in the last 24 h equals the number of provider calls, which enforces the
+daily provider-call cap.
+
 Planned tables (added by the milestone that first needs them):
 
 | Table | Key columns | Key constraints | Milestone |
 |---|---|---|---|
-| papers | provider, provider_id, doi, title, authors (jsonb), year, venue, abstract, oa_url, license | unique(provider, provider_id); unique(doi) where not null | M2 |
-| investigation_papers | investigation_id, paper_id, rank, retrieval_method, score | PK(investigation_id, paper_id) | M2 |
+| investigation_papers | investigation_id, paper_id, rank, retrieval_method, score | PK(investigation_id, paper_id) | M3 (discovery worker links papers to investigations) |
 | outbox_events | event_id, topic, partition_key, event_type, schema_version, payload, published_at | partial index where published_at is null | M3 |
 | processed_events | consumer_group, event_id | PK(consumer_group, event_id) — idempotency | M3 |
 | investigation_tasks | investigation_id, kind, subject_id, status, attempts, next_attempt_at, last_error | unique(investigation_id, kind, subject_id) | M3 |
