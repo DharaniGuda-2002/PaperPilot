@@ -61,10 +61,25 @@ def engine(migrated_database: str) -> Iterator[Engine]:
     engine.dispose()
 
 
+APP_TABLES = (
+    "investigations",
+    "investigation_tasks",
+    "investigation_papers",
+    "papers",
+    "paper_search_cache",
+    "outbox_events",
+    "processed_events",
+)
+
+
+def reset_tables(engine: Engine) -> None:
+    with engine.begin() as conn:
+        conn.execute(text(f"TRUNCATE {', '.join(APP_TABLES)}"))
+
+
 @pytest.fixture
 def client(migrated_database: str, engine: Engine) -> Iterator[TestClient]:
     settings = Settings(database_url=migrated_database, cors_origins="http://localhost:5173")
     with TestClient(create_app(settings)) as test_client:
         yield test_client
-    with engine.begin() as conn:
-        conn.execute(text("TRUNCATE investigations, papers, paper_search_cache"))
+    reset_tables(engine)

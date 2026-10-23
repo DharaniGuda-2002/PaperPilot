@@ -8,14 +8,37 @@ from datetime import timedelta
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from app.investigations.models import Investigation, InvestigationStatus
+from app.core.logging import correlation_id_var
+from app.events.envelope import INVESTIGATION_REQUESTED, InvestigationRequestedV1, new_event
+from app.events.outbox import enqueue
+from app.investigations.models import (
+    Investigation,
+    InvestigationStatus,
+    InvestigationTask,
+    TaskKind,
+)
 from app.investigations.schemas import InvestigationCreate, InvestigationStats
 
 
 def create_investigation(session: Session, data: InvestigationCreate) -> Investigation:
+    """Stage the investigation, its discovery task, and the event that starts the
+    pipeline. All three commit together or not at all (transactional outbox)."""
     investigation = Investigation(question=data.question)
     session.add(investigation)
     session.flush()
+    task = InvestigationTask(investigation_id=investigation.id, kind=TaskKind.DISCOVER_PAPERS)
+    session.add(task)
+    session.flush()
+
+    request_id = correlation_id_var.get()
+    event = new_event(
+        INVESTIGATION_REQUESTED,
+        InvestigationRequestedV1(task_id=task.id, question=investigation.question),
+        investigation_id=investigation.id,
+        entity_id=task.id,
+        correlation_id=uuid.UUID(request_id) if request_id else uuid.uuid4(),
+    )
+    enqueue(session, event, partition_key=str(investigation.id))
     return investigation
 
 

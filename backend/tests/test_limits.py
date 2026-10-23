@@ -7,6 +7,7 @@ from sqlalchemy import Engine, text
 from app.core.config import Settings
 from app.core.rate_limit import SlidingWindowLimiter
 from app.main import create_app
+from tests.conftest import reset_tables
 
 QUESTION = "Does contrastive pretraining improve citation recommendation over BM25?"
 
@@ -18,8 +19,7 @@ def limited_client(migrated_database: str, engine: Engine) -> Iterator[TestClien
     )
     with TestClient(create_app(settings)) as client:
         yield client
-    with engine.begin() as conn:
-        conn.execute(text("TRUNCATE investigations, papers, paper_search_cache"))
+    reset_tables(engine)
 
 
 def test_limiter_allows_up_to_limit_then_recovers_after_window() -> None:

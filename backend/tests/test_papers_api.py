@@ -11,6 +11,7 @@ from app.core.config import Settings
 from app.main import create_app
 from app.papers.openalex import ProviderUnavailableError, normalize_work
 from app.papers.schemas import PaperSearchParams, ProviderSearchHit, ProviderSearchResult
+from tests.conftest import reset_tables
 
 # Real OpenAlex response recorded 2026-10-22 (CC0), trimmed to two works.
 FIXTURE = json.loads(
@@ -50,8 +51,7 @@ def make_client(database_url: str, provider: FakeProvider, **overrides: int) -> 
 def api(migrated_database: str, engine: Engine, provider: FakeProvider) -> Iterator[TestClient]:
     with make_client(migrated_database, provider) as client:
         yield client
-    with engine.begin() as conn:
-        conn.execute(text("TRUNCATE investigations, papers, paper_search_cache"))
+    reset_tables(engine)
 
 
 def search(client: TestClient, **params: str | int | bool) -> dict[str, object]:
@@ -133,8 +133,7 @@ def test_daily_provider_cap_blocks_new_searches_but_not_cached_ones(
             assert search(client)["cached"] is True
             assert len(provider.calls) == 1
     finally:
-        with engine.begin() as conn:
-            conn.execute(text("TRUNCATE investigations, papers, paper_search_cache"))
+        reset_tables(engine)
 
 
 def test_search_is_rate_limited_per_client(
@@ -150,8 +149,7 @@ def test_search_is_rate_limited_per_client(
             ]
             assert codes == [200, 200, 429]
     finally:
-        with engine.begin() as conn:
-            conn.execute(text("TRUNCATE investigations, papers, paper_search_cache"))
+        reset_tables(engine)
 
 
 def test_unknown_paper_returns_404(api: TestClient) -> None:

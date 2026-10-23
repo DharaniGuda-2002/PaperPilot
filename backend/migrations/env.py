@@ -3,11 +3,14 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import create_engine
 
-# Model imports register tables on Base.metadata for autogenerate.
-import app.investigations.models
-import app.papers.models  # noqa: F401
 from app.core.config import get_settings
 from app.core.db import Base
+from app.events import models as event_models
+from app.investigations import models as investigation_models
+from app.papers import models as paper_models
+
+# Importing the model modules registers their tables on Base.metadata.
+_MODEL_MODULES = (event_models, investigation_models, paper_models)
 
 config = context.config
 if config.config_file_name is not None:
