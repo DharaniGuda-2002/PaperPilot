@@ -73,6 +73,7 @@ APP_TABLES = (
     "paper_chunks",
     "evidence_records",
     "evidence_validations",
+    "fetch_host_schedule",
 )
 
 

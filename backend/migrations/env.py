@@ -5,6 +5,7 @@ from sqlalchemy import create_engine
 
 from app.core.config import get_settings
 from app.core.db import Base
+from app.documents import host_schedule as host_schedule_models
 from app.documents import models as document_models
 from app.events import models as event_models
 from app.evidence import models as evidence_models
@@ -13,6 +14,7 @@ from app.papers import models as paper_models
 
 # Importing the model modules registers their tables on Base.metadata.
 _MODEL_MODULES = (
+    host_schedule_models,
     document_models,
     event_models,
     evidence_models,
