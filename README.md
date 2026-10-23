@@ -25,7 +25,7 @@ docker compose up --build -d --wait
 
 | URL | What |
 |---|---|
-| http://localhost:8080 | Web app (nginx serves the SPA and proxies `/api`) |
+| http://localhost:8080 | Landing page; the app is at `/app` (nginx serves the SPA and proxies `/api`) |
 | http://localhost:8000/docs | API reference (OpenAPI) |
 | http://localhost:8000/health/ready | Readiness: 200 when the database answers, else 503 |
 
@@ -81,6 +81,7 @@ scripts/    smoke test
 |---|---|---|
 | POST | `/api/v1/investigations` | 201 + `Location`; body `{"question": "..."}` (10–500 chars) |
 | GET | `/api/v1/investigations?limit=20&offset=0` | Newest first; `limit` 1–100 |
+| GET | `/api/v1/investigations/stats` | Total and count per status |
 | GET | `/api/v1/investigations/{id}` | 200, or 404 if unknown |
 | GET | `/health/live`, `/health/ready` | Liveness / readiness |
 
