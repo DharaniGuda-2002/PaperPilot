@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import Settings
 from app.core.db import get_session
-from app.core.rate_limit import SlidingWindowLimiter
+from app.core.rate_limit import SlidingWindowLimiter, client_address
 from app.papers import service
 from app.papers.openalex import ProviderUnavailableError
 from app.papers.schemas import PaperRead, PaperSearchParams, PaperSearchResponse
@@ -21,7 +21,7 @@ SessionDep = Annotated[Session, Depends(get_session)]
 
 def enforce_search_limit(request: Request) -> None:
     limiter: SlidingWindowLimiter = request.app.state.search_limiter
-    client_ip = request.client.host if request.client else "unknown"
+    client_ip = client_address(request, request.app.state.settings.trusted_proxy_hops)
     if not limiter.allow(client_ip):
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,

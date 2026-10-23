@@ -2,6 +2,8 @@ import threading
 import time
 from collections import defaultdict, deque
 
+from starlette.requests import Request
+
 
 class SlidingWindowLimiter:
     """In-memory per-key limiter: at most `limit` hits per `window_seconds`.
@@ -34,3 +36,21 @@ class SlidingWindowLimiter:
         idle = [k for k, h in self._hits.items() if not h or h[-1] <= now - self.window_seconds]
         for key in idle:
             del self._hits[key]
+
+
+def client_address(request: Request, trusted_proxy_hops: int) -> str:
+    """The address rate limits are keyed on.
+
+    Proxies append the address they received the request from, so with N
+    trusted proxies the client is the N-th entry from the right. Entries further
+    left are client-supplied (uvicorn's --forwarded-allow-ips='*' would take the
+    leftmost one, letting anyone rotate it to dodge per-IP limits).
+    """
+    peer = request.client.host if request.client else "unknown"
+    if trusted_proxy_hops <= 0:
+        return peer
+    header = ",".join(request.headers.getlist("x-forwarded-for"))
+    entries = [e.strip() for e in header.split(",") if e.strip()]
+    if len(entries) < trusted_proxy_hops:
+        return peer  # not via the expected proxies (e.g. a direct local call)
+    return entries[-trusted_proxy_hops]

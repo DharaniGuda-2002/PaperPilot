@@ -20,6 +20,7 @@ x-api-env: &api-env
   RETRY_BASE_SECONDS: ${RETRY_BASE_SECONDS:-30}
   DOCUMENT_FETCH_ENABLED: ${DOCUMENT_FETCH_ENABLED:-true}
   EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-sentence-transformers}
+  TRUSTED_PROXY_HOPS: ${TRUSTED_PROXY_HOPS:-1}  # the frontend's nginx
 
 # API, migrations, dispatcher, and discovery share the small `api` image; document
 # and evidence workers use the `ml` image (PyMuPDF, torch CPU, embedding model).

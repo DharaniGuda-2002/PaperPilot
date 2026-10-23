@@ -71,6 +71,25 @@ jobs:
       - name: Migrations apply to the main database
         run: alembic upgrade head
 
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0  # the secret scan reads the whole history
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Python dependency audit (known vulnerabilities)
+        run: |
+          pip install pip-audit==2.10.1
+          pip-audit -r backend/requirements.txt -r backend/requirements-ml.txt
+      - name: npm audit (production dependencies)
+        working-directory: frontend
+        run: npm audit --omit=dev --audit-level=moderate
+      - name: Secret scan of the full git history
+        run: docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:v8.24.3 git /repo --no-banner --redact
+
   frontend:
     runs-on: ubuntu-latest
     defaults:

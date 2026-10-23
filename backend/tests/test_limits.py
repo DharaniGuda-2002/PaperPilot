@@ -103,3 +103,37 @@ def test_api_docs_page_still_loads_its_assets(client: TestClient) -> None:
     response = client.get("/docs")
     assert response.status_code == 200
     assert "Content-Security-Policy" not in response.headers  # Swagger UI loads from a CDN
+
+
+@pytest.fixture
+def proxied_client(migrated_database: str, engine: Engine) -> Iterator[TestClient]:
+    settings = Settings(
+        database_url=migrated_database, create_rate_limit_per_minute=2, trusted_proxy_hops=1
+    )
+    with TestClient(create_app(settings)) as client:
+        yield client
+    reset_tables(engine)
+
+
+def test_forged_forwarded_for_does_not_reset_the_limit(proxied_client: TestClient) -> None:
+    """Regression: uvicorn trusted the leftmost (client-supplied) X-Forwarded-For
+    entry, so rotating it gave every request a fresh limit."""
+    codes = [
+        proxied_client.post(
+            "/api/v1/investigations",
+            json={"question": QUESTION},
+            headers={"X-Forwarded-For": f"10.0.0.{n}, 203.0.113.7"},  # forged, then proxy-added
+        ).status_code
+        for n in range(3)
+    ]
+    assert codes == [201, 201, 429]
+
+
+def test_clients_behind_the_proxy_have_separate_limits(proxied_client: TestClient) -> None:
+    for address in ("203.0.113.7", "203.0.113.7", "198.51.100.9"):
+        response = proxied_client.post(
+            "/api/v1/investigations",
+            json={"question": QUESTION},
+            headers={"X-Forwarded-For": address},
+        )
+        assert response.status_code == 201

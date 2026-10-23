@@ -24,6 +24,8 @@ services:
         value: "200"
       - key: CREATE_RATE_LIMIT_PER_MINUTE
         value: "5"
+      - key: TRUSTED_PROXY_HOPS
+        value: "1"  # Render's proxy appends the client address to X-Forwarded-For
       - key: OPENALEX_API_KEY
         sync: false  # free key from openalex.org/settings/api; add in the dashboard
       - key: DAILY_PROVIDER_CALL_CAP

@@ -20,6 +20,11 @@ class Settings(BaseSettings):
     create_rate_limit_per_minute: int = 5  # per client IP, per API process
     daily_investigation_cap: int = 200  # across all clients, rolling 24 hours
     paper_search_rate_limit_per_minute: int = 20  # per client IP, per API process
+    # Reverse proxies in front of the API that append to X-Forwarded-For (nginx in
+    # compose: 1; Render: 1). The client IP is the entry the outermost trusted
+    # proxy added; anything to its left was sent by the client and can be forged.
+    # 0 = use the TCP peer address.
+    trusted_proxy_hops: int = 0
 
     # OpenAlex. Without a key, calls share a small daily budget per outbound IP.
     # "fixture" serves a recorded sample for every query: automated tests only.

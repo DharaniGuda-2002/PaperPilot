@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import Settings
 from app.core.db import get_session
-from app.core.rate_limit import SlidingWindowLimiter
+from app.core.rate_limit import SlidingWindowLimiter, client_address
 from app.investigations import service
 from app.investigations.schemas import (
     DiscoveredPaperPage,
@@ -27,7 +27,7 @@ def enforce_create_limits(request: Request, session: SessionDep) -> None:
     """Per-client and global caps so anonymous users cannot flood the demo database."""
     settings: Settings = request.app.state.settings
     limiter: SlidingWindowLimiter = request.app.state.create_limiter
-    client_ip = request.client.host if request.client else "unknown"
+    client_ip = client_address(request, request.app.state.settings.trusted_proxy_hops)
     if not limiter.allow(client_ip):
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
