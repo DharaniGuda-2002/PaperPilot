@@ -38,7 +38,7 @@ class SlidingWindowLimiter:
             del self._hits[key]
 
 
-def client_address(request: Request, trusted_proxy_hops: int) -> str:
+def client_address(request: Request, trusted_proxy_hops: int, client_ip_header: str = "") -> str:
     """The address rate limits are keyed on.
 
     Proxies append the address they received the request from, so with N
@@ -47,6 +47,10 @@ def client_address(request: Request, trusted_proxy_hops: int) -> str:
     leftmost one, letting anyone rotate it to dodge per-IP limits).
     """
     peer = request.client.host if request.client else "unknown"
+    if client_ip_header:
+        value = request.headers.get(client_ip_header, "").strip()
+        if value:
+            return value
     if trusted_proxy_hops <= 0:
         return peer
     header = ",".join(request.headers.getlist("x-forwarded-for"))

@@ -25,6 +25,10 @@ class Settings(BaseSettings):
     # proxy added; anything to its left was sent by the client and can be forged.
     # 0 = use the TCP peer address.
     trusted_proxy_hops: int = 0
+    # A header an edge proxy sets to the client address, overwriting any client
+    # value (Render's Cloudflare edge: CF-Connecting-IP). Takes precedence over
+    # X-Forwarded-For. Only set it when every request passes through that edge.
+    client_ip_header: str = ""
 
     # OpenAlex. Without a key, calls share a small daily budget per outbound IP.
     # "fixture" serves a recorded sample for every query: automated tests only.

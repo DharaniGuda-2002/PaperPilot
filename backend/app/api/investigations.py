@@ -27,7 +27,7 @@ def enforce_create_limits(request: Request, session: SessionDep) -> None:
     """Per-client and global caps so anonymous users cannot flood the demo database."""
     settings: Settings = request.app.state.settings
     limiter: SlidingWindowLimiter = request.app.state.create_limiter
-    client_ip = client_address(request, request.app.state.settings.trusted_proxy_hops)
+    client_ip = client_address(request, settings.trusted_proxy_hops, settings.client_ip_header)
     if not limiter.allow(client_ip):
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,

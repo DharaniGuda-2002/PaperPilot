@@ -150,3 +150,24 @@ def test_unhandled_errors_return_a_generic_body(migrated_database: str) -> None:
         response = client.get("/boom")
     assert response.status_code == 500
     assert "secret" not in response.text and "postgresql" not in response.text
+
+
+def test_edge_client_header_takes_precedence(migrated_database: str, engine: Engine) -> None:
+    settings = Settings(
+        database_url=migrated_database,
+        create_rate_limit_per_minute=2,
+        trusted_proxy_hops=1,
+        client_ip_header="CF-Connecting-IP",
+    )
+    with TestClient(create_app(settings)) as client:
+        codes = [
+            client.post(
+                "/api/v1/investigations",
+                json={"question": QUESTION},
+                # The last X-Forwarded-For entry varies per request (Render's proxies).
+                headers={"CF-Connecting-IP": "203.0.113.7", "X-Forwarded-For": f"10.1.1.{n}"},
+            ).status_code
+            for n in range(3)
+        ]
+    reset_tables(engine)
+    assert codes == [201, 201, 429]

@@ -26,7 +26,11 @@ Requires Docker with Compose v2.
 cp .env.example .env        # optional; defaults work for local use
 docker compose up --build -d --wait
 ./scripts/smoke-test.sh     # end-to-end check through the frontend proxy
+EXPECT_PIPELINE=1 PIPELINE_TIMEOUT=600 ./scripts/smoke-test.sh   # also wait for the report
 ```
+
+The pipeline check uses live OpenAlex and downloads open-access PDFs with
+crawl delays, so it takes a few minutes (about 3.5 on the M7 clean run).
 
 | URL | What |
 |---|---|

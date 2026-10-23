@@ -4,11 +4,14 @@
 #   Defaults: http://localhost:8080 for both (nginx proxies the API locally).
 # Creates one investigation row as a side effect.
 # Set EXPECT_PIPELINE=1 when workers run (local Compose) to also require that
-# discovery links papers to the new investigation.
+# the whole pipeline finishes. Evidence extraction waits PIPELINE_TIMEOUT
+# seconds (default 120, enough for recorded papers with fetching off, as in CI;
+# use 600 with live OpenAlex and PDF downloads, which honor crawl delays).
 set -euo pipefail
 
 FRONTEND_URL="${1:-http://localhost:8080}"
 BASE_URL="${2:-$FRONTEND_URL}"
+PIPELINE_TIMEOUT="${PIPELINE_TIMEOUT:-120}"
 # Hosted free tiers can take ~1 minute to wake up.
 curl() { command curl --max-time 120 "$@"; }
 fail() { echo "FAIL: $*" >&2; exit 1; }
@@ -52,13 +55,13 @@ if [ "${EXPECT_PIPELINE:-0}" = 1 ]; then
   [ "${linked:-0}" -gt 0 ] || fail "no papers linked"
   echo "ok   pipeline: outbox -> Kafka -> discovery worker linked $linked papers"
 
-  for _ in $(seq 1 120); do
+  for _ in $(seq 1 "$PIPELINE_TIMEOUT"); do
     tasks=$(curl -sf "$BASE_URL/api/v1/investigations/$id/tasks" || true)
     done_count=$( (echo "$tasks" | grep -o '"kind":"extract_evidence","subject_key":"[^"]*","status":"succeeded"' || true) | wc -l | tr -d ' ')
     [ "$done_count" -ge "$linked" ] && break
     sleep 1
   done
-  [ "${done_count:-0}" -ge "$linked" ] || fail "evidence extraction did not finish: $done_count of $linked"
+  [ "${done_count:-0}" -ge "$linked" ] || fail "evidence extraction did not finish in ${PIPELINE_TIMEOUT}s: $done_count of $linked"
   evidence=$(curl -sf "$BASE_URL/api/v1/investigations/$id/evidence")
   echo "$evidence" | grep -q '"field"' || fail "no evidence records"
   echo "ok   pipeline: document + evidence workers processed $done_count papers"

@@ -21,7 +21,8 @@ SessionDep = Annotated[Session, Depends(get_session)]
 
 def enforce_search_limit(request: Request) -> None:
     limiter: SlidingWindowLimiter = request.app.state.search_limiter
-    client_ip = client_address(request, request.app.state.settings.trusted_proxy_hops)
+    settings: Settings = request.app.state.settings
+    client_ip = client_address(request, settings.trusted_proxy_hops, settings.client_ip_header)
     if not limiter.allow(client_ip):
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,

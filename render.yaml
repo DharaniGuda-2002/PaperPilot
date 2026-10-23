@@ -24,8 +24,10 @@ services:
         value: "200"
       - key: CREATE_RATE_LIMIT_PER_MINUTE
         value: "5"
-      - key: TRUSTED_PROXY_HOPS
-        value: "1"  # Render's proxy appends the client address to X-Forwarded-For
+      # X-Forwarded-For on Render ends with proxy addresses that vary per request
+      # (measured in M7), so per-client limits key on the Cloudflare edge's header.
+      - key: CLIENT_IP_HEADER
+        value: CF-Connecting-IP
       - key: OPENALEX_API_KEY
         sync: false  # free key from openalex.org/settings/api; add in the dashboard
       - key: DAILY_PROVIDER_CALL_CAP
