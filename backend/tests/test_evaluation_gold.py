@@ -1,5 +1,7 @@
 import json
+from collections.abc import Sequence
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -21,14 +23,20 @@ GOLD_DIR = Path(__file__).resolve().parents[2] / "evaluation" / "gold"
 
 
 def record(
-    field: str, value: dict, page: int = 3, chunk: str = "c1", passage: str = "p"
+    field: str, value: dict[str, Any], page: int = 3, chunk: str = "c1", passage: str = "p"
 ) -> Extracted:
     return Extracted(
         field=field, value=value, page=page, chunk_id=chunk, passage=passage, verified=True
     )
 
 
-def fact(field: str, value: object = "x", pages=(3,), aliases=(), anchors=("anchor",)) -> GoldFact:
+def fact(
+    field: str,
+    value: object = "x",
+    pages: Sequence[int] = (3,),
+    aliases: Sequence[str] = (),
+    anchors: Sequence[str] = ("anchor",),
+) -> GoldFact:
     return GoldFact(
         field=field, value=value, pages=tuple(pages), anchors=tuple(anchors), aliases=tuple(aliases)
     )
