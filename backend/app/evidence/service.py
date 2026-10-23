@@ -37,7 +37,8 @@ class EvidenceBatch:
 
     @property
     def reported(self) -> list[EvidenceRecord]:
-        return [r for r in self.records if r.finding_status == FindingStatus.REPORTED]
+        """Records backed by a passage (reported or uncertain), as opposed to absence notes."""
+        return [r for r in self.records if r.passage is not None]
 
     def count(self, status: ValidationStatus) -> int:
         return sum(r.validation_status == status for r in self.reported)
@@ -49,9 +50,8 @@ class EvidenceBatch:
             "verified": self.count(ValidationStatus.VERIFIED),
             "rejected": self.count(ValidationStatus.REJECTED),
             "by_field": dict(Counter(r.field for r in reported)),
-            "fields_without_evidence": sorted(
-                r.field for r in self.records if r.finding_status != FindingStatus.REPORTED
-            ),
+            "uncertain": sum(r.finding_status == FindingStatus.UNCERTAIN for r in reported),
+            "fields_without_evidence": sorted(r.field for r in self.records if r.passage is None),
         }
 
 
@@ -151,7 +151,13 @@ def _add_fact(
             paper_id=paper_id,
             chunk_id=fact.chunk.chunk_id,
             field=fact.field,
-            finding_status=FindingStatus.REPORTED,
+            # A metric whose unit cannot be determined (e.g. "F1 of 10.92" on a 0-100
+            # scale with no % sign) is real text but an uncertain value.
+            finding_status=(
+                FindingStatus.UNCERTAIN
+                if fact.field == EvidenceField.METRIC_RESULT and fact.value.get("unit") is None
+                else FindingStatus.REPORTED
+            ),
             value=fact.value,
             passage=fact.passage,
             passage_kind="quotation",

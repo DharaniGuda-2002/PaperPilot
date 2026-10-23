@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session, sessionmaker
 from app.core.config import Settings
 from app.documents.fetch import FetchedPdf
 from app.events.envelope import EventEnvelope
+from app.evidence.rules import EXTRACTION_VERSION
 from app.retrieval.embeddings import HashingEmbedder
 from app.workers.documents import handle_paper_discovered
 from app.workers.evidence import handle_document_processed
@@ -107,7 +108,7 @@ def test_extracts_validated_evidence_with_pages_and_provenance(
         gnn_auc.passage == "The GNN reaches an AUC of 0.921, while XGBoost reaches an AUC of 0.883."
     )
     assert gnn_auc.retrieval_method in {"fts", "vector", "fts+vector"}
-    assert gnn_auc.extraction_version == "rules-v1"
+    assert gnn_auc.extraction_version == EXTRACTION_VERSION
 
     fields = {r.field for r in reported}
     assert {"method", "dataset", "split", "baseline", "metric_result", "limitation"} <= fields
@@ -193,3 +194,22 @@ def test_api_returns_evidence_with_checks_and_document_info(
     assert document["embedding_models"] == ["hashing-bow-v1"]
     missing = client.get(f"/api/v1/investigations/{uuid.uuid4()}/evidence")
     assert missing.status_code == 404
+
+
+def test_unknown_unit_is_recorded_as_uncertain_not_rejected() -> None:
+    from app.evidence.rules import SourceChunk
+    from app.evidence.service import build_evidence
+
+    chunk = SourceChunk(
+        uuid.uuid4(), 2, "The baseline reaches an F1 score of 10.92 here.", "fts", 0.1
+    )
+    batch = build_evidence(
+        investigation_id=uuid.uuid4(),
+        paper_id=uuid.uuid4(),
+        content_kind="full_text",
+        page_count=5,
+        sources=[chunk],
+    )
+    metric = next(r for r in batch.records if r.field == "metric_result")
+    assert (metric.finding_status, metric.validation_status) == ("uncertain", "verified")
+    assert batch.summary()["uncertain"] == 1

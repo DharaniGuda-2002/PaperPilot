@@ -17,7 +17,7 @@ from app.documents.text import split_sentences
 from app.evidence.models import EvidenceField
 
 EXTRACTION_METHOD = "rules"
-EXTRACTION_VERSION = "rules-v1"
+EXTRACTION_VERSION = "rules-v2"
 
 # Field-specific retrieval queries, searched alongside the research question.
 FIELD_QUERIES: dict[EvidenceField, str] = {
@@ -46,12 +46,30 @@ _METRICS = {
 # Order matters: longer/specific names first so "AUC-PR" is not read as "AUC".
 _METRIC_ALTERNATION = "|".join(f"(?P<m{i}>{p})" for i, p in enumerate(_METRICS.values()))
 _METRIC_NAMES = list(_METRICS)
-_NUMBER = r"(?<![\[\d.])(?P<num>\d{1,3}(?:\.\d+)?)(?![\d\]])\s*(?P<pct>%)?"
-_METRIC_THEN_NUMBER = re.compile(
-    rf"\b(?:{_METRIC_ALTERNATION})\b[^.\d%;]{{0,30}}?{_NUMBER}", re.IGNORECASE
+# A value stands alone: not part of a name ("GPT-3.5", "Llama-3", "Recall@15"),
+# a citation ("[12]"), or a larger token ("3.5turbo").
+_NUMBER = r"(?<![\w@.\[\-])(?P<num>\d{1,3}(?:\.\d+)?)(?![\w\]])\s*(?P<pct>%)?"
+# Only short connector words may sit between a metric and its value (rules-v2).
+# rules-v1 allowed any 30 characters, which read "accuracy of GPT-3.5" as 3.5
+# and "accuracy improvements of 1%" as an accuracy of 1%.
+_CONNECTOR = (
+    r"(?:\s*\([\w\s-]{1,15}\))?\s*(?:score\s*)?"
+    r"(?:of|is|was|were|=|:|reaches|reached|achieves|achieved|"
+    r"(?:improve[sd]?|increase[sd]?|decrease[sd]?|drop(?:s|ped)?|rise[sn]?|rose) (?:from \S+ )?to"
+    r"|at)?\s*"
+    r"(?:about|approximately|around|nearly|over|~)?\s*"
 )
+_METRIC_THEN_NUMBER = re.compile(
+    rf"\b(?:{_METRIC_ALTERNATION})\b{_CONNECTOR}{_NUMBER}", re.IGNORECASE
+)
+# Table rows flattened into text are dense with numbers and cannot be read
+# reliably as sentences; metric values are not taken from them.
+_TABLE_LIKE_NUMBERS = 8
+# Value before the metric ("95.3% accuracy", "0.92 AUC") must be a percentage or a
+# decimal; a bare integer there is usually a count or a label ("10 questions", "15 Accuracy").
+_VALUE_FIRST_NUMBER = r"(?<![\w@.\[\-])(?P<num>\d{1,3}(?:\.\d+|(?=\s*%)))(?![\w\]])\s*(?P<pct>%)?"
 _NUMBER_THEN_METRIC = re.compile(
-    rf"{_NUMBER}\s*(?:in\s+|of\s+)?(?:{_METRIC_ALTERNATION})\b", re.IGNORECASE
+    rf"{_VALUE_FIRST_NUMBER}\s*(?:in\s+|of\s+)?(?:{_METRIC_ALTERNATION})\b", re.IGNORECASE
 )
 
 _METHODS = {
@@ -83,11 +101,23 @@ _METHODS = {
     "Isolation forest": r"isolation forests?",
     "k-NN": r"k-?NN|k-nearest neighbou?rs?",
     "Naive Bayes": r"naive Bayes",
+    # Retrieval and language models (added in rules-v2 after the first real run).
+    "RAG": r"RAG|retrieval[- ]augmented generation",
+    "DPR": r"DPR|dense passage retrieval",
+    "BM25": r"BM25",
+    "ColBERT": r"ColBERT(?:v2)?",
+    "Contriever": r"Contriever",
+    "FiD": r"FiD|fusion[- ]in[- ]decoder",
+    "GPT": r"GPT-?[34](?:\.5)?(?:-?turbo|o)?|ChatGPT",
+    "Llama": r"Llama(?:-?\d(?:\.\d)?)?",
+    "T5": r"T5",
+    "BART": r"BART",
 }
 _METHOD_PATTERNS = [
     (name, re.compile(rf"(?<![\w-])(?:{pattern})(?![\w-])", re.IGNORECASE if name in {
         "Gradient boosting", "Random forest", "Logistic regression", "Decision tree",
-        "Autoencoder", "Isolation forest", "Naive Bayes", "k-NN",
+        "Autoencoder", "Isolation forest", "Naive Bayes", "k-NN", "RAG", "DPR", "FiD",
+        "Llama",
     } else 0))
     for name, pattern in _METHODS.items()
 ]  # fmt: skip
@@ -115,8 +145,10 @@ _KNOWN_DATASETS = {
 _DATASET_PATTERNS = [
     (n, re.compile(rf"\b(?:{p})", re.IGNORECASE)) for n, p in _KNOWN_DATASETS.items()
 ]
+# One token that looks like a dataset name: at least two capitals or digits
+# ("WebQSP", "MMLU-Med", "RSNA-RadioQA"), not a plain word ("Benchmark", "One").
 _DATASET_GENERIC = re.compile(
-    r"\b([A-Z][A-Za-z0-9-]{2,}(?: [A-Z][A-Za-z0-9-]+)?) (?:dataset|benchmark)\b"
+    r"\b((?=[A-Za-z0-9-]*[A-Z0-9][A-Za-z0-9-]*[A-Z0-9])[A-Z][A-Za-z0-9-]{1,}) (?:dataset|benchmark)\b"
 )
 _NOT_DATASET_NAMES = {
     "The",
@@ -130,6 +162,10 @@ _NOT_DATASET_NAMES = {
     "Real",
     "Public",
     "Large",
+    "Dataset",
+    "Benchmark",
+    "Table",
+    "Figure",
 }
 
 _SPLIT_PATTERNS: list[tuple[re.Pattern[str], str]] = [
@@ -255,6 +291,8 @@ def _nearest_method(positioned: list[tuple[int, str]], position: int) -> str | N
 
 def _metric_values(sentence: str) -> list[tuple[int, str, float, str | None, str]]:
     found: list[tuple[int, str, float, str | None, str]] = []
+    if len(re.findall(r"\d+(?:\.\d+)?", sentence)) >= _TABLE_LIKE_NUMBERS:
+        return found
     spans: list[tuple[int, int]] = []
     for pattern in (_METRIC_THEN_NUMBER, _NUMBER_THEN_METRIC):
         for match in pattern.finditer(sentence):

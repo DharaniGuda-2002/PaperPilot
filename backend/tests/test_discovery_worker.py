@@ -2,6 +2,7 @@
 taken from the outbox row the API wrote, exactly as the dispatcher would send it."""
 
 import threading
+import uuid
 from collections.abc import Iterator
 
 import pytest
@@ -276,3 +277,31 @@ def test_task_and_paper_endpoints_404_for_unknown_investigation(client: TestClie
     missing = "/api/v1/investigations/00000000-0000-0000-0000-000000000000"
     assert client.get(f"{missing}/tasks").status_code == 404
     assert client.get(f"{missing}/papers").status_code == 404
+
+
+def test_duplicate_works_are_linked_once() -> None:
+    from app.papers.schemas import PaperRead, PaperSearchResultItem
+    from app.workers.discovery import _distinct_works
+
+    def item(title: str, doi: str | None) -> PaperSearchResultItem:
+        paper = PaperRead.model_validate(
+            {
+                "id": uuid.uuid4(), "provider": "openalex", "provider_id": uuid.uuid4().hex,
+                "doi": doi, "title": title, "authors": [], "publication_year": 2024, "venue": None,
+                "work_type": None, "abstract": None, "cited_by_count": None, "is_open_access": True,
+                "oa_status": None, "pdf_url": None, "landing_page_url": None, "license": None,
+                "metadata_fetched_at": "2026-10-23T00:00:00Z",
+            }
+        )  # fmt: skip
+        return PaperSearchResultItem(paper=paper, relevance_score=None)
+
+    results = [
+        item("Query Expansion for Open-Domain QA", "10.1/a"),
+        item("Query expansion for open-domain QA.", None),  # same title, other record
+        item("A different paper", "10.1/a"),  # same DOI
+        item("A third paper", "10.1/c"),
+    ]
+    assert [r.paper.title for r in _distinct_works(results)] == [
+        "Query Expansion for Open-Domain QA",
+        "A third paper",
+    ]

@@ -17,7 +17,7 @@ function group(items: EvidenceItem[]): PaperGroup[] {
       reported: [],
       absent: [],
     }
-    ;(item.finding_status === 'reported' ? entry.reported : entry.absent).push(item)
+    ;(item.passage !== null ? entry.reported : entry.absent).push(item)
     groups.set(item.paper_id, entry)
   }
   const order = (i: EvidenceItem) => FIELD_ORDER.indexOf(i.field)
@@ -70,11 +70,16 @@ function EvidenceRow({ item }: { item: EvidenceItem }) {
       <div className="evidence-item__head">
         <span className="evidence-item__field">{FIELD_LABELS[item.field]}</span>
         <span className="evidence-item__value">{describeValue(item)}</span>
+        {item.finding_status === 'uncertain' && (
+          <span className="status-badge status-badge--warning" title="The passage gives no unit or scale for this value">
+            Unit unclear
+          </span>
+        )}
         <span
           className={`status-badge status-badge--${verified ? 'success' : 'error'}`}
           title={failed.map((c) => `${c.rule}: ${c.details}`).join('; ') || undefined}
         >
-          {verified ? 'Verified' : 'Rejected'}
+          {verified ? 'Quote verified' : 'Rejected'}
         </span>
       </div>
       {item.passage && (

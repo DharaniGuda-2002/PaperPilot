@@ -17,6 +17,7 @@ Run: python -m app.workers.discovery
 
 import logging
 import random
+import re
 import uuid
 from dataclasses import dataclass
 from datetime import timedelta
@@ -52,7 +53,12 @@ from app.investigations.models import (
 from app.papers import service as papers_service
 from app.papers.openalex import ProviderUnavailableError
 from app.papers.providers import make_provider
-from app.papers.schemas import FullTextAvailability, PaperRead, PaperSearchParams
+from app.papers.schemas import (
+    FullTextAvailability,
+    PaperRead,
+    PaperSearchParams,
+    PaperSearchResultItem,
+)
 from app.papers.service import PaperProvider
 from app.workers.consumer import HandlerResult, run_consumer
 from app.workers.tasks import ensure_task
@@ -156,18 +162,20 @@ def handle_investigation_requested(
         )
         return DiscoveryResult(Outcome.NO_PAPERS)
 
+    distinct = _distinct_works(response.results)
     # 3. Persist links, follow-up events, task result, and the idempotency record together.
     try:
         with session_factory() as session, session.begin():
             _mark_processed(session, envelope.event_id)
-            for rank, item in enumerate(response.results, start=1):
+            for rank, item in enumerate(distinct, start=1):
                 _link_paper(session, envelope, item.paper, rank, item.relevance_score)
             _finish_task(
                 session,
                 payload.task_id,
                 TaskStatus.SUCCEEDED,
                 summary={
-                    "papers_linked": len(response.results),
+                    "papers_linked": len(distinct),
+                    "duplicates_skipped": len(response.results) - len(distinct),
                     "papers_available": response.total,
                     "query": params.q,
                     "provider": response.provider,
@@ -176,7 +184,24 @@ def handle_investigation_requested(
     except IntegrityError:
         # Another delivery of the same event committed first.
         return DiscoveryResult(Outcome.DUPLICATE)
-    return DiscoveryResult(Outcome.LINKED, papers_linked=len(response.results))
+    return DiscoveryResult(Outcome.LINKED, papers_linked=len(distinct))
+
+
+def _distinct_works(results: list[PaperSearchResultItem]) -> list[PaperSearchResultItem]:
+    """Providers sometimes return the same work twice (a preprint and its
+    published version, or duplicate records). Keep the first by DOI or by
+    normalized title, so one study is not counted as two."""
+    seen: set[str] = set()
+    distinct = []
+    for item in results:
+        keys = {re.sub(r"[^a-z0-9]", "", item.paper.title.lower())}
+        if item.paper.doi:
+            keys.add(f"doi:{item.paper.doi}")
+        if keys & seen:
+            continue
+        seen |= keys
+        distinct.append(item)
+    return distinct
 
 
 def _already_processed(session: Session, event_id: uuid.UUID) -> bool:

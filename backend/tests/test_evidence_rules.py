@@ -47,7 +47,9 @@ def test_non_values_are_not_reported_as_metrics(sentence: str) -> None:
     assert values(sentence, EvidenceField.METRIC_RESULT) == []
 
 
-def test_ambiguous_unit_is_extracted_but_fails_range_check() -> None:
+def test_ambiguous_unit_is_extracted_and_quote_still_verifies() -> None:
+    """ "F1 of 85.3" without % could be a 0-100 score: the value is kept (and marked
+    uncertain by the evidence service), and the quotation still validates."""
     found = values("The F1 reaches 85.3 on the benchmark.", EvidenceField.METRIC_RESULT)
     assert found[0]["unit"] is None
     checks = validate(
@@ -58,7 +60,19 @@ def test_ambiguous_unit_is_extracted_but_fails_range_check() -> None:
         document_page_count=3,
         value=found[0],
     )
-    assert [c.rule for c in checks if not c.passed] == ["value_range"]
+    assert all(c.passed for c in checks)
+    assert next(c for c in checks if c.rule == "value_range").details.startswith("unit not stated")
+
+
+@pytest.mark.parametrize(
+    "sentence",
+    [
+        "Response accuracy to 10 standardized questions is evaluated by experts.",
+        "Figure 2 plots 15 Accuracy curves across settings.",
+    ],
+)
+def test_counts_and_labels_are_not_metric_values(sentence: str) -> None:
+    assert values(sentence, EvidenceField.METRIC_RESULT) == []
 
 
 def test_baselines_are_the_methods_after_the_comparison_cue() -> None:
@@ -154,3 +168,57 @@ def test_each_value_is_credited_to_the_method_before_it() -> None:
     sentence = "The GNN reaches an AUC of 0.921, while XGBoost reaches an AUC of 0.883."
     found = values(sentence, EvidenceField.METRIC_RESULT)
     assert [(v["method_hint"], v["value"]) for v in found] == [("GNN", 0.921), ("XGBoost", 0.883)]
+
+
+# Regressions from the first real run (rules-v1). Sentences are synthetic,
+# written to reproduce each failure's structure.
+@pytest.mark.parametrize(
+    "sentence",
+    [
+        "The accuracy of GPT-3.5 improved after retrieval.",  # model version read as value
+        "Accuracy of Llama-3 rises with more snippets.",
+        "We report Recall@15 for every retriever.",  # @k read as value
+        "Relative accuracy improvements of 6% were observed.",  # change, not a result
+        "Retrieval accuracy is higher than DPR when k ≥5.",  # parameter read as value
+    ],
+)
+def test_names_and_parameters_are_not_metric_values(sentence: str) -> None:
+    assert values(sentence, EvidenceField.METRIC_RESULT) == []
+
+
+def test_flattened_table_rows_are_not_read_as_results() -> None:
+    row = "Model Recall@15 Recall@10 base 0.505 0.489 large 0.575 0.511 xl 0.579 0.489 xxl 0.6 0.5"
+    assert values(row, EvidenceField.METRIC_RESULT) == []
+
+
+def test_metric_with_short_connector_still_extracted() -> None:
+    found = values(
+        "GPT-4 accuracy increased from 71% to 75% with retrieval.", EvidenceField.METRIC_RESULT
+    )
+    assert [(v["metric"], v["value"], v["unit"], v["method_hint"]) for v in found] == [
+        ("Accuracy", 75.0, "%", "GPT")
+    ]
+
+
+@pytest.mark.parametrize(
+    ("sentence", "names"),
+    [
+        ("Results on the WebQSP dataset are in Table 6.", ["WebQSP"]),
+        ("We use the MMLU-Med benchmark for evaluation.", ["MMLU-Med"]),
+        ("One benchmark, one model.", []),
+        ("The Benchmark dataset contains forty questions.", []),
+    ],
+)
+def test_generic_dataset_names_must_look_like_names(sentence: str, names: list[str]) -> None:
+    assert [d["name"] for d in values(sentence, EvidenceField.DATASET)] == names
+
+
+def test_retrieval_and_language_model_methods_are_recognized() -> None:
+    sentence = "We compare BM25, DPR, and ColBERT retrievers feeding Llama-3 and GPT-4o readers."
+    assert [v["name"] for v in values(sentence, EvidenceField.METHOD)] == [
+        "BM25",
+        "DPR",
+        "ColBERT",
+        "Llama",
+        "GPT",
+    ]

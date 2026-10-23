@@ -79,7 +79,7 @@ export function InvestigationPage() {
     (pipeline.data?.oldest_pending_seconds ?? 0) > STALLED_AFTER_SECONDS
   const documents = summarizeStage(taskList, 'process_document')
   const validation = validationSummary(taskList, extraction)
-  const reportedEvidence = (evidence.data ?? []).some((i) => i.finding_status === 'reported')
+  const reportedEvidence = (evidence.data ?? []).some((i) => i.passage !== null)
 
   return (
     <div className="page">

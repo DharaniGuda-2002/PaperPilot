@@ -90,7 +90,8 @@ def _value_in_range(value: dict[str, Any]) -> CheckResult:
         return CheckResult("value_range", False, "metric without a numeric value")
     limit = 100 if unit == "%" else 1 if unit == "ratio" else None
     if limit is None:
-        return CheckResult("value_range", False, f"unit unknown for {number}; cannot check range")
+        # The record is marked `uncertain` instead; the quotation itself is still checked.
+        return CheckResult("value_range", True, f"unit not stated for {number}; range not checked")
     ok = 0 <= number <= limit
     return CheckResult(
         "value_range", ok, f"{number} within 0..{limit}" if ok else f"{number} outside 0..{limit}"
