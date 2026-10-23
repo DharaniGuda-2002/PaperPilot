@@ -23,7 +23,7 @@ user accounts, and every investigation is public on purpose.
 | Request size | 16 KB limit, enforced by Content-Length and by counting streamed bytes (chunked uploads) | `app/core/http.py` | `test_limits.py`; live 413 via nginx and uvicorn for a 50 KB chunked body |
 | Input validation | Pydantic schemas: question 10–500 chars, bounded paging, UUID path parameters | `app/*/schemas.py`, `app/api` | API tests |
 | Rate limits | Create: 5/min per client. Search: 20/min per client. Global caps: 200 investigations and 500 uncached OpenAlex calls per rolling 24 h | `app/api`, `app/core/rate_limit.py` | `test_limits.py` |
-| Client address | Taken from the entry the trusted proxy appended to `X-Forwarded-For` (`TRUSTED_PROXY_HOPS`), never the client-supplied one | `client_address()` | Regression test; local forged-header experiment: 5 × 201, then 429 |
+| Client address | Render: `CF-Connecting-IP`, set by its Cloudflare edge (`CLIENT_IP_HEADER`). Compose: the entry nginx appends to `X-Forwarded-For` (`TRUSTED_PROXY_HOPS=1`). Never the client-supplied entry | `client_address()` | Regression tests. Local: forged headers got 5 × 201, then 429. Render: 25 rapid searches got 20 × 200, then 429, with and without a forged `X-Forwarded-For`; a client-sent `CF-Connecting-IP` is rejected by the edge (403) |
 | Processing bounds | At most 25 papers per investigation; PDFs at most 25 MB with a 30 s timeout; bounded retries, then dead letter | settings, `app/documents/fetch.py` | Worker tests |
 | SSRF | http/https on ports 80/443 only; every redirect hop resolved and checked; private, loopback, link-local, CGNAT, and mapped addresses rejected; connected peer re-checked; `%PDF` magic required | `app/documents/fetch.py` ([ADR 0006](adr/0006-documents-retrieval-and-evidence.md)) | 39 fetch tests; live blocks of the metadata IP, localhost, and `127.0.0.1.nip.io` |
 | Robots and terms | Open-access PDFs only; robots.txt; per-host crawl delay shared across workers | `app/documents` | Tests; M5 real run |
@@ -49,11 +49,12 @@ user accounts, and every investigation is public on purpose.
 - **Per-client limits are in memory.** They reset when the process restarts
   and are per instance. The database-backed daily caps are the real
   backstop.
-- **Render's proxy chain is not documented.** `TRUSTED_PROXY_HOPS=1` assumes
-  Render appends one entry. A forged leftmost entry no longer resets the limit
-  on the demo (see roadmap, M7 log). If Render ever adds a second, shared
-  hop, clients would share one bucket. That would fail closed (more 429s), not
-  open.
+- **Render's headers are undocumented.** Measured in M7: the last
+  `X-Forwarded-For` entry varies between proxies per request, so the demo keys on
+  `CF-Connecting-IP`. If Render stops routing through Cloudflare, the header is
+  missing and the limiter falls back to `X-Forwarded-For`. That is weaker but still
+  backed by the global caps. Re-run the check in the roadmap's M7 log after
+  platform changes.
 - **No authentication.** Anyone can create investigations within the caps
   and read all of them. This is acceptable for a demo of public research
   questions, not for private data.

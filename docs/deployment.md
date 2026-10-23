@@ -57,8 +57,9 @@ Implemented before the first public deploy:
 - Paper search: 20 per minute per IP, a 24 h result cache, and a cap of 500 uncached
   OpenAlex calls per rolling 24 h (`DAILY_PROVIDER_CALL_CAP`). Past the cap, new searches
   return 503 and cached ones keep working.
-- The per-IP limiter is in memory and keys on the address Render's proxy appends to
-  `X-Forwarded-For` (`TRUSTED_PROXY_HOPS=1`); a client-forged entry does not reset it.
+- The per-IP limiter is in memory and keys on `CF-Connecting-IP` from Render's
+  Cloudflare edge (`CLIENT_IP_HEADER`). A forged `X-Forwarded-For` does not reset it,
+  which was verified on the live demo.
   It is still best-effort (per process, lost on restart); the global DB-backed cap is
   the real backstop for the 1 GB database.
 - The demo runs no workers, so investigations stay queued and cost nothing beyond a row.

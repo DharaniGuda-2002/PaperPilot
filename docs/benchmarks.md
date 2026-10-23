@@ -65,3 +65,60 @@ requests/s without a key, 30 with) is the real ceiling for live searches.
 - One machine, single Kafka broker, 3 runs per setting: medians are indicative,
   not statistically strong.
 - 90 tasks per run; skew effects shrink as batches grow.
+
+## API read latency and retrieval query time (2026-10-23)
+
+**Question:** how fast are the read paths the UI uses, and how fast is the
+hybrid retrieval query each evidence task runs 7 times per paper?
+
+**Setup:**
+- Same machine as above. Local Compose stack: one uvicorn process, no
+  `--workers`, sync endpoints on its thread pool.
+- Postgres 17 + pgvector with 3,046 chunks in total.
+- Requests went directly to the API on port 8000, without nginx.
+- Data: the real RAG investigation (25 papers, its report, 273 KB of evidence).
+
+**Method:**
+- `python3 evaluation/benchmarks/api_latency.py --investigation <id>`: 10
+  warm-up requests, then 200 timed requests per endpoint at concurrency 1 and 8.
+  Raw results are in `evaluation/benchmarks/results/*-api-latency.json`.
+- Create and search are excluded, because the rate limiter would set their
+  numbers.
+
+| Endpoint | Body | c=1 p50 / p95 (ms) | c=8 p50 / p95 (ms) | c=1 → c=8 req/s |
+|---|---|---|---|---|
+| `GET /health/ready` (DB ping) | 42 B | 1.6 / 2.5 | 8.1 / 13.9 | 587 → 913 |
+| `GET /investigations?limit=20` | 4.5 KB | 2.1 / 3.5 | 12.8 / 19.0 | 423 → 605 |
+| `GET /investigations/{id}` | 0.3 KB | 1.7 / 2.5 | 9.6 / 14.9 | 550 → 775 |
+| `GET /investigations/{id}/papers` (25) | 47 KB | 3.0 / 4.4 | 19.0 / 26.9 | 310 → 400 |
+| `GET /investigations/{id}/evidence` (all) | 273 KB | 13.0 / 32.2 | 112.3 / 165.1 | 64 → 69 |
+| `GET /investigations/{id}/report` | 34 KB | 2.4 / 4.0 | 15.1 / 26.3 | 370 → 488 |
+| `GET /evidence/{id}` (inspector) | 1.9 KB | 2.8 / 3.6 | 17.0 / 22.0 | 341 → 463 |
+
+0 non-200 responses out of 2,800.
+
+Hybrid retrieval: `python -m app.evaluation.retrieval_latency <id>` in the ml
+image (embeddings computed beforehand, so this is database time only).
+
+| Calls | p50 | p95 | max |
+|---|---|---|---|
+| 17 full-text papers (1,333 chunks) × 7 queries × 3 = 357 | 1.3 ms | 3.4 ms | 6.4 ms |
+
+**What the numbers say:**
+- Every read the report UI makes is under 5 ms at p95 for a single user.
+- With 8 concurrent clients, throughput rises only 1.3–1.6×, and latency grows
+  about 6×. One Python process serializes much of the work. Adding
+  `uvicorn --workers` would help locally; the free Render instance (0.1 CPU) is
+  the real limit on the demo.
+- The evidence list is the outlier: 273 KB and every validation check for every
+  record in one response. It is the first candidate for paging if
+  investigations grow. At 13 ms p50 it does not justify the change yet.
+- Retrieval is not a bottleneck. A paper's 7 queries take about 10 ms in
+  total, against seconds for PDF download and embedding.
+
+**Limitations:**
+- Local machine, warm caches, and one investigation's data. These are not
+  numbers for the hosted demo.
+- Render free instances sleep, and the first request after idle took about a
+  minute in M1.
+
