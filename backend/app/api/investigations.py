@@ -9,7 +9,12 @@ from app.core.config import Settings
 from app.core.db import get_session
 from app.core.rate_limit import SlidingWindowLimiter
 from app.investigations import service
-from app.investigations.schemas import InvestigationCreate, InvestigationPage, InvestigationRead
+from app.investigations.schemas import (
+    InvestigationCreate,
+    InvestigationPage,
+    InvestigationRead,
+    InvestigationStats,
+)
 
 router = APIRouter(prefix="/api/v1/investigations", tags=["investigations"])
 
@@ -62,6 +67,12 @@ def list_investigations(
         limit=limit,
         offset=offset,
     )
+
+
+@router.get("/stats")
+def investigation_stats(session: SessionDep) -> InvestigationStats:
+    """Counts by status for the dashboard. Declared before /{investigation_id}."""
+    return service.investigation_stats(session)
 
 
 @router.get("/{investigation_id}")

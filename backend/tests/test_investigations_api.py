@@ -2,6 +2,7 @@ import uuid
 
 import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy import Engine, text
 
 QUESTION = (
     "Do graph neural networks outperform traditional machine learning "
@@ -67,6 +68,36 @@ def test_list_returns_newest_first_with_pagination(client: TestClient) -> None:
 
     second_page = client.get("/api/v1/investigations", params={"limit": 2, "offset": 2}).json()
     assert [item["id"] for item in second_page["items"]] == [ids[0]]
+
+
+def test_stats_counts_every_status(client: TestClient, engine: Engine) -> None:
+    empty = client.get("/api/v1/investigations/stats").json()
+    assert empty["total"] == 0
+    assert set(empty["by_status"]) == {
+        "queued",
+        "running",
+        "completed",
+        "partially_completed",
+        "failed",
+        "cancelled",
+    }
+    assert all(count == 0 for count in empty["by_status"].values())
+
+    client.post("/api/v1/investigations", json={"question": QUESTION})
+    client.post("/api/v1/investigations", json={"question": QUESTION})
+    with engine.begin() as conn:
+        conn.execute(
+            text(
+                "INSERT INTO investigations (id, question, status) "
+                "VALUES (gen_random_uuid(), :q, 'failed')"
+            ),
+            {"q": QUESTION},
+        )
+
+    stats = client.get("/api/v1/investigations/stats").json()
+    assert stats["total"] == 3
+    assert stats["by_status"]["queued"] == 2
+    assert stats["by_status"]["failed"] == 1
 
 
 @pytest.mark.parametrize("params", [{"limit": 0}, {"limit": 101}, {"offset": -1}])

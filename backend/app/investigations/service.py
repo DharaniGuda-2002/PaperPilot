@@ -8,8 +8,8 @@ from datetime import timedelta
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from app.investigations.models import Investigation
-from app.investigations.schemas import InvestigationCreate
+from app.investigations.models import Investigation, InvestigationStatus
+from app.investigations.schemas import InvestigationCreate, InvestigationStats
 
 
 def create_investigation(session: Session, data: InvestigationCreate) -> Investigation:
@@ -29,6 +29,16 @@ def count_created_in_last(session: Session, window: timedelta) -> int:
         )
         or 0
     )
+
+
+def investigation_stats(session: Session) -> InvestigationStats:
+    rows = session.execute(
+        select(Investigation.status, func.count()).group_by(Investigation.status)
+    ).all()
+    counts = {status: 0 for status in InvestigationStatus}
+    for status, count in rows:
+        counts[InvestigationStatus(status)] = count
+    return InvestigationStats(total=sum(counts.values()), by_status=counts)
 
 
 def get_investigation(session: Session, investigation_id: uuid.UUID) -> Investigation | None:

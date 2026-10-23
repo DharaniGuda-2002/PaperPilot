@@ -26,6 +26,11 @@ class InvestigationRead(BaseModel):
     updated_at: datetime
 
 
+class InvestigationStats(BaseModel):
+    total: int
+    by_status: dict[InvestigationStatus, int]
+
+
 class InvestigationPage(BaseModel):
     items: list[InvestigationRead]
     total: int
