@@ -13,7 +13,7 @@ Each milestone is finished and verified before the next starts.
 - [x] M4 — Distributed reliability (scheduled retries, dead letters, replay, lag metrics, benchmarks)
 - [x] M5 — Retrieval and evidence (permitted PDFs, SSRF guard, embeddings, hybrid search, rule-based extraction, validation)
 - [x] M6 — Comparison and reports (rules, versioned reports, progressive-disclosure UI, gold-set evaluation)
-- [ ] M7 — Hardening and final deployment
+- [x] M7 — Hardening and final deployment (security fixes, audits, clean-checkout run, latency benchmarks, demo guide, interview notes)
 
 ## M1 acceptance criteria
 
@@ -193,3 +193,73 @@ Open items:
   not tuned to the one used for measurement.
 - The gold set needs a human review pass.
 - The public demo still has no workers, so reports exist only locally.
+
+## M7 acceptance criteria and verification (2026-10-23)
+
+| Criterion | Result |
+|---|---|
+| Security checks | Pass, with 2 real fixes (below). `pip-audit` (api + ml) and `npm audit`: no known vulnerabilities. gitleaks over the full history: 49 commits, no leaks. All three now run in a CI `security` job. Notes, controls, and gaps: [security.md](security.md) |
+| Full tests | Pass: 263 backend tests (real Postgres + pgvector + Kafka in CI), 41 frontend tests, typecheck, lint, contrast check, Compose end-to-end job |
+| Benchmarks | Pass: discovery scaling (M4), plus API read latency and hybrid query time ([benchmarks.md](benchmarks.md)); scripts and raw results committed |
+| Documentation | Pass: security notes, demo guide, local troubleshooting, interview notes; README screenshots; stale UI copy ("reports are being built") replaced |
+| Clean checkout | Pass: fresh `git clone` of `main`, `cp .env.example .env`, `docker compose up --build -d --wait` with empty volumes (separate project name), then `smoke-test.sh` passed. With `EXPECT_PIPELINE=1`, live OpenAlex and PDF downloads finished 25 papers with a report (`partially_completed`) in about 3.5 min. Image layers came from the local cache; CI's Compose job builds from scratch on every push |
+| Deployment verification | Pass: public smoke test (frontend, deep links, readiness, create, read, validation, CORS); new CSP and frame headers served by Render; API security headers present; per-client limit verified live (below) |
+| Screenshots and demo instructions | Pass: [demo.md](demo.md), 5 screenshots from the real investigation; the resilience step was run (worker stopped: investigation stays queued; started: 25 papers linked in about 4 s) |
+| Interview preparation | Pass: [interview.md](interview.md) |
+
+Security bugs found and fixed:
+- **Per-client rate limits could be bypassed** with a forged `X-Forwarded-For`.
+  - Cause: uvicorn ran with `--forwarded-allow-ips='*'`, so the leftmost,
+    client-controlled entry became the client address. Locally, 7 of 7 creates
+    succeeded against a limit of 5.
+  - First fix: key on the proxy-appended entry. It worked locally, but on
+    Render 25 unforged searches alternated 200/429, because the last entry
+    there varies between proxies.
+  - Final fix: `CLIENT_IP_HEADER=CF-Connecting-IP` on Render; its edge sets
+    the header and rejects client-sent values with 403. Compose keeps the
+    nginx hop count.
+  - Verified live: 20 × 200, then 429, with and without a forged header.
+- **Chunked request bodies skipped the 16 KB limit.** A 20 KB chunked POST got
+  422 after being read whole. An ASGI middleware now counts streamed bytes and
+  answers 413 (verified through nginx and uvicorn).
+
+Other fixes:
+- A "6:2:2" split ratio was shown as percentages (compare-v3).
+- The smoke test's pipeline wait is configurable (`PIPELINE_TIMEOUT`).
+
+### Final definition of done
+
+| Item | Status |
+|---|---|
+| Runs from a clean checkout | Yes (above) |
+| Migrations work on a clean database | Yes: clean-checkout run, plus CI on every push |
+| Core UI and API workflow | Yes |
+| Kafka coordinates background processing | Yes (local; the public demo has no workers, as documented) |
+| Outbox addresses dual writes | Yes (M3) |
+| Duplicate delivery does not corrupt data | Yes: tests, plus a replay of about 1,125 messages with unchanged row counts (M4) |
+| Failures retried safely | Yes: scheduled retries, dead letters, replay (M4) |
+| Partial completion represented | Yes: `partially_completed` and per-task status (M6) |
+| Multiple workers process concurrently | Yes, up to the partition count (benchmarks) |
+| Evidence traceable to source | Yes: exact quotation, page, chunk, retrieval and validation provenance |
+| Reports separate findings, uncertainty, missing information | Yes |
+| Progressive disclosure | Yes: three levels |
+| Light-theme design system applied | Tokens and contrast checks everywhere. The collage-style visual redesign was deferred at the user's request |
+| Tests and CI pass | Yes |
+| Benchmarks are real and reproducible | Yes |
+| Deployment instructions match | Yes: updated in M7 |
+| Public deployment smoke-tested | Yes |
+| No paid dependency | Yes |
+| Feature-wise commits | Yes |
+| Architecture and trade-offs documented | Yes: 7 ADRs |
+| Explainable in an interview | [interview.md](interview.md) |
+
+Open items (none block the definition of done):
+- The gold set needs a human review pass, then a second, held-out set for
+  improving the extraction rules.
+- The database runtime role is the owner role (see security.md).
+- `processed_events` pruning is manual.
+- The evidence endpoint is unpaginated.
+- The UI redesign from the mockup collage is still pending.
+- Local test data: 12 investigations named "spoof test question …" were created
+  by the M7 rate-limit experiments in the developer's local database.
+

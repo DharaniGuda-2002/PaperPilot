@@ -4,7 +4,7 @@ An evidence-backed research investigation engine. Ask a technical research quest
 PaperPilot finds relevant papers, extracts reported evidence with source passages,
 flags experiments that cannot be fairly compared, and produces a traceable report.
 
-> **Status: Milestone 6 (comparison and reports).** An investigation runs a Kafka pipeline:
+> **Status: all milestones (M0–M7) complete.** An investigation runs a Kafka pipeline:
 > discovery (OpenAlex) → permitted open-access PDFs (SSRF-safe, robots-aware) → page-exact
 > chunks with local embeddings → hybrid search → rule-based evidence with exact quotations
 > and deterministic validation → deterministic comparability rules → a versioned report
