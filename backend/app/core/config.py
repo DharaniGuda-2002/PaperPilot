@@ -43,6 +43,8 @@ class Settings(BaseSettings):
     # A message whose handler raises this many times in a row is dead-lettered
     # so one bad message cannot block its partition.
     consumer_max_handler_failures: int = 5
+    # "sentence-transformers" (real model) or "hashing" (tests/CI only).
+    embedding_provider: Literal["sentence-transformers", "hashing"] = "sentence-transformers"
 
     @field_validator("database_url")
     @classmethod

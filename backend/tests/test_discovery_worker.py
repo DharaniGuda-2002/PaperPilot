@@ -45,7 +45,10 @@ def state(engine: Engine) -> dict[str, object]:
         return {
             "investigation": conn.scalar(text("SELECT status FROM investigations")),
             "task": conn.execute(
-                text("SELECT status, attempts, last_error, result_summary FROM investigation_tasks")
+                text(
+                    "SELECT status, attempts, last_error, result_summary FROM investigation_tasks "
+                    "WHERE kind = 'discover_papers'"
+                )
             ).one(),
             "links": conn.execute(
                 text("SELECT rank, retrieval_method FROM investigation_papers ORDER BY rank")
@@ -255,8 +258,13 @@ def test_api_exposes_tasks_papers_and_backlog(
     handle_investigation_requested(sessions, FakeProvider(), requested, settings)
 
     tasks = client.get(f"{investigation}/tasks").json()
-    assert [(t["kind"], t["status"]) for t in tasks] == [("discover_papers", "succeeded")]
+    assert (tasks[0]["kind"], tasks[0]["status"]) == ("discover_papers", "succeeded")
     assert tasks[0]["result_summary"]["papers_linked"] == 2
+    # Each linked paper gets its document and evidence tasks.
+    per_paper = sorted((t["kind"], t["status"]) for t in tasks[1:])
+    assert (
+        per_paper == [("extract_evidence", "pending")] * 2 + [("process_document", "pending")] * 2
+    )
     papers = client.get(f"{investigation}/papers", params={"limit": 1}).json()
     assert papers["total"] == 2
     assert papers["items"][0]["rank"] == 1

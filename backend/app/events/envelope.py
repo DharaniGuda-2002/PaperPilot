@@ -18,6 +18,8 @@ from pydantic import BaseModel, ConfigDict, Field
 TOPIC_PARTITIONS = {
     "investigation-requests": 3,
     "paper-discovered": 6,
+    "document-processed": 6,
+    "evidence-extracted": 3,
     "investigation-failures": 1,
 }
 
@@ -59,6 +61,24 @@ class PaperDiscoveredV1(BaseModel):
     full_text_availability: str
 
 
+class DocumentProcessedV1(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    paper_id: uuid.UUID
+    document_id: uuid.UUID
+    content_kind: str  # full_text | abstract | none
+    chunk_count: int
+
+
+class EvidenceExtractedV1(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    paper_id: uuid.UUID
+    records: int
+    verified: int
+    rejected: int
+
+
 class EventSpec(BaseModel):
     event_type: str
     schema_version: int
@@ -79,8 +99,22 @@ PAPER_DISCOVERED = EventSpec(
     payload_model=PaperDiscoveredV1,
 )
 
+DOCUMENT_PROCESSED = EventSpec(
+    event_type="document.processed",
+    schema_version=1,
+    topic="document-processed",
+    payload_model=DocumentProcessedV1,
+)
+EVIDENCE_EXTRACTED = EventSpec(
+    event_type="evidence.extracted",
+    schema_version=1,
+    topic="evidence-extracted",
+    payload_model=EvidenceExtractedV1,
+)
+
 _REGISTRY = {
-    (s.event_type, s.schema_version): s for s in (INVESTIGATION_REQUESTED, PAPER_DISCOVERED)
+    (s.event_type, s.schema_version): s
+    for s in (INVESTIGATION_REQUESTED, PAPER_DISCOVERED, DOCUMENT_PROCESSED, EVIDENCE_EXTRACTED)
 }
 
 

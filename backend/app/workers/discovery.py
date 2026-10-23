@@ -46,6 +46,7 @@ from app.investigations.models import (
     InvestigationPaper,
     InvestigationStatus,
     InvestigationTask,
+    TaskKind,
     TaskStatus,
 )
 from app.papers import service as papers_service
@@ -54,6 +55,7 @@ from app.papers.providers import make_provider
 from app.papers.schemas import FullTextAvailability, PaperRead, PaperSearchParams
 from app.papers.service import PaperProvider
 from app.workers.consumer import HandlerResult, run_consumer
+from app.workers.tasks import ensure_task
 
 logger = logging.getLogger(__name__)
 
@@ -251,6 +253,8 @@ def _link_paper(
     )
     # Keyed by paper so per-paper work spreads across partitions and workers.
     enqueue(session, event, partition_key=str(paper.id))
+    for kind in (TaskKind.PROCESS_DOCUMENT, TaskKind.EXTRACT_EVIDENCE):
+        ensure_task(session, envelope.investigation_id, kind, str(paper.id))
 
 
 def _finish_task(
