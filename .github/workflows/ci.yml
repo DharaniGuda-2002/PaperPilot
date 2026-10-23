@@ -61,6 +61,8 @@ jobs:
           python-version: "3.12"
           cache: pip
           cache-dependency-path: backend/requirements*.txt
+      - name: Install CPU-only torch (the default Linux wheel bundles CUDA)
+        run: pip install torch==2.14.1 --index-url https://download.pytorch.org/whl/cpu
       - run: pip install -r requirements-dev.txt
       - run: ruff check .
       - run: ruff format --check .
@@ -97,6 +99,7 @@ jobs:
         run: docker compose up --build -d --wait
         env:
           PAPER_PROVIDER: fixture
+          DOCUMENT_FETCH_ENABLED: "false"  # no live PDF downloads from CI
       - name: Smoke test including the event pipeline
         run: ./scripts/smoke-test.sh http://localhost:8080
         env:

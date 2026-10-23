@@ -52,8 +52,10 @@ class TemporaryFetchError(Exception):
         self.retry_after_seconds = retry_after_seconds
 
 
-def full_text_url(paper: Paper) -> tuple[str | None, str | None]:
+def full_text_url(paper: Paper, fetch_enabled: bool = True) -> tuple[str | None, str | None]:
     """(url, reason it cannot be used). Only open-access PDFs are fetched."""
+    if not fetch_enabled:
+        return None, "full-text fetching disabled by configuration"
     if not paper.is_open_access:
         return None, "not open access"
     if not paper.pdf_url:
@@ -67,10 +69,11 @@ def prepare_document(
     embedder: Embedder,
     *,
     allow_abstract_fallback_on_temporary_error: bool,
+    fetch_enabled: bool = True,
 ) -> PreparedDocument:
     """Fetch, extract, chunk, and embed. Raises TemporaryFetchError when a retry
     is worthwhile and the caller has attempts left."""
-    url, reason = full_text_url(paper)
+    url, reason = full_text_url(paper, fetch_enabled)
     if url:
         try:
             fetched = fetcher.fetch_pdf(url)

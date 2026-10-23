@@ -7,6 +7,7 @@ services:
     rootDir: backend
     dockerfilePath: ./Dockerfile
     dockerContext: .
+    # The Dockerfile's last stage is the small api image (no torch).
     # Single free instance, so migrating at startup cannot race another instance.
     # Render runs dockerCommand through its own shell, so keep it a single script path.
     dockerCommand: ./start-with-migrations.sh

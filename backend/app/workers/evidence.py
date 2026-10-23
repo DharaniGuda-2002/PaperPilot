@@ -63,6 +63,9 @@ def handle_document_processed(
         task_id = ensure_task(
             session, envelope.investigation_id, TaskKind.EXTRACT_EVIDENCE, subject
         )
+        if task_id is None:  # investigation deleted after the event was published
+            mark_processed(session, CONSUMER_GROUP, envelope.event_id)
+            return EvidenceResult("investigation_missing")
         if claim_task(session, task_id) is None:
             return EvidenceResult("busy")
         investigation = session.get(Investigation, envelope.investigation_id)

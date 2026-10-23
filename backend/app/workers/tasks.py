@@ -18,7 +18,7 @@ from app.core.config import Settings
 from app.events.envelope import EventEnvelope, EventSpec, new_event
 from app.events.models import ProcessedEvent
 from app.events.outbox import enqueue
-from app.investigations.models import InvestigationTask, TaskStatus
+from app.investigations.models import Investigation, InvestigationTask, TaskStatus
 
 STALE_RUNNING_AFTER = timedelta(minutes=10)
 
@@ -42,8 +42,12 @@ def mark_processed(session: Session, group: str, event_id: uuid.UUID) -> None:
 
 def ensure_task(
     session: Session, investigation_id: uuid.UUID, kind: str, subject_key: str
-) -> uuid.UUID:
-    """Create the task if missing (e.g. investigations from before a stage existed)."""
+) -> uuid.UUID | None:
+    """Create the task if missing (e.g. investigations from before a stage existed).
+    Returns None if the investigation itself no longer exists: events can outlive
+    the rows they refer to, and such events are skipped, not retried."""
+    if session.get(Investigation, investigation_id) is None:
+        return None
     session.execute(
         insert(InvestigationTask)
         .values(

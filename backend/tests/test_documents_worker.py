@@ -285,3 +285,41 @@ def test_closed_access_paper_is_never_fetched(
             text("SELECT content_kind, full_text_unavailable_reason FROM paper_documents")
         ).one()
     assert (row.content_kind, row.full_text_unavailable_reason) == ("abstract", "not open access")
+
+
+def test_fetching_can_be_disabled_by_configuration(
+    discovered: list[EventEnvelope],
+    sessions: sessionmaker[Session],
+    migrated_database: str,
+    engine: Engine,
+) -> None:
+    settings = Settings(database_url=migrated_database, document_fetch_enabled=False)
+    fetcher = FakeFetcher()
+    run(sessions, fetcher, discovered[0], settings)
+    assert fetcher.urls == []
+    with engine.connect() as conn:
+        reason = conn.scalar(text("SELECT full_text_unavailable_reason FROM paper_documents"))
+    assert reason == "full-text fetching disabled by configuration"
+
+
+def test_events_for_deleted_investigations_are_skipped(
+    discovered: list[EventEnvelope],
+    sessions: sessionmaker[Session],
+    settings: Settings,
+    engine: Engine,
+) -> None:
+    """Regression: old events in the topic referenced deleted investigations and
+    crashed the worker with a foreign-key violation until dead-lettered."""
+    with engine.begin() as conn:
+        conn.execute(text("DELETE FROM investigations"))
+    assert run(sessions, FakeFetcher(), discovered[0], settings) == "investigation_missing"
+    with engine.connect() as conn:
+        assert (
+            conn.scalar(
+                text(
+                    "SELECT count(*) FROM processed_events "
+                    "WHERE consumer_group = 'document-workers'"
+                )
+            )
+            == 1
+        )

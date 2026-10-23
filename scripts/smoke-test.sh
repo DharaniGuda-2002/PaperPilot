@@ -51,6 +51,17 @@ if [ "${EXPECT_PIPELINE:-0}" = 1 ]; then
   linked=$(curl -sf "$BASE_URL/api/v1/investigations/$id/papers" | sed -E 's/.*"total":([0-9]+).*/\1/')
   [ "${linked:-0}" -gt 0 ] || fail "no papers linked"
   echo "ok   pipeline: outbox -> Kafka -> discovery worker linked $linked papers"
+
+  for _ in $(seq 1 120); do
+    tasks=$(curl -sf "$BASE_URL/api/v1/investigations/$id/tasks" || true)
+    done_count=$( (echo "$tasks" | grep -o '"kind":"extract_evidence","subject_key":"[^"]*","status":"succeeded"' || true) | wc -l | tr -d ' ')
+    [ "$done_count" -ge "$linked" ] && break
+    sleep 1
+  done
+  [ "${done_count:-0}" -ge "$linked" ] || fail "evidence extraction did not finish: $done_count of $linked"
+  evidence=$(curl -sf "$BASE_URL/api/v1/investigations/$id/evidence")
+  echo "$evidence" | grep -q '"field"' || fail "no evidence records"
+  echo "ok   pipeline: document + evidence workers processed $done_count papers"
 fi
 
 code=$(curl -s -o /dev/null -w '%{http_code}' -X POST "$BASE_URL/api/v1/investigations" \

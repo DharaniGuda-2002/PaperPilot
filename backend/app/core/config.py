@@ -45,6 +45,9 @@ class Settings(BaseSettings):
     consumer_max_handler_failures: int = 5
     # "sentence-transformers" (real model) or "hashing" (tests/CI only).
     embedding_provider: Literal["sentence-transformers", "hashing"] = "sentence-transformers"
+    # Off: never fetch PDFs, use abstracts only (CI with recorded data, or hosts that
+    # should make no outbound document requests).
+    document_fetch_enabled: bool = True
 
     @field_validator("database_url")
     @classmethod

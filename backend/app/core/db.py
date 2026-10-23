@@ -29,6 +29,8 @@ def create_db_engine(settings: Settings) -> Engine:
 
 
 def create_session_factory(engine: Engine) -> sessionmaker[Session]:
+    import app.models  # noqa: F401  (register every table before first use)
+
     return sessionmaker(bind=engine, expire_on_commit=False)
 
 

@@ -86,6 +86,9 @@ def handle_paper_discovered(
         task_id = ensure_task(
             session, envelope.investigation_id, TaskKind.PROCESS_DOCUMENT, subject
         )
+        if task_id is None:  # investigation deleted after the event was published
+            mark_processed(session, CONSUMER_GROUP, envelope.event_id)
+            return DocumentResult("investigation_missing")
         attempt = claim_task(session, task_id)
         if attempt is None:
             return DocumentResult("busy")
@@ -102,6 +105,7 @@ def handle_paper_discovered(
                 embedder,
                 allow_abstract_fallback_on_temporary_error=attempt
                 >= settings.discovery_max_attempts,
+                fetch_enabled=settings.document_fetch_enabled,
             )
         except TemporaryFetchError as exc:
             deferral = exc.retry_after_seconds is not None

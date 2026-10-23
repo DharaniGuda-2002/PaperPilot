@@ -18,13 +18,28 @@ x-api-env: &api-env
   OPENALEX_BASE_URL: ${OPENALEX_BASE_URL:-https://api.openalex.org}
   DISCOVERY_MAX_ATTEMPTS: ${DISCOVERY_MAX_ATTEMPTS:-4}
   RETRY_BASE_SECONDS: ${RETRY_BASE_SECONDS:-30}
+  DOCUMENT_FETCH_ENABLED: ${DOCUMENT_FETCH_ENABLED:-true}
+  EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-sentence-transformers}
 
-# API, migrations, and workers share one image with different commands.
-# Only `migrate` builds it; the others reuse the tag (parallel builds would collide).
+# API, migrations, dispatcher, and discovery share the small `api` image; document
+# and evidence workers use the `ml` image (PyMuPDF, torch CPU, embedding model).
+# One service builds each image; the others reuse the tag (parallel builds collide).
 x-backend: &backend
   image: paperpilot-backend:local
   pull_policy: never
   environment: *api-env
+
+x-ml: &ml
+  image: paperpilot-ml:local
+  pull_policy: never
+  environment: *api-env
+  restart: unless-stopped
+  stop_grace_period: 30s
+  depends_on:
+    migrate:
+      condition: service_completed_successfully
+    kafka-init:
+      condition: service_completed_successfully
 
 services:
   db:
@@ -43,7 +58,9 @@ services:
   # One-shot: applies migrations, then exits. The API waits for it to succeed.
   migrate:
     <<: *backend
-    build: ./backend
+    build:
+      context: ./backend
+      target: api
     command: ["alembic", "upgrade", "head"]
     depends_on:
       db:
@@ -122,6 +139,24 @@ services:
         condition: service_completed_successfully
       kafka-init:
         condition: service_completed_successfully
+
+  document-worker:
+    <<: *ml
+    build:
+      context: ./backend
+      target: ml
+    command: ["python", "-m", "app.workers.documents"]
+
+  evidence-worker:
+    <<: *ml
+    command: ["python", "-m", "app.workers.evidence"]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      kafka-init:
+        condition: service_completed_successfully
+      document-worker:
+        condition: service_started  # builds the shared ml image first
 
   frontend:
     build: ./frontend
