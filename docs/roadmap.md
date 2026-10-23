@@ -8,7 +8,7 @@ Each milestone is finished and verified before the next starts.
 - [x] M1 — Application foundation (local, CI, and public demo verified)
 - [x] UI redesign — landing page, sidebar app shell, dashboard with real status counts
       (2026-10-23; screens without backend data wait for their milestones)
-- [ ] M2 — Paper discovery (OpenAlex) — search built and verified locally; public verification pending
+- [x] M2 — Paper discovery (OpenAlex search, cached and rate limited; verified locally and on the public demo)
 - [ ] M3 — Kafka pipeline (outbox, dispatcher, first idempotent consumer)
 - [ ] M4 — Distributed reliability (retries, DLQ, recovery, throughput)
 - [ ] M5 — Retrieval and evidence (PDFs, embeddings, hybrid search, extraction)
@@ -61,3 +61,18 @@ cd frontend && npm run typecheck && npm run lint && npm run contrast && npm test
 | 9. Checks | Pass locally: ruff, mypy, pytest (22), typecheck, oxlint, vitest (8), build |
 | 9. GitHub Actions | Pass: run 39892780167 (backend 22 tests, frontend 8 tests, Compose smoke test) |
 | 10. Public deployment | Pass (2026-10-23): Render + Neon. `smoke-test.sh` passed against the public URLs (frontend, deep links, readiness with DB, create/read, 422, CORS). Also: 413 on 20 KB body, no CORS header for a foreign origin, per-IP limit 201×3 then 429 behind Render's proxy. Browser: dashboard list, 429 message, and submit → detail page all worked |
+
+## M2 acceptance criteria and verification (2026-10-23)
+
+| Criterion | Result |
+|---|---|
+| Search real papers through a free metadata provider | Pass: OpenAlex; live query returned 30,606 hits locally and on the public demo |
+| Normalize and persist papers with provenance | Pass: `papers` upserted by (provider, provider_id); `metadata_fetched_at`; recorded-response normalization tests |
+| Respect provider limits | Pass: 24 h cache (live repeat returned `cached: true`), daily provider-call cap, per-IP limit, bounded retry, fail-fast on spent budget; covered by tests |
+| No DB transaction held during the network call | Pass: by design in `papers/service.py` (read transaction ended before calling the provider) |
+| Display real results | Pass: Search page and paper page show live OpenAlex data locally and on the public demo |
+| Untrusted URLs | Pass: only http(s) stored and rendered; tests for `javascript:` links |
+| Checks | Pass: backend 53 tests, mypy on app and tests; frontend 31 tests; CI run on `e133e54` green; public smoke test passed |
+
+Open item: the public API calls OpenAlex without a key, sharing $0.10/day with other tenants
+on Render's outbound IP. Add `OPENALEX_API_KEY` on Render to get a dedicated $1/day budget.
