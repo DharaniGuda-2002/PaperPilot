@@ -13,7 +13,7 @@ import uuid
 from dataclasses import dataclass
 from typing import Any
 
-from app.documents.text import split_sentences
+from app.documents.sentences import split_sentences
 from app.evidence.models import EvidenceField
 
 EXTRACTION_METHOD = "rules"

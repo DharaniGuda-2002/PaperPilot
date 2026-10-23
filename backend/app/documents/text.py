@@ -9,6 +9,8 @@ from dataclasses import dataclass
 
 import pymupdf
 
+from app.documents.sentences import split_sentences
+
 EXTRACTOR = "pymupdf"
 # Bump the suffix when cleanup or chunking changes, so stored text is traceable.
 EXTRACTOR_VERSION = f"{pymupdf.VersionBind}-pp2"
@@ -23,12 +25,6 @@ _REFERENCES_HEADING = re.compile(
     r"^\s*(references|bibliography)\s*(?:$|(?=\[\d+\]|\d+\.\s|[A-Z][\w'-]+,))",
     re.IGNORECASE | re.MULTILINE,
 )
-# Abbreviations that end with a period but do not end a sentence.
-_ABBREVIATIONS = (
-    "e.g", "i.e", "et al", "etc", "fig", "figs", "eq", "eqs", "sec", "tab", "vs",
-    "no", "cf", "approx", "resp", "ref", "refs", "al",
-)  # fmt: skip
-_SENTENCE_END = re.compile(r"(?<=[.!?])\s+(?=[A-Z(\[\"'])")
 
 
 class ExtractionError(Exception):
@@ -97,23 +93,6 @@ def drop_references(pages: list[PageText]) -> list[PageText]:
             head = PageText(pages[index].number, pages[index].text[: match.start()].strip())
             return [*pages[:index], head]
     return pages
-
-
-def split_sentences(text: str) -> list[str]:
-    """Split on sentence-ending punctuation, keeping abbreviations and decimals intact."""
-    sentences: list[str] = []
-    start = 0
-    for match in _SENTENCE_END.finditer(text):
-        before = text[start : match.start()]
-        last_word = before.rsplit(" ", 1)[-1].rstrip(".").lower()
-        if last_word in _ABBREVIATIONS:
-            continue
-        sentences.append(before.strip())
-        start = match.end()
-    tail = text[start:].strip()
-    if tail:
-        sentences.append(tail)
-    return [s for s in sentences if s]
 
 
 def chunk_pages(pages: list[PageText]) -> list[Chunk]:

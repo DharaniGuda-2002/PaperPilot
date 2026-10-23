@@ -38,3 +38,28 @@ def test_entry_point_resolves_all_tables(module: str) -> None:
         [sys.executable, "-c", code], cwd=BACKEND, capture_output=True, text=True, timeout=120
     )
     assert result.returncode == 0, result.stderr[-2000:]
+
+
+# Processes that run from the small `api` image, which has no PDF or ML packages.
+API_IMAGE_ENTRY_POINTS = [
+    "app.main",
+    "app.workers.outbox_dispatcher",
+    "app.workers.discovery",
+    "app.workers.reports",
+    "app.ops.dead_letters",
+    "app.ops.metrics",
+    "app.events.topics",
+]
+ML_ONLY_PACKAGES = ["pymupdf", "fitz", "torch", "sentence_transformers"]
+
+
+@pytest.mark.parametrize("module", API_IMAGE_ENTRY_POINTS)
+def test_api_image_entry_point_does_not_need_ml_packages(module: str) -> None:
+    """Regression: the report worker imported PyMuPDF through a sentence splitter,
+    so the API container (and the public deployment) failed to start."""
+    blocked = ", ".join(repr(name) for name in ML_ONLY_PACKAGES)
+    code = f"import sys\nfor name in [{blocked}]:\n    sys.modules[name] = None\nimport {module}\n"
+    result = subprocess.run(  # noqa: S603
+        [sys.executable, "-c", code], cwd=BACKEND, capture_output=True, text=True, timeout=120
+    )
+    assert result.returncode == 0, result.stderr[-2000:]
