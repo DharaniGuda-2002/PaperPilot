@@ -1,0 +1,26 @@
+[project]
+name = "paperpilot-backend"
+version = "0.1.0"
+description = "PaperPilot research investigation engine: API and workers"
+requires-python = ">=3.12"
+# Runtime and dev dependencies are pinned in requirements*.txt.
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF", "S"]
+ignore = ["S101"]  # assert is fine in tests
+
+[tool.ruff.lint.per-file-ignores]
+"migrations/versions/*.py" = ["E501"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+plugins = ["pydantic.mypy"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
