@@ -58,6 +58,8 @@ class Investigation(Base):
 
 class TaskKind(StrEnum):
     DISCOVER_PAPERS = "discover_papers"
+    PROCESS_DOCUMENT = "process_document"  # subject_key = paper id
+    EXTRACT_EVIDENCE = "extract_evidence"  # subject_key = paper id
 
 
 class TaskStatus(StrEnum):

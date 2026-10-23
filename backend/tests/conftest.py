@@ -69,6 +69,10 @@ APP_TABLES = (
     "paper_search_cache",
     "outbox_events",
     "processed_events",
+    "paper_documents",
+    "paper_chunks",
+    "evidence_records",
+    "evidence_validations",
 )
 
 

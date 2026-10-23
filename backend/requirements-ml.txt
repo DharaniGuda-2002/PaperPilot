@@ -1,0 +1,6 @@
+# Document processing and embeddings, used only by the document and evidence
+# workers. Kept out of requirements.txt so the API image stays small.
+-r requirements.txt
+pymupdf==1.28.2
+sentence-transformers==6.1.0
+torch==2.14.1
