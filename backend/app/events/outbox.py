@@ -1,3 +1,4 @@
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.events.envelope import EventEnvelope, spec_for
@@ -18,3 +19,14 @@ def enqueue(session: Session, envelope: EventEnvelope, *, partition_key: str) ->
             envelope=envelope.model_dump(mode="json"),
         )
     )
+
+
+def outbox_backlog(session: Session) -> tuple[int, float | None]:
+    """(unpublished rows, age in seconds of the oldest one)."""
+    count, oldest = session.execute(
+        select(
+            func.count(),
+            func.extract("epoch", func.now() - func.min(OutboxEvent.created_at)),
+        ).where(OutboxEvent.published_at.is_(None))
+    ).one()
+    return int(count), float(oldest) if oldest is not None else None

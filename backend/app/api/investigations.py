@@ -10,10 +10,12 @@ from app.core.db import get_session
 from app.core.rate_limit import SlidingWindowLimiter
 from app.investigations import service
 from app.investigations.schemas import (
+    DiscoveredPaperPage,
     InvestigationCreate,
     InvestigationPage,
     InvestigationRead,
     InvestigationStats,
+    InvestigationTaskRead,
 )
 
 router = APIRouter(prefix="/api/v1/investigations", tags=["investigations"])
@@ -81,3 +83,31 @@ def get_investigation(investigation_id: uuid.UUID, session: SessionDep) -> Inves
     if investigation is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Investigation not found")
     return InvestigationRead.model_validate(investigation)
+
+
+def _require_investigation(session: Session, investigation_id: uuid.UUID) -> None:
+    if service.get_investigation(session, investigation_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Investigation not found")
+
+
+@router.get("/{investigation_id}/tasks")
+def list_tasks(investigation_id: uuid.UUID, session: SessionDep) -> list[InvestigationTaskRead]:
+    _require_investigation(session, investigation_id)
+    return [
+        InvestigationTaskRead.model_validate(t)
+        for t in service.list_tasks(session, investigation_id)
+    ]
+
+
+@router.get("/{investigation_id}/papers")
+def list_discovered_papers(
+    investigation_id: uuid.UUID,
+    session: SessionDep,
+    limit: Annotated[int, Query(ge=1, le=100)] = 25,
+    offset: Annotated[int, Query(ge=0)] = 0,
+) -> DiscoveredPaperPage:
+    _require_investigation(session, investigation_id)
+    items, total = service.list_discovered_papers(
+        session, investigation_id, limit=limit, offset=offset
+    )
+    return DiscoveredPaperPage(items=items, total=total, limit=limit, offset=offset)

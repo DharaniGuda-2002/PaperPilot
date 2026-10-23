@@ -179,3 +179,32 @@ def test_running_task_owned_by_live_worker_is_left_alone(
 def test_search_query_trims_at_word_boundary(question: str, expected: str) -> None:
     assert search_query(question) == expected
     assert len(search_query(question)) <= 200
+
+
+def test_api_exposes_tasks_papers_and_backlog(
+    client: TestClient,
+    requested: EventEnvelope,
+    sessions: sessionmaker[Session],
+    settings: Settings,
+) -> None:
+    investigation = f"/api/v1/investigations/{requested.investigation_id}"
+    assert client.get("/api/v1/system/pipeline").json()["outbox_backlog"] == 1
+    assert client.get(f"{investigation}/tasks").json()[0]["status"] == "pending"
+    assert client.get(f"{investigation}/papers").json()["total"] == 0
+
+    handle_investigation_requested(sessions, FakeProvider(), requested, settings)
+
+    tasks = client.get(f"{investigation}/tasks").json()
+    assert [(t["kind"], t["status"]) for t in tasks] == [("discover_papers", "succeeded")]
+    assert tasks[0]["result_summary"]["papers_linked"] == 2
+    papers = client.get(f"{investigation}/papers", params={"limit": 1}).json()
+    assert papers["total"] == 2
+    assert papers["items"][0]["rank"] == 1
+    assert papers["items"][0]["paper"]["provider_id"] == "W3022945404"
+    assert papers["items"][0]["retrieval_method"] == "openalex_search"
+
+
+def test_task_and_paper_endpoints_404_for_unknown_investigation(client: TestClient) -> None:
+    missing = "/api/v1/investigations/00000000-0000-0000-0000-000000000000"
+    assert client.get(f"{missing}/tasks").status_code == 404
+    assert client.get(f"{missing}/papers").status_code == 404

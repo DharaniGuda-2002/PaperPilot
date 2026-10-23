@@ -22,7 +22,7 @@ from dataclasses import dataclass
 from datetime import timedelta
 from typing import Any, Protocol
 
-from sqlalchemy import func, select, text, update
+from sqlalchemy import func, text, update
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.core.config import get_settings
@@ -31,6 +31,7 @@ from app.core.logging import configure_logging
 from app.events.envelope import EventEnvelope
 from app.events.kafka import make_producer
 from app.events.models import OutboxEvent
+from app.events.outbox import outbox_backlog
 
 logger = logging.getLogger(__name__)
 
@@ -126,17 +127,6 @@ def dispatch_once(
     if failed:
         logger.warning("outbox publish failures", extra={"published": published, "failed": failed})
     return published, failed
-
-
-def outbox_backlog(session: Session) -> tuple[int, float | None]:
-    """(unpublished rows, age in seconds of the oldest one)."""
-    count, oldest = session.execute(
-        select(
-            func.count(),
-            func.extract("epoch", func.now() - func.min(OutboxEvent.created_at)),
-        ).where(OutboxEvent.published_at.is_(None))
-    ).one()
-    return int(count), float(oldest) if oldest is not None else None
 
 
 class KafkaPublisher:

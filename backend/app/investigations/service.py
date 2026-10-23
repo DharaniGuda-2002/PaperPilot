@@ -13,11 +13,18 @@ from app.events.envelope import INVESTIGATION_REQUESTED, InvestigationRequestedV
 from app.events.outbox import enqueue
 from app.investigations.models import (
     Investigation,
+    InvestigationPaper,
     InvestigationStatus,
     InvestigationTask,
     TaskKind,
 )
-from app.investigations.schemas import InvestigationCreate, InvestigationStats
+from app.investigations.schemas import (
+    DiscoveredPaper,
+    InvestigationCreate,
+    InvestigationStats,
+)
+from app.papers.models import Paper
+from app.papers.schemas import PaperRead
 
 
 def create_investigation(session: Session, data: InvestigationCreate) -> Investigation:
@@ -78,4 +85,45 @@ def list_investigations(
         .limit(limit)
         .offset(offset)
     ).all()
+    return items, total
+
+
+def list_tasks(session: Session, investigation_id: uuid.UUID) -> Sequence[InvestigationTask]:
+    return session.scalars(
+        select(InvestigationTask)
+        .where(InvestigationTask.investigation_id == investigation_id)
+        .order_by(InvestigationTask.created_at, InvestigationTask.kind)
+    ).all()
+
+
+def list_discovered_papers(
+    session: Session, investigation_id: uuid.UUID, *, limit: int, offset: int
+) -> tuple[list[DiscoveredPaper], int]:
+    """One joined query for the page (no per-paper lookups)."""
+    total = (
+        session.scalar(
+            select(func.count())
+            .select_from(InvestigationPaper)
+            .where(InvestigationPaper.investigation_id == investigation_id)
+        )
+        or 0
+    )
+    rows = session.execute(
+        select(InvestigationPaper, Paper)
+        .join(Paper, Paper.id == InvestigationPaper.paper_id)
+        .where(InvestigationPaper.investigation_id == investigation_id)
+        .order_by(InvestigationPaper.rank)
+        .limit(limit)
+        .offset(offset)
+    ).all()
+    items = [
+        DiscoveredPaper(
+            rank=link.rank,
+            relevance_score=link.relevance_score,
+            retrieval_method=link.retrieval_method,
+            discovered_at=link.discovered_at,
+            paper=PaperRead.model_validate(paper),
+        )
+        for link, paper in rows
+    ]
     return items, total

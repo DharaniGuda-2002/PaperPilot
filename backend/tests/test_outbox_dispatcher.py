@@ -9,12 +9,8 @@ from fastapi.testclient import TestClient
 from sqlalchemy import Engine, text
 from sqlalchemy.orm import Session, sessionmaker
 
-from app.workers.outbox_dispatcher import (
-    ClaimedEvent,
-    claim_batch,
-    dispatch_once,
-    outbox_backlog,
-)
+from app.events.outbox import outbox_backlog
+from app.workers.outbox_dispatcher import ClaimedEvent, claim_batch, dispatch_once
 
 QUESTION = "Do graph neural networks beat gradient boosting for fraud detection?"
 
