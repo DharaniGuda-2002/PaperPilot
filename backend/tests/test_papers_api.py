@@ -1,7 +1,5 @@
-import json
 import uuid
 from collections.abc import Iterator
-from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
@@ -9,32 +7,8 @@ from sqlalchemy import Engine, text
 
 from app.core.config import Settings
 from app.main import create_app
-from app.papers.openalex import ProviderUnavailableError, normalize_work
-from app.papers.schemas import PaperSearchParams, ProviderSearchHit, ProviderSearchResult
 from tests.conftest import reset_tables
-
-# Real OpenAlex response recorded 2026-10-22 (CC0), trimmed to two works.
-FIXTURE = json.loads(
-    (Path(__file__).parent / "fixtures" / "openalex_search_gnn_fraud.json").read_text()
-)
-
-
-class FakeProvider:
-    """Stands in for OpenAlex; returns the recorded works and counts calls."""
-
-    def __init__(self) -> None:
-        self.calls: list[PaperSearchParams] = []
-        self.fail = False
-
-    def search_works(self, params: PaperSearchParams) -> ProviderSearchResult:
-        self.calls.append(params)
-        if self.fail:
-            raise ProviderUnavailableError("simulated outage")
-        hits = [
-            ProviderSearchHit(paper=normalize_work(work), relevance_score=work["relevance_score"])
-            for work in FIXTURE["results"]
-        ]
-        return ProviderSearchResult(total=FIXTURE["meta"]["count"], hits=hits)
+from tests.fakes import FIXTURE, FakeProvider
 
 
 @pytest.fixture
