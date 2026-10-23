@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     # OpenAlex. Without a key, calls share a small daily budget per outbound IP.
     # "fixture" serves a recorded sample for every query: automated tests only.
     paper_provider: Literal["openalex", "fixture"] = "openalex"
+    fixture_provider_latency_ms: int = 0  # benchmarks only
     openalex_base_url: str = "https://api.openalex.org"
     openalex_api_key: str | None = None
     openalex_contact_email: str | None = None

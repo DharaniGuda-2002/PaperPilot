@@ -4,9 +4,11 @@ An evidence-backed research investigation engine. Ask a technical research quest
 PaperPilot finds relevant papers, extracts reported evidence with source passages,
 flags experiments that cannot be fairly compared, and produces a traceable report.
 
-> **Status: Milestone 3 (event pipeline).** Creating an investigation starts a Kafka
+> **Status: Milestone 4 (reliable pipeline).** Creating an investigation starts a Kafka
 > pipeline (transactional outbox → dispatcher → discovery workers) that links relevant
-> OpenAlex papers to it. Evidence extraction and reports are not built yet.
+> OpenAlex papers to it, with scheduled retries, a dead-letter topic, replay tools,
+> lag metrics, and [measured throughput](docs/benchmarks.md). Evidence extraction and
+> reports are not built yet.
 > The pipeline runs in the local Docker setup; the public demo has no workers.
 > See [docs/roadmap.md](docs/roadmap.md).
 
@@ -33,13 +35,15 @@ docker compose up --build -d --wait
 
 Stop with `docker compose down`. Add `-v` to also delete the database and Kafka volumes.
 
-Pipeline operations:
+Pipeline operations (full runbook: [docs/operations.md](docs/operations.md)):
 
 ```bash
 docker compose up -d --scale discovery-worker=3        # more consumers in the group
 docker compose logs -f discovery-worker outbox-dispatcher
 docker compose exec kafka /opt/kafka/bin/kafka-consumer-groups.sh \
   --bootstrap-server localhost:9092 --describe --group discovery-workers   # partitions and lag
+docker compose run --rm --no-deps api python -m app.ops.metrics          # backlog, lag, latency
+docker compose run --rm --no-deps api python -m app.ops.dead_letters list
 ```
 
 ## Local development
@@ -105,7 +109,7 @@ scripts/    smoke test
 ## Known limitations
 
 - The pipeline ends after discovery, so investigations stay `running` until
-  evidence extraction exists. Retries via redelivery and dead-letter handling come in M4.
+  evidence extraction exists.
 - Paper search depends on OpenAlex usage limits; see
   [ADR 0005](docs/adr/0005-openalex-provider-and-search-cache.md).
 - No authentication. Creating investigations is rate limited per client and capped

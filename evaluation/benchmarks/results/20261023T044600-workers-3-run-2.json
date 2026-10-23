@@ -1,0 +1,27 @@
+{
+  "label": "workers-3-run-2",
+  "workers": 3,
+  "n": 90,
+  "succeeded": 90,
+  "failed": 0,
+  "simulated_provider_latency_ms": 400,
+  "wall_seconds": 16.2,
+  "throughput_per_second": 5.55,
+  "end_to_end_seconds": {
+    "p50": 7.23,
+    "p95": 14.35,
+    "max": 16.01
+  },
+  "processing_seconds": {
+    "p50": 0.417,
+    "p95": 0.429
+  },
+  "max_consumer_lag": 87,
+  "messages_per_partition": {
+    "0": 36,
+    "1": 28,
+    "2": 26
+  },
+  "recorded_at": "2026-10-23T04:46:00.168523+00:00",
+  "machine": "Darwin arm64"
+}

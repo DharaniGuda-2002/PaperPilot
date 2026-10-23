@@ -13,6 +13,11 @@ x-api-env: &api-env
   KAFKA_BOOTSTRAP_SERVERS: kafka:9092
   OPENALEX_API_KEY: ${OPENALEX_API_KEY:-}
   PAPER_PROVIDER: ${PAPER_PROVIDER:-openalex}
+  FIXTURE_PROVIDER_LATENCY_MS: ${FIXTURE_PROVIDER_LATENCY_MS:-0}
+  DAILY_PROVIDER_CALL_CAP: ${DAILY_PROVIDER_CALL_CAP:-500}
+  OPENALEX_BASE_URL: ${OPENALEX_BASE_URL:-https://api.openalex.org}
+  DISCOVERY_MAX_ATTEMPTS: ${DISCOVERY_MAX_ATTEMPTS:-4}
+  RETRY_BASE_SECONDS: ${RETRY_BASE_SECONDS:-30}
 
 # API, migrations, and workers share one image with different commands.
 # Only `migrate` builds it; the others reuse the tag (parallel builds would collide).

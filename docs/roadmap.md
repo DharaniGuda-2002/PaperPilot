@@ -10,7 +10,7 @@ Each milestone is finished and verified before the next starts.
       (2026-10-23; screens without backend data wait for their milestones)
 - [x] M2 — Paper discovery (OpenAlex search, cached and rate limited; verified locally and on the public demo)
 - [x] M3 — Kafka pipeline (outbox, dispatcher, idempotent discovery worker; local deployment)
-- [ ] M4 — Distributed reliability (retries, DLQ, recovery, throughput)
+- [x] M4 — Distributed reliability (scheduled retries, dead letters, replay, lag metrics, benchmarks)
 - [ ] M5 — Retrieval and evidence (PDFs, embeddings, hybrid search, extraction)
 - [ ] M6 — Comparison and reports (rules, progressive-disclosure report UI)
 - [ ] M7 — Hardening and final deployment
@@ -95,3 +95,27 @@ on Render's outbound IP. Add `OPENALEX_API_KEY` on Render to get a dedicated $1/
 Not in M3, by plan: redelivery-based retries, dead-letter publishing, consumer-lag
 metrics, throughput benchmarks (M4). The public demo runs no workers; see
 docs/deployment.md.
+
+## M4 acceptance criteria and verification (2026-10-23)
+
+| Criterion | Result |
+|---|---|
+| Redelivery-based retries with backoff | Pass: retry events scheduled through the outbox (`available_at`); tests for scheduling, success on retry, exhaustion, delay curve. Drill: attempts at +0 s, +2 s, +5 s with base 2 s, then `failed_permanent` |
+| Partition never blocked by one bad message | Pass: real-Kafka test sends poison, always-failing, and exhausted messages ahead of a good one; the good one is processed and lag returns to 0 |
+| Dead-letter handling and inspection | Pass: three failure kinds dead-lettered with exact bytes and reasons; offset committed only after the DLQ write; `dead_letters list/show` used in the drill |
+| Replay | Pass: dead-letter replay test; drill replayed the exhausted investigation after fixing the cause → 25 papers linked. Group rewind to earliest re-delivered about 1,125 messages in about 6 s, all skipped as duplicates, row counts unchanged |
+| Consumer lag and throughput metrics | Pass: workers log lag every 30 s; `app.ops.metrics` reports backlog, per-partition lag, retry/failure rates, latency p50/p95, throughput |
+| Single vs multi-worker benchmark | Pass: [benchmarks.md](benchmarks.md). 1 → 3 workers: 2.22 → 5.77 tasks/s; a 4th worker idles (3 partitions); throughput tracks the busiest partition |
+| Kafka in CI | Pass: backend job runs a real broker (`REQUIRE_KAFKA=1`) |
+
+Findings fixed during M4:
+- Kafka advertised `localhost`, which resolved to IPv6 first while Docker published only
+  IPv4, causing intermittent transport failures and slow tests. It now advertises 127.0.0.1.
+
+Open items:
+- `processed_events` grows without bound. Rows older than topic retention (7 days) can
+  never match a redelivery and can be pruned by a scheduled job (not built).
+- The benchmark spent the local daily provider-call cap (it counts cache rows), which then
+  made a drill fail with "paper search daily limit reached". The benchmark data was
+  removed afterwards. The cap behaved as designed; benchmark runs should use a separate
+  database or clean up after themselves.

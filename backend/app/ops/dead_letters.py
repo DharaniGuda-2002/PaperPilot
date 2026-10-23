@@ -122,7 +122,7 @@ def _summary(record: DeadLetterRecord) -> str:
         f"{record.dead_letter_id}  {record.dead_lettered_at:%Y-%m-%d %H:%M:%S}  "
         f"{record.failure_kind:<17} {record.event_type or '-':<24} "
         f"{record.original_topic}[{record.original_partition}]@{record.original_offset}  "
-        f"{record.reason[:80]}"
+        f"{' '.join(record.reason.split())[:80]}"
     )
 
 

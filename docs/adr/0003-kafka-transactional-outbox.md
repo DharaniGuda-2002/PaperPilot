@@ -60,7 +60,21 @@ claim.
   across retries, so consumers rely on idempotency and state checks, not on
   strict global order.
 
-## Verification (M3/M4)
+## Retries (M4)
 
-Tests for duplicate delivery, worker crash before offset commit, broker outage
-during dispatch, retry exhaustion → dead-letter, and replay.
+Retries reuse the outbox instead of separate retry topics: the worker
+schedules a new event with `available_at` in the future. This keeps one
+mechanism for every publish, survives broker outages, and never blocks a
+partition behind a failing message. The trade-off is that retry timing is
+coarse (dispatcher poll interval, about 1 s), which is fine for minutes-scale
+backoff.
+
+## Verification
+
+All automated except where marked as drills (results in roadmap.md):
+duplicate and concurrent delivery (tests), dispatcher crash after publish
+(test), broker outage during dispatch (drill), worker downtime (drill), retry
+scheduling and exhaustion (tests + drill), dead-lettering of unparseable,
+repeatedly failing, and exhausted messages with later messages still flowing
+(real-Kafka tests in CI), dead-letter replay (test + drill), consumer-group
+rewind replay with zero duplicate effects (drill).

@@ -1,5 +1,6 @@
 import json
 import logging
+import time
 from pathlib import Path
 
 from app.core.config import Settings
@@ -17,10 +18,14 @@ class RecordedSampleProvider:
     query. For automated end-to-end tests only: results do not depend on the
     question, so never enable it for real use."""
 
-    def __init__(self) -> None:
+    def __init__(self, latency_seconds: float = 0.0) -> None:
         self._sample = json.loads(SAMPLE_PATH.read_text())
+        # Simulated provider latency, for repeatable throughput benchmarks.
+        self._latency = latency_seconds
 
     def search_works(self, params: PaperSearchParams) -> ProviderSearchResult:
+        if self._latency:
+            time.sleep(self._latency)
         hits = [
             ProviderSearchHit(
                 paper=normalize_work(work), relevance_score=work.get("relevance_score")
@@ -36,7 +41,7 @@ class RecordedSampleProvider:
 def make_provider(settings: Settings) -> OpenAlexClient | RecordedSampleProvider:
     if settings.paper_provider == "fixture":
         logger.warning("PAPER_PROVIDER=fixture: search returns a recorded sample for any query")
-        return RecordedSampleProvider()
+        return RecordedSampleProvider(settings.fixture_provider_latency_ms / 1000)
     return OpenAlexClient(
         base_url=settings.openalex_base_url,
         api_key=settings.openalex_api_key,

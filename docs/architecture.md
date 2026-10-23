@@ -180,12 +180,25 @@ discovery-worker (group discovery-workers)
 ```
 
 Investigation status after discovery stays `running`, because the later stages
-do not exist yet and the investigation is not finished. Failures set the task to
-`failed_retryable` (provider unavailable) or `failed_permanent` (no papers) and
-the investigation to `failed`, with the reason in `last_error`. Redelivery-based
-retries and the dead-letter topic come in M4.
+do not exist yet and the investigation is not finished.
 
-Verified failure behavior (local Compose, 2026-10-23):
+### Failures, retries, and dead letters (M4)
+
+| Situation | Handling |
+|---|---|
+| Provider unavailable or quota spent | task `failed_retryable`, `next_attempt_at` set; a new `investigation.requested` event goes to the outbox with `available_at` = now + 30 s·2^(n−1) (max 15 min, ±20% jitter); the current message is committed so the partition keeps moving |
+| Attempt `DISCOVERY_MAX_ATTEMPTS` (4) fails | task `failed_permanent`, investigation `failed`, message dead-lettered (`retries_exhausted`) |
+| No papers found | task `failed_permanent` immediately (retrying will not help) |
+| Message not parseable / unknown version | dead-lettered (`unparseable`) without calling the handler |
+| Handler raises (bug, database down) | seek back and retry with backoff; after 5 consecutive failures dead-lettered (`handler_error`) |
+| Dead-letter publish fails | offset not committed; the message is retried (nothing is dropped silently) |
+
+Dead-letter records (`investigation-failures`, schema `DeadLetterRecord` v1)
+hold the exact original bytes plus reason, failure kind, consumer group, and
+original topic/partition/offset. `app.ops.dead_letters` lists, shows, and
+replays them; see [operations.md](operations.md).
+
+Verified failure behavior (local Compose, 2026-10-23; M4 drills in roadmap.md):
 
 | Drill | Observed |
 |---|---|
