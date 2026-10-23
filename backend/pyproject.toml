@@ -21,6 +21,15 @@ python_version = "3.12"
 strict = true
 plugins = ["pydantic.mypy"]
 
+[[tool.mypy.overrides]]
+# PyMuPDF ships without complete type annotations.
+module = ["app.documents.text", "tests.test_text", "tests.test_documents_worker"]
+disallow_untyped_calls = false
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-ra"
+filterwarnings = [
+    # Emitted by PyMuPDF's SWIG bindings on import; not actionable here.
+    "ignore:builtin type .* has no __module__ attribute:DeprecationWarning",
+]
