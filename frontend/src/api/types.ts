@@ -74,6 +74,45 @@ export interface PaperSearchResponse {
   results: { paper: Paper; relevance_score: number | null }[]
 }
 
+export type TaskStatus =
+  | 'pending'
+  | 'running'
+  | 'succeeded'
+  | 'failed_retryable'
+  | 'failed_permanent'
+  | 'skipped'
+
+export interface InvestigationTask {
+  id: string
+  kind: string
+  subject_key: string
+  status: TaskStatus
+  attempts: number
+  last_error: string | null
+  result_summary: Record<string, unknown> | null
+  started_at: string | null
+  finished_at: string | null
+  created_at: string
+}
+
+export interface DiscoveredPaperPage {
+  items: {
+    rank: number
+    relevance_score: number | null
+    retrieval_method: string
+    discovered_at: string
+    paper: Paper
+  }[]
+  total: number
+  limit: number
+  offset: number
+}
+
+export interface PipelineStatus {
+  outbox_backlog: number
+  oldest_pending_seconds: number | null
+}
+
 export const SEARCH_QUERY_MIN_LENGTH = 3
 export const SEARCH_MAX_PAGE = 50
 

@@ -277,6 +277,11 @@ svg {
   color: var(--color-info);
 }
 
+.notice--warning {
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+}
+
 .notice--error {
   background: var(--color-error-bg);
   color: var(--color-error);
@@ -665,8 +670,31 @@ svg {
 }
 
 .stage-list__name {
+  display: grid;
   font-weight: 500;
   font-size: 0.9375rem;
+}
+
+.stage-list__icon--success {
+  color: var(--color-success);
+}
+
+.stage-list__icon--info {
+  color: var(--color-info);
+}
+
+.stage-list__icon--error {
+  color: var(--color-error);
+}
+
+.stage-list__detail {
+  font-size: 0.8125rem;
+  font-weight: 400;
+  color: var(--color-text-secondary);
+}
+
+.stage-list__detail--error {
+  color: var(--color-error);
 }
 
 .detail-list {
