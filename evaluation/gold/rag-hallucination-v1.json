@@ -1,0 +1,139 @@
+{
+  "set": "rag-hallucination-v1",
+  "question": "Does retrieval-augmented generation reduce hallucination in open-domain question answering?",
+  "annotator": "AI coding assistant (Claude), not a domain expert",
+  "review_status": "pending human review",
+  "annotated_on": "2026-10-23",
+  "source": "Stored full text (PyMuPDF extraction) of 5 open-access papers from the real investigation; every page was read.",
+  "guidelines": {
+    "dataset": "Datasets the paper's own experiments train or evaluate on. Not datasets only cited in related work.",
+    "baseline": "Methods or systems the paper's own experiments compare against, named in prose or table rows.",
+    "split": "Statements of how evaluation was done: test split, held-out set, scoring procedure.",
+    "metric_result": "Numeric results stated in running prose (abstract, results, conclusion). Values that appear only in tables are out of scope, because a flattened table cannot be annotated reliably.",
+    "code_availability": "A statement or link that code or released artifacts are available.",
+    "limitation": "Limitations stated by the authors about their own work.",
+    "method": "Not annotated: a 'method mentioned' has no clear right answer."
+  },
+  "anchors": "Each anchor is a short verbatim phrase (under 15 words) that locates the fact in the stored text; it is not the full passage.",
+  "papers": [
+    {
+      "doi": "10.21203/rs.3.rs-10186581/v1",
+      "title": "Retrieval-Augmented Generation for Reducing Hallucinations in Drug-Related Question Answering Systems",
+      "absent": [],
+      "facts": [
+        {"field": "dataset", "value": "150-question drug QA set built by the authors", "aliases": ["150 drug-related question", "drug qa", "150-question"], "pages": [2, 4], "anchors": ["Evaluated on a purpose-built dataset of 150 drug-related question", "TABLE II Dataset Composition (N = 150)"]},
+        {"field": "baseline", "value": "LLM-only baseline (no retrieval)", "aliases": ["llm-only", "llama 3.2", "large language models"], "pages": [4], "anchors": ["the RAG system and the LLM-only baseline"]},
+        {"field": "split", "value": "RAGAS scoring against an author-built reference-answer benchmark", "pages": [4], "anchors": ["Five metrics were computed using RAGAS automated scoring"]},
+        {"field": "metric_result", "value": 47.8, "metric": "hallucination rate (baseline)", "pages": [2, 4], "anchors": ["reduces the hallucination rate from 47.8% to 12.3%", "Hallucination Rate from 47.8% to 12.3%"]},
+        {"field": "metric_result", "value": 12.3, "metric": "hallucination rate (RAG)", "pages": [2, 4], "anchors": ["reduces the hallucination rate from 47.8% to 12.3%", "Hallucination Rate from 47.8% to 12.3%"]},
+        {"field": "metric_result", "value": 74.3, "metric": "relative reduction in hallucination rate", "pages": [2, 4, 5], "anchors": ["a 74.3% relative reduction"]},
+        {"field": "metric_result", "value": 0.52, "metric": "faithfulness (baseline)", "pages": [2], "anchors": ["improving Faithfulness from 0.52 to 0.87"]},
+        {"field": "metric_result", "value": 0.87, "metric": "faithfulness (RAG)", "pages": [2], "anchors": ["improving Faithfulness from 0.52 to 0.87"]},
+        {"field": "metric_result", "value": 0.54, "metric": "factual accuracy (baseline)", "pages": [2], "anchors": ["Factual Accuracy from 0.54 to 0.89"]},
+        {"field": "metric_result", "value": 0.89, "metric": "factual accuracy (RAG)", "pages": [2], "anchors": ["Factual Accuracy from 0.54 to 0.89"]},
+        {"field": "metric_result", "value": 61.4, "metric": "oncology hallucination rate (baseline)", "pages": [4], "anchors": ["highest in Oncology (baseline 61.4%)"]},
+        {"field": "metric_result", "value": 55.3, "metric": "pain management hallucination rate (baseline)", "pages": [4], "anchors": ["and Pain Management (55.3%)"]},
+        {"field": "metric_result", "value": 44.8, "metric": "oncology improvement (pp)", "pages": [4], "anchors": ["with Oncology improving by 44.8 pp"]},
+        {"field": "metric_result", "value": 40.3, "metric": "pain management improvement (pp)", "pages": [4], "anchors": ["Pain Management by 40.3 pp"]},
+        {"field": "code_availability", "value": "dataset and code on GitHub", "pages": [5, 6], "anchors": ["We release our 150-question evaluation dataset and evaluation code", "the source code developed for this study are publicly available"]},
+        {"field": "limitation", "value": "English-only corpus, static knowledge base, small evaluation set, latency", "pages": [5], "anchors": ["Key limitations include: (1) English-only corpus"]}
+      ]
+    },
+    {
+      "doi": "10.18653/v1/2024.naacl-industry.19",
+      "title": "Reducing hallucination in structured outputs via Retrieval-Augmented Generation",
+      "absent": ["code_availability"],
+      "facts": [
+        {"field": "dataset", "value": "internal workflow dataset, Human Eval split", "aliases": ["human eval", "workflow"], "pages": [4], "anchors": ["create an additional dataset split, named"]},
+        {"field": "dataset", "value": "five out-of-domain splits OOD1-OOD5", "aliases": ["ood1", "ood2", "ood3", "ood4", "ood5", "ood"], "pages": [5, 6], "anchors": ["Table 2: Data statistics for out-of-domain evaluation", "on the five OOD splits described by Table 2"]},
+        {"field": "baseline", "value": "fine-tuned LLM without a retriever", "aliases": ["no retriever", "no rag"], "pages": [6], "anchors": ["without a retriever (only LLM fine-tuning)"]},
+        {"field": "baseline", "value": "off-the-shelf GTR-T5 encoders", "aliases": ["gtr-t5", "gtrt5", "gtr"], "pages": [5], "anchors": ["against different sizes of off-the-shelf GTRT5 models"]},
+        {"field": "baseline", "value": "CodeLlama-7B", "aliases": ["codellama"], "pages": [5, 6], "anchors": ["CodeLlama-7B and Mistral-7Bv0.1 produce worse results"]},
+        {"field": "baseline", "value": "Mistral-7B-v0.1", "aliases": ["mistral"], "pages": [5, 6], "anchors": ["CodeLlama-7B and Mistral-7Bv0.1 produce worse results"]},
+        {"field": "split", "value": "final metrics on the Human Eval split, not the Test split", "pages": [4], "anchors": ["Our final metrics are based on this split instead of the"]},
+        {"field": "split", "value": "retriever scored with Recall@15 (steps) and Recall@10 (tables)", "pages": [5], "anchors": ["we use Recall@15 for steps and Recall@10 for tables"]},
+        {"field": "metric_result", "value": 21, "metric": "hallucinated steps/tables without retriever (up to)", "pages": [6], "anchors": ["can be as high as 21% on the"]},
+        {"field": "metric_result", "value": 7.5, "metric": "hallucinated steps with retriever (below)", "pages": [6], "anchors": ["less than 7.5% for steps"]},
+        {"field": "metric_result", "value": 4.5, "metric": "hallucinated tables with retriever (below)", "pages": [6], "anchors": ["less than 4.5% for tables"]},
+        {"field": "limitation", "value": "internal datasets mostly from the IT domain", "pages": [4], "anchors": ["A drawback of our data labeling approach is that these internal datasets"]},
+        {"field": "limitation", "value": "risk of harm from hallucination not eliminated", "pages": [7], "anchors": ["we do not claim that the risk of harm due to hallucination is eliminated"]}
+      ]
+    },
+    {
+      "doi": "10.18653/v1/2024.emnlp-main.321",
+      "title": "REAR: A Relevance-Aware Retrieval-Augmented Framework for Open-Domain Question Answering",
+      "absent": [],
+      "facts": [
+        {"field": "dataset", "value": "Natural Questions", "aliases": ["natural questions", "nq"], "pages": [6], "anchors": ["training data from the Natural Questions (NQ)"]},
+        {"field": "dataset", "value": "TriviaQA", "aliases": ["triviaqa"], "pages": [6], "anchors": ["including TriviaQA (Joshi et al., 2017)"]},
+        {"field": "dataset", "value": "WebQuestions", "aliases": ["webquestions", "webq"], "pages": [6], "anchors": ["WebQuestions (WebQ) (Berant et al., 2013)"]},
+        {"field": "dataset", "value": "SQuAD", "aliases": ["squad"], "pages": [6], "anchors": ["and SQuAD (Rajpurkar et al., 2016)"]},
+        {"field": "baseline", "value": "Self-RAG", "aliases": ["self-rag", "selfrag"], "pages": [6, 7], "anchors": ["fine-tuned RobustLM (Yoran et al., 2023) and Self-RAG"]},
+        {"field": "baseline", "value": "RobustLM", "aliases": ["robustlm"], "pages": [6, 7], "anchors": ["fine-tuned RobustLM (Yoran et al., 2023) and Self-RAG", "RobustLM prompting: We following the approach"]},
+        {"field": "baseline", "value": "LLaMA2-Chat", "aliases": ["llama2-chat", "llama2chat", "llama2", "llama-2"], "pages": [6], "anchors": ["we consider LLaMA2Chat (Touvron et al., 2023)"]},
+        {"field": "baseline", "value": "Mistral-It", "aliases": ["mistral"], "pages": [6], "anchors": ["Mistral-It (Jiang et al., 2023)"]},
+        {"field": "baseline", "value": "Baichuan2-Chat", "aliases": ["baichuan"], "pages": [6], "anchors": ["Baichuan2-Chat (Yang et al., 2023)"]},
+        {"field": "baseline", "value": "ChatGLM3", "aliases": ["chatglm"], "pages": [6], "anchors": ["ChatGLM3 (Du et al., 2022)"]},
+        {"field": "baseline", "value": "Chain-of-Note", "aliases": ["chain-of-note", "con"], "pages": [5], "anchors": ["Chain-of-Note (CoN) (Yu et al., 2023)"]},
+        {"field": "split", "value": "test split from Karpukhin et al. (2020)", "pages": [6], "anchors": ["We follow the test split in prior work (Karpukhin et al., 2020)"]},
+        {"field": "split", "value": "evaluation uses the top 10 documents from dense retrievers", "pages": [7], "anchors": ["sourced from the top 10 documents retrieved by dense retrievers"]},
+        {"field": "code_availability", "value": "code on GitHub", "pages": [1], "anchors": ["Our codes can be accessed at https://github.com/RUCAIBox/REAR"]},
+        {"field": "limitation", "value": "no guidance toward key sentences or tokens", "pages": [9], "anchors": ["our current approach has not delved into guiding LLMs"]},
+        {"field": "limitation", "value": "not evaluated on a broader range of RAG tasks such as KILT", "pages": [9], "anchors": ["the applicability of our methods across a broader spectrum of RAG tasks"]}
+      ]
+    },
+    {
+      "doi": "10.18653/v1/2024.acl-long.585",
+      "title": "RAGTruth: A Hallucination Corpus for Developing Trustworthy Retrieval-Augmented Language Models",
+      "absent": [],
+      "facts": [
+        {"field": "dataset", "value": "RAGTruth", "aliases": ["ragtruth"], "pages": [1, 2, 7], "anchors": ["This paper presents RAGTruth, a corpus tailored", "tested on the same RAGTruth test set"]},
+        {"field": "dataset", "value": "MS MARCO", "aliases": ["ms marco", "msmarco"], "pages": [3], "anchors": ["random sampling from the training set of MS MARCO"]},
+        {"field": "dataset", "value": "Yelp Open Dataset", "aliases": ["yelp"], "pages": [3], "anchors": ["from the Yelp Open Dataset (Yelp, 2021)"]},
+        {"field": "dataset", "value": "CNN/Daily Mail", "aliases": ["cnn/daily mail", "cnn", "dailymail", "daily mail", "cnn/dm"], "pages": [4], "anchors": ["the well-known CNN/Daily Mail dataset"]},
+        {"field": "baseline", "value": "prompt-based detection with GPT-4-turbo / GPT-3.5-turbo", "aliases": ["gpt-4", "gpt-3.5", "gpt4", "gpt-4-turbo", "gpt-3.5-turbo"], "pages": [6, 7], "anchors": ["Hallucination detection prompts are manually crafted to instruct LLMs"]},
+        {"field": "baseline", "value": "SelfCheckGPT", "aliases": ["selfcheckgpt"], "pages": [6, 7], "anchors": ["SelfCheckGPT employs a zero-resource, samplingbased method"]},
+        {"field": "baseline", "value": "LMvLM", "aliases": ["lmvlm"], "pages": [7], "anchors": ["LMvLM is an approach that employs a multi-turn interaction"]},
+        {"field": "baseline", "value": "random response selection", "aliases": ["random selection", "random"], "pages": [8], "anchors": ["We employed random selection as a simple baseline for comparison"]},
+        {"field": "split", "value": "450-instance test set, 150 per task; rest used for fine-tuning", "pages": [7], "anchors": ["tested on the same RAGTruth test set, which consists of 450 instances"]},
+        {"field": "split", "value": "span-level scores computed on character overlap", "pages": [7], "anchors": ["report the precision, recall, and f1 score at the char-level"]},
+        {"field": "metric_result", "value": 63.4, "metric": "F1, prompt GPT-4-turbo (response level)", "pages": [7], "anchors": ["achieves only an average F1 score of 63.4%"]},
+        {"field": "metric_result", "value": 58.8, "metric": "F1, SelfCheckGPT (response level)", "pages": [7], "anchors": ["achieving an average F1 score of 58.8% with GPT-3.5-turbo"]},
+        {"field": "metric_result", "value": 78.7, "metric": "F1, fine-tuned Llama-2-13B (response level)", "pages": [7], "anchors": ["the best performance with an average 78.7% f1 score"]},
+        {"field": "metric_result", "value": 18.4, "metric": "precision, GPT-4-turbo (span level)", "pages": [7], "anchors": ["with a low precision of 18.4%"]},
+        {"field": "metric_result", "value": 52.7, "metric": "F1, fine-tuned model (span level)", "pages": [8], "anchors": ["by achieving an averaged f1 score of 52.7%"]},
+        {"field": "metric_result", "value": 21.6, "metric": "hallucination rate reduction, strategy 1 (small models)", "pages": [8], "anchors": ["the first strategy reduced the hallucination rate by 21.6%"]},
+        {"field": "metric_result", "value": 63.2, "metric": "hallucination rate reduction, strategy 2 (small models)", "pages": [8], "anchors": ["the second strategy achieved a reduction of 63.2%"]},
+        {"field": "metric_result", "value": 42.9, "metric": "hallucination rate reduction, strategy 1 (GPT models)", "pages": [8], "anchors": ["reduction in hallucination rates of 42.9% and 51.0%"]},
+        {"field": "metric_result", "value": 51.0, "metric": "hallucination rate reduction, strategy 2 (GPT models)", "pages": [8], "anchors": ["reduction in hallucination rates of 42.9% and 51.0%"]},
+        {"field": "code_availability", "value": "dataset repository on GitHub", "pages": [1], "anchors": ["The RAGTruth dataset is available at"]},
+        {"field": "limitation", "value": "generality of the trained detector not yet benchmarked", "pages": [9], "anchors": ["It is important to carefully benchmark the generality capability"]}
+      ]
+    },
+    {
+      "doi": "10.48550/arxiv.2404.14760",
+      "title": "Retrieval Augmented Generation for Domain-specific Question Answering",
+      "absent": ["code_availability"],
+      "facts": [
+        {"field": "dataset", "value": "Helpx click data 2022-2023", "aliases": ["helpx", "click-data", "click data"], "pages": [2, 3], "anchors": ["for our training and evaluation set", "Helpx 2022-2023 Click-data"]},
+        {"field": "dataset", "value": "per-product query-title match evaluation sets", "aliases": ["query-title", "acrobat", "photoshop", "lightroom", "adobe express"], "pages": [5], "anchors": ["Acrobat Query-Title Match", "Photoshop Query-Title Match"]},
+        {"field": "dataset", "value": "Acrobat test set of 137 user questions", "aliases": ["acrobat"], "pages": [6], "anchors": ["We utilize 137 user-asked questions"]},
+        {"field": "baseline", "value": "ChatGPT", "aliases": ["chatgpt"], "pages": [7, 8], "anchors": ["comparing the output of our system with"]},
+        {"field": "baseline", "value": "BGE-large-en-v1.5", "aliases": ["bge"], "pages": [6], "anchors": ["BGE-large-en-v1.5 (2023)"]},
+        {"field": "baseline", "value": "UAE-Large-V1", "aliases": ["uae"], "pages": [6], "anchors": ["UAE-Large-V1 (2023)"]},
+        {"field": "baseline", "value": "mxbai-embed-large-v1", "aliases": ["mxbai"], "pages": [6, 7], "anchors": ["mxbai-embed-large-v1 (2024)"]},
+        {"field": "baseline", "value": "SFR-Embedding-Mistral", "aliases": ["sfr-embedding", "sfr"], "pages": [6, 7], "anchors": ["SFR-Embedding-Mistral (2024)"]},
+        {"field": "baseline", "value": "SimCSE", "aliases": ["simcse"], "pages": [6], "anchors": ["SimCSE (sup-roberta-large, 2021)"]},
+        {"field": "baseline", "value": "DiffCSE", "aliases": ["diffcse"], "pages": [6], "anchors": ["DiffCSE (roberta-base-sts, 2022)"]},
+        {"field": "baseline", "value": "CLIP / OpenCLIP", "aliases": ["clip", "openclip"], "pages": [6], "anchors": ["OpenClip (ViT-H-14)"]},
+        {"field": "baseline", "value": "T5 (3B)", "aliases": ["t5"], "pages": [6], "anchors": ["T5 (3b)"]},
+        {"field": "baseline", "value": "multi-qa-MiniLM-L6-cos-v1 retriever", "aliases": ["multi-qa-minilm", "minilm"], "pages": [7], "anchors": ["sentence-transformers/multi-qa-MiniLM-L6-cos-v1 + GPT4"]},
+        {"field": "baseline", "value": "GPT-4 without retrieval", "aliases": ["gpt4", "gpt-4"], "pages": [7], "anchors": ["GPT4 0.1705"]},
+        {"field": "split", "value": "evaluation queries unseen in training", "pages": [5], "anchors": ["We made sure the model has not seen the queries previously in training"]},
+        {"field": "split", "value": "nDCG computed over the full document set", "pages": [5], "anchors": ["we consider all documents in our document set rather than"]},
+        {"field": "split", "value": "GPT-4 scores similarity to expert gold answers", "pages": [6], "anchors": ["to evaluate the similarity of the candidate-generated answer"]},
+        {"field": "limitation", "value": "fine-tuned generator performs poorly on the test set", "pages": [6], "anchors": ["We also see poor performance of the finetuned generator on the test set"]}
+      ]
+    }
+  ]
+}

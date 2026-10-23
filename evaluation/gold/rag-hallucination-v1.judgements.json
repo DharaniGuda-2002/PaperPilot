@@ -1,0 +1,18 @@
+{
+  "set": "rag-hallucination-v1",
+  "extraction_version": "rules-v2",
+  "annotator": "AI coding assistant (Claude), not a domain expert",
+  "review_status": "pending human review",
+  "note": "Verdicts on extracted records that no gold fact explains. Keys hash the passage, so no paper text is stored here.",
+  "items": [
+    {"key": "10.21203/rs.3.rs-10186581/v1|baseline|p5|RAG|fba0a46390", "correct": false, "note": "RAG is the proposed system; the baseline in the sentence is unnamed"},
+    {"key": "10.21203/rs.3.rs-10186581/v1|dataset|p2|QA|3e039cc8f7", "correct": false, "note": "right passage, but 'QA' is not a dataset name"},
+    {"key": "10.18653/v1/2024.naacl-industry.19|limitation|p1|limitation|08febb710d", "correct": false, "note": "a limitation of generative AI in general, not of this work"},
+    {"key": "10.18653/v1/2024.naacl-industry.19|baseline|p2|BM25|9594005ad3", "correct": false, "note": "related-work mention; BM25 is not an experimental baseline"},
+    {"key": "10.18653/v1/2024.emnlp-main.321|baseline|p6|RAG|c2b61c9084", "correct": false, "note": "right passage (RobustLM, Self-RAG), wrong name extracted"},
+    {"key": "10.18653/v1/2024.emnlp-main.321|limitation|p8|future work|33d568bfce", "correct": false, "note": "future work, not a stated limitation (borderline)"},
+    {"key": "10.18653/v1/2024.acl-long.585|baseline|p7|GPT|0b1436a0e2", "correct": false, "note": "the baseline is SelfCheckGPT; 'GPT' does not identify it"},
+    {"key": "10.18653/v1/2024.acl-long.585|baseline|p5|CNN|1035388f83", "correct": false, "note": "CNN/DM is a dataset subtask, not a baseline"},
+    {"key": "10.48550/arxiv.2404.14760|limitation|p8|fails to|ab97ab164d", "correct": false, "note": "describes ChatGPT failing, not a limitation of this work"}
+  ]
+}
