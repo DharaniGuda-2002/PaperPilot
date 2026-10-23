@@ -27,6 +27,13 @@ class Settings(BaseSettings):
     paper_search_cache_hours: int = 24
     daily_provider_call_cap: int = 500  # uncached searches per rolling 24 hours
 
+    # Kafka and background workers (local deployment).
+    kafka_bootstrap_servers: str = "localhost:9094"
+    outbox_batch_size: int = 100
+    outbox_poll_seconds: float = 1.0
+    outbox_lease_seconds: float = 30.0
+    discovery_papers_per_investigation: int = 25
+
     @field_validator("database_url")
     @classmethod
     def use_psycopg_driver(cls, url: str) -> str:
