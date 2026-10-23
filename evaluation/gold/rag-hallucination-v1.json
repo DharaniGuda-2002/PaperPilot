@@ -2,7 +2,10 @@
   "set": "rag-hallucination-v1",
   "question": "Does retrieval-augmented generation reduce hallucination in open-domain question answering?",
   "annotator": "AI coding assistant (Claude), not a domain expert",
-  "review_status": "pending human review",
+  "review_status": "reviewed",
+  "reviewed_by": "DharaniGuda-2002",
+  "reviewed_on": "2026-10-23",
+  "review_note": "Approved as annotated, including the judgement calls listed in docs/evaluation.md.",
   "annotated_on": "2026-10-23",
   "source": "Stored full text (PyMuPDF extraction) of 5 open-access papers from the real investigation; every page was read.",
   "guidelines": {

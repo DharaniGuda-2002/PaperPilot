@@ -1,8 +1,10 @@
 {
   "set": "rag-hallucination-v1",
   "annotator": "AI coding assistant (Claude), not a domain expert",
-  "review_status": "pending human review",
-  "run_at": "2026-10-23T15:51:56+00:00",
+  "review_status": "reviewed",
+  "reviewed_by": "DharaniGuda-2002",
+  "reviewed_on": "2026-10-23",
+  "run_at": "2026-10-23T17:23:22+00:00",
   "versions": {
     "extraction": "rules-v2",
     "validation": "checks-v1",

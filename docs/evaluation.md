@@ -82,8 +82,40 @@ v2's recall are **not measured**. Measuring them is M6 work.
 
 **Annotator:** the AI coding assistant, not a domain expert. Every page of each
 paper's stored text was read before any extraction output was looked at.
-**Status: pending human review.** The numbers below are only as good as this
-annotation.
+**Review:** reviewed and approved as annotated by the project owner
+(DharaniGuda-2002) on 2026-10-23. The owner reviewed a per-paper walkthrough of
+every fact and verdict, with the judgement calls below flagged. No annotation
+changed, so the numbers are the same as before review. One annotator plus one
+reviewer is still a small basis; read the sample sizes before the percentages.
+
+**Judgement calls (approved as annotated):**
+- **Scope:** baselines named only in table rows count, but results that appear
+  only in tables do not.
+- **Matching:** `split`, `code_availability`, and `limitation` match on the
+  anchor's chunk, not the exact sentence.
+- **Paper 1:**
+  - Derived results count as facts: the 74.3% relative reduction and the
+    pp improvements.
+  - The limitations list is one fact.
+  - The baseline's aliases accept "Llama 3.2" and "large language models".
+- **Paper 2:**
+  - The internal "Human Eval" and OOD1–5 splits count as datasets.
+  - GTR-T5, a retriever baseline, counts as a baseline.
+  - The bounds "as high as 21%" and "less than 7.5% / 4.5%" count as results.
+  - The ethics-section statement counts as a limitation.
+- **REAR:** Chain-of-Note counts as a baseline, although it is compared only on
+  efficiency.
+- **RAGTruth:**
+  - MS MARCO, Yelp, and CNN/Daily Mail count as datasets, although they are
+    used to generate responses.
+  - The dataset repository link counts as code availability.
+  - Annotator agreement (91.8%, 78.8%) is not counted as a result.
+- **Paper 5:**
+  - 11 table-row baselines count, so this paper makes up 41% of all baseline
+    facts.
+  - ChatGPT counts as a baseline, although the comparison is qualitative.
+- **Verdicts:** all 9 unmatched records are incorrect, including the borderline
+  "future work" record from REAR.
 
 **What counts as a fact** (full guidelines in the gold file):
 - **dataset** and **baseline**: what the paper's own experiments use, not
@@ -178,7 +210,8 @@ set stays a fair test):
 
 **Limits of this evaluation:**
 - 5 papers on one topic, chosen as the shortest full texts in the run.
-- One annotator, not a domain expert, pending human review.
+- One annotator (not a domain expert) and one reviewer; the reviewer approved
+  the annotations without changes.
 - Table values are excluded.
 - `split`, `code_availability`, and `limitation` match on the anchor's chunk,
   which is lenient: another sentence in the same chunk would count.

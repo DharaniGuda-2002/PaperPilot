@@ -67,8 +67,9 @@ Diagrams and contracts: [architecture.md](architecture.md).
   passages reach the extractor. n = 84 facts. [evaluation.md](evaluation.md)
 - **Extraction:** recall 0.10 and precision 0.47 on 84 gold facts and 17
   records. All 17 quotations were verified in the stored text.
-- **The gold set** was annotated by the AI assistant and is pending human
-  review. Say so.
+- **The gold set** was annotated by the AI assistant, then reviewed and approved
+  by the project owner (2026-10-23). Say so; it is one annotator and one
+  reviewer.
 - **API reads:** p95 under 5 ms for report reads at concurrency 1; the
   evidence list (273 KB) is the outlier. Hybrid query p95 is 3.4 ms.
   [benchmarks.md](benchmarks.md)
@@ -128,8 +129,8 @@ queue for PDF fetching per host. Measure before each step; the benchmarks
 show partitions are the first ceiling.
 
 **What would you do next?**
-- A human review of the gold set, then a second, held-out set for improving
-  the extraction rules.
+- A second, held-out gold set, so the extraction rules can be improved
+  without tuning them to the set used for measurement.
 - A least-privilege database role.
 - Pruning of `processed_events`.
 - Paging the evidence endpoint.

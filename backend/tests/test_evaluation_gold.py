@@ -113,7 +113,7 @@ def test_load_gold_rejects_long_anchors(tmp_path: Path) -> None:
 
 def test_committed_gold_set_is_well_formed() -> None:
     gold = load_gold(GOLD_DIR / "rag-hallucination-v1.json")
-    assert gold.review_status == "pending human review"
+    assert (gold.review_status, gold.reviewed_by) == ("reviewed", "DharaniGuda-2002")
     dois = {p.doi for p in gold.papers}
     assert len(dois) == len(gold.papers) == 5
     judgements = load_judgements(GOLD_DIR / "rag-hallucination-v1.judgements.json")

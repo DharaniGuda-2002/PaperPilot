@@ -158,7 +158,7 @@ Open items:
 | Evidence-backed report generation | Pass: report-v1 from templates over verified evidence ids; published strength rules (counting checkable sources, downgraded by conflicts); limitations, missing information, unresolved questions; immutable versions with all rule versions recorded; `app.ops.reports rebuild` |
 | Pipeline end and final status | Pass: report worker (api image) builds once every per-paper task is terminal; `completed` or `partially_completed`; idempotent through the build_report task; backfilled 5 earlier finished investigations on first start |
 | Progressive-disclosure UI | Pass: level 1 bottom line, strength, scope, limits; level 2 findings expand in place with their caveat visible while collapsed; level 3 evidence inspector dialog with quotation, page, source, provenance, checks; comparison matrix and sources tabs (`?view=`, arrow keys). Checked in the browser on the real investigation, including a 471 px window |
-| Evaluation set with Recall@K and precision/recall | Pass, with caveats: 84 facts from 5 papers, annotated by the AI assistant, pending human review. Hybrid Recall@8 0.583 per field query; pipeline coverage 0.929; extraction recall 0.10 and precision 0.47 overall (n = 17 records) |
+| Evaluation set with Recall@K and precision/recall | Pass, with caveats: 84 facts from 5 papers, annotated by the AI assistant; reviewed and approved by the project owner on 2026-10-23 (after M7). Hybrid Recall@8 0.583 per field query; pipeline coverage 0.929; extraction recall 0.10 and precision 0.47 overall (n = 17 records) |
 
 Real investigation ("Does retrieval-augmented generation reduce hallucination in
 open-domain question answering?", 25 papers; 24 distinct studies after merging 1 duplicate):
@@ -191,7 +191,7 @@ Open items:
 - Extraction recall is the limiting factor, not retrieval (see evaluation.md).
   Improving the rules needs a second, held-out gold set, so that the rules are
   not tuned to the one used for measurement.
-- The gold set needs a human review pass.
+- ~~The gold set needs a human review pass.~~ Done 2026-10-23: approved as annotated.
 - The public demo still has no workers, so reports exist only locally.
 
 ## M7 acceptance criteria and verification (2026-10-23)
@@ -254,8 +254,8 @@ Other fixes:
 | Explainable in an interview | [interview.md](interview.md) |
 
 Open items (none block the definition of done):
-- The gold set needs a human review pass, then a second, held-out set for
-  improving the extraction rules.
+- A second, held-out gold set for improving the extraction rules. The first set
+  was reviewed and approved as annotated on 2026-10-23.
 - The database runtime role is the owner role (see security.md).
 - `processed_events` pruning is manual.
 - The evidence endpoint is unpaginated.

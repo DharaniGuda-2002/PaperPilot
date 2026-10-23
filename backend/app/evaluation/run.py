@@ -166,6 +166,8 @@ def evaluate(
         "set": gold.name,
         "annotator": gold.annotator,
         "review_status": gold.review_status,
+        "reviewed_by": gold.reviewed_by,
+        "reviewed_on": gold.reviewed_on,
         "run_at": datetime.now(UTC).isoformat(timespec="seconds"),
         "versions": {
             "extraction": EXTRACTION_VERSION,

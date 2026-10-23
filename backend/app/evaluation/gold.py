@@ -60,6 +60,8 @@ class GoldSet:
     annotator: str
     review_status: str
     papers: tuple[GoldPaper, ...]
+    reviewed_by: str | None = None
+    reviewed_on: str | None = None
 
 
 @dataclass(frozen=True)
@@ -123,7 +125,13 @@ def load_gold(path: Path) -> GoldSet:
             GoldPaper(paper["doi"], paper["title"], tuple(facts), tuple(paper.get("absent", ())))
         )
     return GoldSet(
-        raw["set"], raw["question"], raw["annotator"], raw["review_status"], tuple(papers)
+        raw["set"],
+        raw["question"],
+        raw["annotator"],
+        raw["review_status"],
+        tuple(papers),
+        reviewed_by=raw.get("reviewed_by"),
+        reviewed_on=raw.get("reviewed_on"),
     )
 
 

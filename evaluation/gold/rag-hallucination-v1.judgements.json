@@ -2,7 +2,10 @@
   "set": "rag-hallucination-v1",
   "extraction_version": "rules-v2",
   "annotator": "AI coding assistant (Claude), not a domain expert",
-  "review_status": "pending human review",
+  "review_status": "reviewed",
+  "reviewed_by": "DharaniGuda-2002",
+  "reviewed_on": "2026-10-23",
+  "review_note": "Approved as annotated, including the judgement calls listed in docs/evaluation.md.",
   "note": "Verdicts on extracted records that no gold fact explains. Keys hash the passage, so no paper text is stored here.",
   "items": [
     {"key": "10.21203/rs.3.rs-10186581/v1|baseline|p5|RAG|fba0a46390", "correct": false, "note": "RAG is the proposed system; the baseline in the sentence is unnamed"},
