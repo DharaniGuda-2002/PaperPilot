@@ -222,3 +222,23 @@ def test_retrieval_and_language_model_methods_are_recognized() -> None:
         "Llama",
         "GPT",
     ]
+
+
+@pytest.mark.parametrize(
+    ("sentence", "claims"),
+    [
+        (
+            "Our GNN outperforms XGBoost and logistic regression.",
+            [("GNN", "XGBoost"), ("GNN", "Logistic regression")],
+        ),
+        ("XGBoost beats GCN, while GraphSAGE is slower.", [("XGBoost", "GCN")]),
+        ("These methods outperform prior work.", []),
+        ("GCN and GAT are used as baselines.", []),
+    ],
+)  # fmt: skip
+def test_outperformance_claims_are_read_from_one_clause(
+    sentence: str, claims: list[tuple[str, str]]
+) -> None:
+    from app.evidence.rules import outperformance_claims
+
+    assert outperformance_claims(sentence) == claims

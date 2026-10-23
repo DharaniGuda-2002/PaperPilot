@@ -329,3 +329,35 @@ def _datasets_in(sentence: str) -> list[dict[str, Any]]:
             continue
         names.append({"name": candidate, "source": "pattern"})
     return names
+
+
+def methods_in(text: str) -> list[str]:
+    """Canonical method names mentioned in text, in order of appearance."""
+    return [name for _, name in _methods_in(text)]
+
+
+_OUTPERFORM = re.compile(r"\b(outperform(?:s|ed|ing)?|surpass(?:es|ed)?|beats?)\b", re.IGNORECASE)
+# The comparison ends where a new clause starts ("A beats B, while C is slower").
+_CLAUSE_BREAK = re.compile(
+    r";|,\s*(?:while|whereas|but|although|though|however|which)\b|\bbut\b", re.IGNORECASE
+)
+
+
+def outperformance_claims(sentence: str) -> list[tuple[str, str]]:
+    """(claimed better, claimed worse) pairs from "A outperforms B" style sentences.
+
+    Only methods before the verb can be the claimant and only those after it the
+    baseline; a sentence with no method on either side yields nothing. This
+    reads what the authors claim; it is not a judgment that the claim holds."""
+    match = _OUTPERFORM.search(sentence)
+    if not match:
+        return []
+    positioned = _methods_in(sentence)
+    clause_break = _CLAUSE_BREAK.search(sentence, match.end())
+    clause_end = clause_break.start() if clause_break else len(sentence)
+    before = [name for start, name in positioned if start < match.start()]
+    after = [name for start, name in positioned if match.end() < start < clause_end]
+    if not before or not after:
+        return []
+    claimant = before[-1]
+    return [(claimant, baseline) for baseline in dict.fromkeys(after) if baseline != claimant]
