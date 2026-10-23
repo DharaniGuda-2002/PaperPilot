@@ -16,7 +16,7 @@ services:
       - key: DATABASE_URL
         sync: false  # Neon connection string; entered in the Render dashboard, never committed
       - key: CORS_ORIGINS
-        value: https://paperpilot-web.onrender.com
+        value: https://paperpilot-web-tfx4.onrender.com
       - key: LOG_LEVEL
         value: INFO
       - key: DAILY_INVESTIGATION_CAP
@@ -44,4 +44,4 @@ services:
         value: strict-origin-when-cross-origin
     envVars:
       - key: VITE_API_BASE_URL
-        value: https://paperpilot-api.onrender.com
+        value: https://paperpilot-api-2ykf.onrender.com

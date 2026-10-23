@@ -68,8 +68,8 @@ Implemented before the first public deploy:
 ## Verifying a deployment
 
 ```bash
-curl -s https://paperpilot-api.onrender.com/health/ready     # may take ~1 min if asleep
-./scripts/smoke-test.sh https://paperpilot-web.onrender.com https://paperpilot-api.onrender.com
+curl -s https://paperpilot-api-2ykf.onrender.com/health/ready     # may take ~1 min if asleep
+./scripts/smoke-test.sh https://paperpilot-web-tfx4.onrender.com https://paperpilot-api-2ykf.onrender.com
 ```
 
 The smoke test creates one investigation. Record results in [roadmap.md](roadmap.md).
