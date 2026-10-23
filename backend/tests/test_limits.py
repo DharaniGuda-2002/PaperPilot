@@ -137,3 +137,16 @@ def test_clients_behind_the_proxy_have_separate_limits(proxied_client: TestClien
             headers={"X-Forwarded-For": address},
         )
         assert response.status_code == 201
+
+
+def test_unhandled_errors_return_a_generic_body(migrated_database: str) -> None:
+    app = create_app(Settings(database_url=migrated_database))
+
+    @app.get("/boom")
+    def boom() -> None:
+        raise RuntimeError("secret detail: postgresql://user:pass@host/db")
+
+    with TestClient(app, raise_server_exceptions=False) as client:
+        response = client.get("/boom")
+    assert response.status_code == 500
+    assert "secret" not in response.text and "postgresql" not in response.text

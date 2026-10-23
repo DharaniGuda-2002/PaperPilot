@@ -82,7 +82,8 @@ then builds the full Compose stack and runs the smoke test.
 FastAPI modular monolith + PostgreSQL (with pgvector) as the single source of truth.
 Background processing will run in separate worker processes coordinated through Kafka
 with a transactional outbox. Details: [docs/architecture.md](docs/architecture.md) and
-the decision records in [docs/adr/](docs/adr/).
+the decision records in [docs/adr/](docs/adr/). Security controls and known gaps:
+[docs/security.md](docs/security.md).
 
 ```
 backend/    FastAPI app, workers (app/workers), event contracts (app/events),
