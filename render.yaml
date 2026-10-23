@@ -8,10 +8,8 @@ services:
     dockerfilePath: ./Dockerfile
     dockerContext: .
     # Single free instance, so migrating at startup cannot race another instance.
-    dockerCommand: >-
-      sh -c "alembic upgrade head &&
-      exec uvicorn app.main:create_app --factory --host 0.0.0.0 --port $PORT
-      --proxy-headers --forwarded-allow-ips='*'"
+    # Render runs dockerCommand through its own shell, so keep it a single script path.
+    dockerCommand: ./start-with-migrations.sh
     healthCheckPath: /health/live
     autoDeploy: true
     envVars:

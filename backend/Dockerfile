@@ -10,7 +10,7 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
-COPY alembic.ini .
+COPY alembic.ini start-with-migrations.sh ./
 COPY migrations ./migrations
 COPY app ./app
 
