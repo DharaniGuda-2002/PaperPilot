@@ -87,10 +87,10 @@ def test_claims_about_question_methods_lead_with_strength_and_conflicts() -> Non
     assert [s.title for s in top.conflicting] == ["C"]
     # 2 full-text + 1 abstract supporters, 1 conflicting: moderate, downgraded to limited.
     assert top.strength == Strength.LIMITED
-    assert "1 paper report the opposite" in (top.strength_reason or "")
+    assert "1 paper reports the opposite" in (top.strength_reason or "")
     assert report.bottom_line.startswith(
         "3 of 4 analyzed papers report Graph neural networks outperforming Gradient-boosted trees, "
-        "while 1 report the opposite."
+        "while 1 reports the opposite."
     )
     assert report.bottom_line.endswith("it does not establish which method is better.")
     assert any("conflict" in q or "disagree" in q for q in report.unresolved_questions)

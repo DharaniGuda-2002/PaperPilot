@@ -60,7 +60,7 @@ def strength_for(full_text: int, abstract_only: int, conflicting: int) -> tuple[
     if conflicting:
         order = list(Strength)
         level = order[min(order.index(level) + 1, len(order) - 1)]
-        reason += f"; {_n(conflicting, 'paper')} report the opposite"
+        reason += f"; {_n(conflicting, 'paper')} {_verb(conflicting)} the opposite"
     return level, reason
 
 
@@ -175,9 +175,9 @@ def _claim_findings(
         )
         full = sum(s.content_kind == "full_text" for s in supporting)
         level, reason = strength_for(full, len(supporting) - full, len(conflicting))
-        summary = f"{_n(len(supporting), 'paper')} report {better} outperforming {worse}."
+        summary = f"{_n(len(supporting), 'paper')} {_verb(len(supporting))} {better} outperforming {worse}."
         if conflicting:
-            summary += f" {_n(len(conflicting), 'paper')} report the opposite."
+            summary += f" {_n(len(conflicting), 'paper')} {_verb(len(conflicting))} the opposite."
         summary += " These are the authors' own claims, each in its own experimental setting."
         finding = Finding(
             id=f"claim-{len(results) + 1}",
@@ -239,7 +239,7 @@ def _group_finding(group: ComparableGroup, rows: dict[uuid.UUID, MatrixRow], ind
         kind=FindingKind.COMPARISON,
         title=f"Comparable {group.metric} results on {group.dataset}",
         summary=(
-            f"{_n(group.paper_count, 'paper')} report {group.metric} on {group.dataset} under "
+            f"{_n(group.paper_count, 'paper')} {_verb(group.paper_count)} {group.metric} on {group.dataset} under "
             f"{group.protocol}: values range from {min(values):.3g} to {max(values):.3g} "
             "(0-1 scale). Values are as reported by the authors, not reproduced."
         ),
@@ -310,10 +310,7 @@ def _caveat_findings(comparison: Comparison, rows: dict[uuid.UUID, MatrixRow]) -
                 f"{_n(len(not_full), 'paper')} could not be read in full: {abstract} as "
                 f"abstracts only and {no_text} with no text at all. Their methods and results "
                 "may be missing from this report.",
-                [
-                    _support(r, "Abstract only" if r.content_kind == "abstract" else "No text", [])
-                    for r in not_full
-                ],
+                [_support(r, "Not read in full", []) for r in not_full],
             )
         )
     stated = [
@@ -381,7 +378,7 @@ def _bottom_line(
     elif relevant:
         top = relevant[0]
         opposite = (
-            f", while {len(top.finding.conflicting)} report the opposite"
+            f", while {len(top.finding.conflicting)} {_verb(len(top.finding.conflicting))} the opposite"
             if top.finding.conflicting
             else ""
         )
@@ -421,7 +418,7 @@ def _limitations(
     unattributed = sum(1 for r in comparison.matrix if len(r.datasets) > 1 and r.results)
     if unattributed:
         items.append(
-            f"{_n(unattributed, 'paper')} report several datasets, so their values "
+            f"{_n(unattributed, 'paper')} {_verb(unattributed)} several datasets, so the values "
             "were not compared."
         )
     return items
@@ -465,6 +462,10 @@ def _unresolved(comparison: Comparison, claims: list[_ClaimFinding]) -> list[str
             "a controlled comparison would be needed to rank methods."
         )
     return items
+
+
+def _verb(count: int) -> str:
+    return "reports" if count == 1 else "report"
 
 
 def _n(count: int, noun: str) -> str:

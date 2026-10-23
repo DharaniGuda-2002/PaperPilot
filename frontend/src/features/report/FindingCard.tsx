@@ -94,7 +94,8 @@ function Studies({ label, studies, onCite }: { label: string; studies: StudySupp
             </span>
             <span className="hint">
               {study.detail}
-              {study.content_kind !== 'full_text' && ' · abstract only'}
+              {study.content_kind === 'abstract' && ' · abstract only'}
+              {study.content_kind === 'none' && ' · no text available'}
             </span>
             <span className="study-list__cites">
               {study.evidence_ids.map((id, i) => (
