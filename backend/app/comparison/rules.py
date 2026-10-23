@@ -1,4 +1,4 @@
-"""Deterministic comparability rules (compare-v2).
+"""Deterministic comparability rules (compare-v3).
 
 Input: verified evidence for one investigation. Output: a per-paper matrix,
 groups of results that can be compared directly, results that cannot (with
@@ -25,7 +25,7 @@ from pydantic import BaseModel
 
 from app.evidence.rules import outperformance_claims
 
-COMPARISON_VERSION = "compare-v2"  # v2: claimants outside the method lexicon
+COMPARISON_VERSION = "compare-v3"  # v2: claimants outside the lexicon; v3: verbatim splits
 
 
 @dataclass(frozen=True)
@@ -213,8 +213,10 @@ def _protocol_label(value: dict[str, object]) -> str:
     protocol = str(value.get("protocol", "unknown protocol"))
     if "k" in value:
         return f"{value['k']}-fold cross-validation"
-    parts = [f"{key} {value[key]}%" for key in ("train", "valid", "test") if key in value]
-    return f"{protocol} ({', '.join(parts)})" if parts else protocol
+    # The verbatim match: "6:2:2" is a ratio, "80%/10%/10%" percentages; adding
+    # units here mislabeled ratios as percentages (compare-v2).
+    raw = str(value.get("raw", "")).strip()
+    return f"{protocol} ({raw})" if raw else protocol
 
 
 def _normalize(value: float, unit: str | None) -> float | None:

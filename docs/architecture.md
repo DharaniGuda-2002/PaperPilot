@@ -54,7 +54,7 @@ work is ready*, identified by IDs; it never holds the only copy of anything.
 | `app.documents` | SSRF-safe, robots-aware PDF fetch; page-exact extraction and chunking; shared host schedule | M5 |
 | `app.retrieval` | Local embeddings; full-text + pgvector hybrid search with RRF | M5 |
 | `app.evidence` | Rule-based extraction with exact quotations; deterministic validation | M5 |
-| `app.comparison` | Deterministic comparability rules (compare-v2) | M6 |
+| `app.comparison` | Deterministic comparability rules (compare-v3) | M6 |
 | `app.reports` | Template-based report assembly from verified evidence; versioned storage | M6 |
 | `app.evaluation` | Gold-set scoring: retrieval Recall@K, extraction precision/recall | M6 |
 
@@ -243,7 +243,7 @@ measured quality: [evaluation.md](evaluation.md).
 evidence.extracted ─▶ report-worker (group report-workers, api image)
    wait until every per-paper task is terminal; claim the build_report task (once)
    load verified evidence + absence records; merge duplicate works (same title)
-   compare-v2: per-paper matrix; groups only when metric, dataset, protocol, unit known
+   compare-v3: per-paper matrix; groups only when metric, dataset, protocol, unit known
                claims "A outperforms B" from one clause; opposite claims = conflicts
    report-v1: 3–5 findings from templates, strength by published counting rules,
               question-aware bottom line, limitations / missing information / open questions

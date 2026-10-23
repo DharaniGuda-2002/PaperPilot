@@ -10,7 +10,7 @@ describe('LandingPage', () => {
       'Turn research papers into clear insights.',
     )
     expect(screen.getByRole('link', { name: 'Open app' })).toHaveAttribute('href', '/app')
-    expect(screen.getByText(/Early preview/)).toBeInTheDocument()
+    expect(screen.getByText(/hosted demo runs no background workers/)).toBeInTheDocument()
     expect(screen.getByLabelText('Research question')).toBeInTheDocument()
   })
 })

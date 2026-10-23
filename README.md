@@ -18,6 +18,12 @@ idle can take about a minute). API docs: https://paperpilot-api-2ykf.onrender.co
 
 PaperPilot evaluates *reported* evidence. It does not prove scientific reproducibility.
 
+| Report summary | Evidence inspector |
+|---|---|
+| ![Report summary with bottom line, strength label, and findings](docs/screenshots/report-summary.png) | ![Evidence inspector showing the exact quotation, page, provenance, and validation checks](docs/screenshots/evidence-inspector.png) |
+
+Five-minute walkthrough: [docs/demo.md](docs/demo.md).
+
 ## Quick start (Docker)
 
 Requires Docker with Compose v2.

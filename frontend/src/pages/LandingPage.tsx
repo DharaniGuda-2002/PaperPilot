@@ -51,8 +51,10 @@ export function LandingPage() {
             </p>
             <QuickStartForm label="Research question" placeholder="Ask a research question…" />
             <p className="notice notice--info hero__preview">
-              Early preview: paper search and investigation tracking work today. Evidence
-              extraction and reports are being built.
+              Evidence is extracted by deterministic rules and checked against the source text.
+              Reports summarize what papers report; they never rank methods. The hosted demo runs
+              no background workers, so its investigations stay queued; the full pipeline runs
+              locally with Docker Compose.
             </p>
           </div>
 

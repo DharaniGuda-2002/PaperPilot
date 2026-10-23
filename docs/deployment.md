@@ -100,3 +100,16 @@ The smoke test creates one investigation. Record results in [roadmap.md](roadmap
 | 429 on create | Rate limit or daily cap reached | Expected; wait or raise the cap |
 | Search says the provider is unavailable | OpenAlex budget spent (often keyless on a shared IP) or outage | Add `OPENALEX_API_KEY`; check API logs for `openalex error response` |
 | Everything suspended mid-month | 750 free instance-hours used up | Wait for the next month; the local stack is unaffected |
+| Browser console shows a Content-Security-Policy violation | The API URL changed, or a new external resource was added | Update `connect-src` in `render.yaml` (and `frontend/nginx.conf` locally) |
+
+### Local stack
+
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| `docker compose up` fails with "port is already allocated" | Another process uses 5433, 8000, 8080, or 9094 | Stop it, or change the host side of the port in `docker-compose.yml` |
+| First `up --build` takes many minutes | The ml image downloads CPU-only torch and the embedding model (about 2.2 GB) | Wait once; later builds reuse the layers |
+| Investigation stays `queued` | Kafka or the dispatcher is not running | `docker compose ps`; `docker compose logs outbox-dispatcher`; `python -m app.ops.metrics` shows the outbox backlog |
+| Stuck at "Reading papers" for minutes | PDF downloads honor each host's crawl delay (arXiv: 3 s) | Expected for 25 papers; `docker compose logs -f document-worker` shows progress |
+| Report says "Report not ready" | Some paper is still being processed, or a task failed permanently and is waiting for retries | The investigation page lists each task; dead letters: `python -m app.ops.dead_letters list` |
+| Smoke test fails at "evidence extraction did not finish" | Live OpenAlex and PDF fetching take longer than the default 120 s | `EXPECT_PIPELINE=1 PIPELINE_TIMEOUT=600 ./scripts/smoke-test.sh` |
+| `evaluation/run-gold.sh` says a paper has no stored full text | The gold papers have not been processed in this database | Run the gold set's question as an investigation first |

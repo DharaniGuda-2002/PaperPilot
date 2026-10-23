@@ -14,7 +14,7 @@
 
 ## Decisions
 
-**Comparison is rules, not judgement** (`app/comparison/rules.py`, compare-v2).
+**Comparison is rules, not judgement** (`app/comparison/rules.py`, compare-v3).
 - Only verified evidence and absence records are used.
 - Two results are comparable only when metric, dataset, and evaluation protocol
   are all known and equal. Extraction does not tie a value to a dataset, so a

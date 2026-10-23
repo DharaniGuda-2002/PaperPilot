@@ -26,7 +26,8 @@ export function AppShell() {
           ))}
         </nav>
         <p className="sidebar__note">
-          Early preview. Paper search works; evidence extraction and reports are in development.
+          Findings quote their sources. The hosted demo runs no background workers, so its
+          investigations stay queued; the full pipeline runs locally.
         </p>
       </aside>
       <main id="main" className="app-main" tabIndex={-1}>

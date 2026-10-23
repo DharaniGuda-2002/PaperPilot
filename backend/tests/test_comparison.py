@@ -141,3 +141,16 @@ def test_rows_report_text_availability_and_missing_fields() -> None:
     assert row.proposed_methods == ["GNN"]
     assert row.missing_fields == ["dataset", "split"]
     assert W_ABSTRACT_ONLY in row.warnings
+
+
+def test_split_labels_quote_the_paper_instead_of_adding_units() -> None:
+    """Regression: a "6:2:2" ratio was shown as "train 6%, valid 2%, test 2%"."""
+    a, b = paper("A"), paper("B")
+    split = {"protocol": "train/validation/test split", "train": 6, "valid": 2, "test": 2}
+    evidence = [
+        ev(a, "split", {**split, "raw": "6:2:2 "}),
+        ev(b, "split", {**split, "raw": "60%/20%/20%"}),
+    ]
+    rows = {r.title: r for r in compare([a, b], evidence).matrix}
+    assert rows["A"].protocols == ["train/validation/test split (6:2:2)"]
+    assert rows["B"].protocols == ["train/validation/test split (60%/20%/20%)"]
