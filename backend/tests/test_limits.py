@@ -75,3 +75,31 @@ def test_rejects_oversized_body(client: TestClient) -> None:
 def test_database_url_gets_psycopg_driver(url: str) -> None:
     settings = Settings(database_url=url)
     assert settings.database_url == "postgresql+psycopg://u:p@host/db?sslmode=require"
+
+
+def test_rejects_oversized_chunked_body_without_content_length(client: TestClient) -> None:
+    """Regression: the size check trusted Content-Length, so a chunked upload was
+    read into memory whole before validation."""
+
+    def chunks() -> Iterator[bytes]:
+        for _ in range(20):
+            yield b"x" * 1_000
+
+    response = client.post(
+        "/api/v1/investigations", content=chunks(), headers={"Content-Type": "application/json"}
+    )
+    assert response.status_code == 413
+
+
+def test_api_responses_carry_security_headers(client: TestClient) -> None:
+    response = client.get("/health/live")
+    assert response.headers["X-Content-Type-Options"] == "nosniff"
+    assert response.headers["X-Frame-Options"] == "DENY"
+    assert response.headers["Referrer-Policy"] == "no-referrer"
+    assert "frame-ancestors 'none'" in response.headers["Content-Security-Policy"]
+
+
+def test_api_docs_page_still_loads_its_assets(client: TestClient) -> None:
+    response = client.get("/docs")
+    assert response.status_code == 200
+    assert "Content-Security-Policy" not in response.headers  # Swagger UI loads from a CDN

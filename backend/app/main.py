@@ -6,11 +6,11 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 
 from app.api import evidence, health, investigations, papers, reports, system
 from app.core.config import Settings, get_settings
 from app.core.db import create_db_engine, create_session_factory
+from app.core.http import BodySizeLimitMiddleware, SecurityHeadersMiddleware
 from app.core.logging import configure_logging, correlation_id_var
 from app.core.rate_limit import SlidingWindowLimiter
 from app.papers.providers import make_provider
@@ -44,6 +44,7 @@ def create_app(
     app.state.search_limiter = SlidingWindowLimiter(settings.paper_search_rate_limit_per_minute)
     app.state.paper_provider = paper_provider or owned_provider
 
+    # Added last runs first: size limit, then security headers, then CORS.
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origin_list,
@@ -51,17 +52,6 @@ def create_app(
         allow_headers=["Content-Type", CORRELATION_HEADER],
         expose_headers=["Location", CORRELATION_HEADER],
     )
-
-    @app.middleware("http")
-    async def limit_body_size(
-        request: Request, call_next: Callable[[Request], Awaitable[Response]]
-    ) -> Response:
-        # Requests without Content-Length (chunked) are bounded by the schema's
-        # 500-character question limit; this rejects oversized bodies up front.
-        length = request.headers.get("content-length")
-        if length and (not length.isdigit() or int(length) > settings.max_request_body_bytes):
-            return JSONResponse(status_code=413, content={"detail": "Request body too large"})
-        return await call_next(request)
 
     @app.middleware("http")
     async def request_context(
@@ -91,6 +81,9 @@ def create_app(
             },
         )
         return response
+
+    app.add_middleware(SecurityHeadersMiddleware)
+    app.add_middleware(BodySizeLimitMiddleware, max_bytes=settings.max_request_body_bytes)
 
     app.include_router(health.router)
     app.include_router(investigations.router)
