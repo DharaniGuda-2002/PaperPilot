@@ -24,7 +24,7 @@ ruff check . && ruff format --check .
 mypy app
 pytest                       # needs Postgres; see TEST_DATABASE_URL in .env.example
 alembic upgrade head
-uvicorn app.main:app --reload
+uvicorn app.main:create_app --factory --reload
 ```
 
 Frontend (from `frontend/`):

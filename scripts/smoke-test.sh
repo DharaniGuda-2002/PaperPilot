@@ -1,17 +1,25 @@
 #!/usr/bin/env bash
 # Smoke test a running PaperPilot deployment through its public entry point.
-# Usage: scripts/smoke-test.sh [base_url]   (default http://localhost:8080)
+# Usage: scripts/smoke-test.sh [frontend_url] [api_url]
+#   Defaults: http://localhost:8080 for both (nginx proxies the API locally).
 # Creates one investigation row as a side effect.
 set -euo pipefail
 
-BASE_URL="${1:-http://localhost:8080}"
+FRONTEND_URL="${1:-http://localhost:8080}"
+BASE_URL="${2:-$FRONTEND_URL}"
+# Hosted free tiers can take ~1 minute to wake up.
+curl() { command curl --max-time 120 "$@"; }
 fail() { echo "FAIL: $*" >&2; exit 1; }
 
-echo "Smoke testing $BASE_URL"
+echo "Smoke testing frontend $FRONTEND_URL, API $BASE_URL"
 
-code=$(curl -s -o /dev/null -w '%{http_code}' "$BASE_URL/")
+code=$(curl -s -o /dev/null -w '%{http_code}' "$FRONTEND_URL/" || true)
 [ "$code" = 200 ] || fail "frontend returned $code"
 echo "ok   frontend serves index"
+
+code=$(curl -s -o /dev/null -w '%{http_code}' "$FRONTEND_URL/investigations/deep-link-check" || true)
+[ "$code" = 200 ] || fail "SPA deep link returned $code"
+echo "ok   frontend serves deep links"
 
 body=$(curl -sf "$BASE_URL/health/ready") || fail "readiness check failed"
 echo "$body" | grep -q '"database":"ok"' || fail "database not ready: $body"
@@ -32,5 +40,12 @@ code=$(curl -s -o /dev/null -w '%{http_code}' -X POST "$BASE_URL/api/v1/investig
   -H 'Content-Type: application/json' -d '{"question":"short"}')
 [ "$code" = 422 ] || fail "invalid input returned $code, expected 422"
 echo "ok   invalid input rejected"
+
+if [ "$FRONTEND_URL" != "$BASE_URL" ]; then
+  allowed=$(curl -s -D - -o /dev/null -H "Origin: $FRONTEND_URL" "$BASE_URL/health/live" \
+    | tr -d '\r' | awk -F': ' 'tolower($1)=="access-control-allow-origin"{print $2}')
+  [ "$allowed" = "$FRONTEND_URL" ] || fail "CORS does not allow $FRONTEND_URL (got '$allowed')"
+  echo "ok   CORS allows the frontend origin"
+fi
 
 echo "PASS"

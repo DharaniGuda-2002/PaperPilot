@@ -84,6 +84,7 @@ scripts/    smoke test
 ## Known limitations
 
 - No processing pipeline yet: investigations stay `queued`.
-- No authentication, rate limiting, or quotas yet. Do not expose this build publicly
-  beyond a demo; quotas are required before any expensive processing is added.
-- Public deployment is not done yet; see [ADR 0004](docs/adr/0004-zero-cost-deployment.md).
+- No authentication. Creating investigations is rate limited per client and capped
+  per day; see [docs/deployment.md](docs/deployment.md#public-demo-safeguards).
+- Public demo runs on free tiers (Render + Neon) and sleeps when idle; the first
+  request can take about a minute. Setup and limits: [docs/deployment.md](docs/deployment.md).

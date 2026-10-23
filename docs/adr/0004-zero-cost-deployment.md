@@ -1,6 +1,6 @@
 # ADR 0004: $0 deployment strategy
 
-- Status: proposed (provider limits not yet verified)
+- Status: accepted (limits checked 2026-10-22; see docs/deployment.md)
 - Date: 2026-10-22
 
 ## Problem
@@ -14,13 +14,13 @@ background workers.
 1. **Local is the reference deployment.** `docker compose up` runs the
    complete system (frontend, API, Postgres + pgvector, Kafka, workers,
    dispatcher). It must always work from a clean checkout.
-2. **Public demo hosts only what free tiers verifiably support.** Candidates
-   to evaluate when we deploy (none verified yet):
-   - Frontend: static hosting (Cloudflare Pages, GitHub Pages, Netlify).
-   - API: a free container web service (e.g. Render free tier; sleeps when idle).
-   - Postgres + pgvector: a free managed Postgres (e.g. Neon, Supabase).
-   - Kafka and workers: likely local-only; check current free Kafka offerings
-     and their time/credit limits before relying on any.
+2. **Public demo hosts only what free tiers verifiably support.** Chosen after
+   checking current limits (comparison in `docs/deployment.md`):
+   - Frontend: Render static site.
+   - API: Render free Docker web service (sleeps after 15 min idle).
+   - Postgres + pgvector: Neon Free (no expiry; Render's free Postgres expires
+     after 30 days).
+   - Kafka and workers: local-only; Render offers no free background workers.
 3. Components that cannot be hosted reliably for free are documented as
    local-only. No paid service is added without explicit approval.
 4. The public demo must cap expensive processing (quotas, rate limits) before
