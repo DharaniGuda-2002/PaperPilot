@@ -63,7 +63,10 @@ describe('InvestigationPage', () => {
     expect(within(discoveryStage()).getByText('1 papers found')).toBeInTheDocument()
     expect(await screen.findByRole('link', { name: 'Fixture paper on graph learning' })).toBeInTheDocument()
     expect(screen.getByText(/Top 1 by relevance of 1,309 matches/)).toBeInTheDocument()
-    expect(screen.getAllByText(/Not built yet ·/)).toHaveLength(2)
+    expect(screen.queryByText(/Not built yet/)).not.toBeInTheDocument()
+    const reportStage = screen.getByText('Comparing results and writing the report').closest('li')!
+    expect(within(reportStage).getByText('Waiting')).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: /View report/ })).not.toBeInTheDocument()
   })
 
   it('aggregates per-paper stages and shows evidence with quotations', async () => {
@@ -136,6 +139,23 @@ describe('InvestigationPage', () => {
     expect(screen.getByText('“The GNN reaches an AUC of 0.92.”', { exact: false })).toBeInTheDocument()
     expect(screen.getByText(/Page 3 · quotation · found by fts\+vector/)).toBeInTheDocument()
     expect(screen.getByText(/Not found in the full text: Code\./)).toBeInTheDocument()
+  })
+
+  it('links to the report once it is built', async () => {
+    mockApi({
+      [BASE]: () => jsonResponse(makeInvestigation({ id: 'abc', status: 'completed' })),
+      [`${BASE}/tasks`]: () =>
+        jsonResponse([
+          makeTask({ status: 'succeeded', result_summary: { papers_linked: 0 } }),
+          makeTask({ id: 'r', kind: 'build_report', status: 'succeeded', result_summary: { version: 1, findings: 4 } }),
+        ]),
+      [`${BASE}/papers`]: () => jsonResponse({ items: [], total: 0, limit: 25, offset: 0 }),
+    })
+    renderRoute('/app/investigations/abc')
+    const link = await screen.findByRole('link', { name: /View report/ })
+    expect(link).toHaveAttribute('href', '/app/investigations/abc/report')
+    const reportStage = screen.getByText('Comparing results and writing the report').closest('li')!
+    expect(within(reportStage).getByText('Version 1 · 4 key findings')).toBeInTheDocument()
   })
 
   it('warns when the event is waiting and no worker is processing', async () => {

@@ -12,6 +12,7 @@ import type {
   PipelineStatus,
   InvestigationTask,
 } from './types'
+import type { EvidenceDetail, ReportEnvelope } from './report'
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? ''
 
@@ -79,6 +80,14 @@ export const api = {
 
   getEvidence(id: string): Promise<EvidenceItem[]> {
     return request(`/api/v1/investigations/${encodeURIComponent(id)}/evidence`)
+  },
+
+  getReport(id: string): Promise<ReportEnvelope> {
+    return request(`/api/v1/investigations/${encodeURIComponent(id)}/report`)
+  },
+
+  getEvidenceDetail(id: string): Promise<EvidenceDetail> {
+    return request(`/api/v1/evidence/${encodeURIComponent(id)}`)
   },
 
   getPipelineStatus(): Promise<PipelineStatus> {

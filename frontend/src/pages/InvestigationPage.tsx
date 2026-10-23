@@ -1,7 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { CheckCircle2, Circle, Loader, XCircle } from 'lucide-react'
+import { CheckCircle2, Circle, FileText, Loader, XCircle } from 'lucide-react'
 import { useEffect } from 'react'
-import { useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 
 import { ApiError } from '../api/client'
 import type { InvestigationTask, TaskStatus } from '../api/types'
@@ -27,10 +27,6 @@ import type { StatusTone } from '../features/investigations/status'
 import { PaperResult } from '../features/papers/PaperResult'
 import { formatDateTime, formatRelative } from '../lib/format'
 
-const NOT_BUILT = [
-  { name: 'Generating comparison', milestone: 'M6' },
-  { name: 'Creating final report', milestone: 'M6' },
-]
 
 const TASK_DISPLAY: Record<TaskStatus, { label: string; tone: StatusTone }> = {
   pending: { label: 'Waiting', tone: 'neutral' },
@@ -80,6 +76,16 @@ export function InvestigationPage() {
   const documents = summarizeStage(taskList, 'process_document')
   const validation = validationSummary(taskList, extraction)
   const reportedEvidence = (evidence.data ?? []).some((i) => i.passage !== null)
+  const reportTask = taskList.find((task) => task.kind === 'build_report')
+  const reportStage: StageSummary = reportTask
+    ? {
+        ...summarizeStage(taskList, 'build_report'),
+        details:
+          reportTask.status === 'succeeded'
+            ? [`Version ${String(reportTask.result_summary?.version ?? 1)} · ${String(reportTask.result_summary?.findings ?? '')} key findings`]
+            : [],
+      }
+    : { label: 'Waiting', tone: 'neutral', state: validation.state === 'done' ? 'active' : 'waiting', details: [] }
 
   return (
     <div className="page">
@@ -121,21 +127,12 @@ export function InvestigationPage() {
               summary={{ ...extraction, details: [...extraction.details, ...evidenceDetails(taskList)] }}
             />
             <StageRow name="Validating findings" summary={validation} />
-            {NOT_BUILT.map((stage) => (
-              <li key={stage.name} className="stage-list__item">
-                <Circle className="stage-list__icon" aria-hidden="true" size={20} />
-                <span className="stage-list__name">{stage.name}</span>
-                <span className="status-badge status-badge--neutral">
-                  Not built yet · {stage.milestone}
-                </span>
-              </li>
-            ))}
+            <StageRow name="Comparing results and writing the report" summary={reportStage} />
           </ol>
-          {validation.state === 'done' && (
-            <p className="hint">
-              The pipeline currently stops after validation, so this investigation stays in progress
-              until comparison and reports are built.
-            </p>
+          {reportTask?.status === 'succeeded' && (
+            <Link to={`/app/investigations/${data.id}/report`} className="button button--primary report-link">
+              <FileText aria-hidden="true" size={16} /> View report
+            </Link>
           )}
         </section>
 
