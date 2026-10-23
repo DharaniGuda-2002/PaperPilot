@@ -140,6 +140,17 @@ services:
       kafka-init:
         condition: service_completed_successfully
 
+  report-worker:
+    <<: *backend
+    command: ["python", "-m", "app.workers.reports"]
+    restart: unless-stopped
+    stop_grace_period: 30s
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      kafka-init:
+        condition: service_completed_successfully
+
   document-worker:
     <<: *ml
     build:

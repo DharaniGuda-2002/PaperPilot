@@ -8,7 +8,7 @@ from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app.api import evidence, health, investigations, papers, system
+from app.api import evidence, health, investigations, papers, reports, system
 from app.core.config import Settings, get_settings
 from app.core.db import create_db_engine, create_session_factory
 from app.core.logging import configure_logging, correlation_id_var
@@ -97,4 +97,5 @@ def create_app(
     app.include_router(papers.router)
     app.include_router(system.router)
     app.include_router(evidence.router)
+    app.include_router(reports.router)
     return app

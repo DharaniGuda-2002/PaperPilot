@@ -74,6 +74,7 @@ APP_TABLES = (
     "evidence_records",
     "evidence_validations",
     "fetch_host_schedule",
+    "investigation_reports",
 )
 
 

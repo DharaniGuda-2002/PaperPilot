@@ -12,7 +12,16 @@ from app.events import models as _events
 from app.evidence import models as _evidence
 from app.investigations import models as _investigations
 from app.papers import models as _papers
+from app.reports import models as _reports
 
-ALL_MODEL_MODULES = (_host_schedule, _documents, _events, _evidence, _investigations, _papers)
+ALL_MODEL_MODULES = (
+    _host_schedule,
+    _documents,
+    _events,
+    _evidence,
+    _investigations,
+    _papers,
+    _reports,
+)
 
 __all__ = ["ALL_MODEL_MODULES", "Base"]

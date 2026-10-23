@@ -16,6 +16,7 @@ ENTRY_POINTS = [
     "app.workers.discovery",
     "app.workers.documents",
     "app.workers.evidence",
+    "app.workers.reports",
     "app.ops.dead_letters",
     "app.ops.metrics",
 ]

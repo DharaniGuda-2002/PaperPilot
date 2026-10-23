@@ -62,6 +62,17 @@ if [ "${EXPECT_PIPELINE:-0}" = 1 ]; then
   evidence=$(curl -sf "$BASE_URL/api/v1/investigations/$id/evidence")
   echo "$evidence" | grep -q '"field"' || fail "no evidence records"
   echo "ok   pipeline: document + evidence workers processed $done_count papers"
+
+  report=""
+  for _ in $(seq 1 60); do
+    report=$(curl -sf "$BASE_URL/api/v1/investigations/$id/report" || true)
+    [ -n "$report" ] && break
+    sleep 1
+  done
+  echo "$report" | grep -q '"bottom_line"' || fail "report not built"
+  status=$(curl -sf "$BASE_URL/api/v1/investigations/$id" | sed -E 's/.*"status":"([a-z_]+)".*/\1/')
+  case "$status" in completed|partially_completed) ;; *) fail "unexpected final status $status" ;; esac
+  echo "ok   pipeline: report built; investigation $status"
 fi
 
 code=$(curl -s -o /dev/null -w '%{http_code}' -X POST "$BASE_URL/api/v1/investigations" \
