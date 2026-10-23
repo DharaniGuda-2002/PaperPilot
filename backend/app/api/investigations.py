@@ -1,10 +1,13 @@
 import uuid
+from datetime import timedelta
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
 from sqlalchemy.orm import Session
 
+from app.core.config import Settings
 from app.core.db import get_session
+from app.core.rate_limit import SlidingWindowLimiter
 from app.investigations import service
 from app.investigations.schemas import InvestigationCreate, InvestigationPage, InvestigationRead
 
@@ -13,7 +16,29 @@ router = APIRouter(prefix="/api/v1/investigations", tags=["investigations"])
 SessionDep = Annotated[Session, Depends(get_session)]
 
 
-@router.post("", status_code=status.HTTP_201_CREATED)
+def enforce_create_limits(request: Request, session: SessionDep) -> None:
+    """Per-client and global caps so anonymous users cannot flood the demo database."""
+    settings: Settings = request.app.state.settings
+    limiter: SlidingWindowLimiter = request.app.state.create_limiter
+    client_ip = request.client.host if request.client else "unknown"
+    if not limiter.allow(client_ip):
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Too many investigations from this address. Try again in a minute.",
+            headers={"Retry-After": "60"},
+        )
+    if (
+        service.count_created_in_last(session, timedelta(days=1))
+        >= settings.daily_investigation_cap
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="The demo has reached its daily investigation limit. Try again tomorrow.",
+            headers={"Retry-After": "3600"},
+        )
+
+
+@router.post("", status_code=status.HTTP_201_CREATED, dependencies=[Depends(enforce_create_limits)])
 def create_investigation(
     body: InvestigationCreate, session: SessionDep, response: Response
 ) -> InvestigationRead:

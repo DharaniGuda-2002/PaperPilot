@@ -6,11 +6,13 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from app.api import health, investigations
 from app.core.config import Settings, get_settings
 from app.core.db import create_db_engine, create_session_factory
 from app.core.logging import configure_logging, correlation_id_var
+from app.core.rate_limit import SlidingWindowLimiter
 
 logger = logging.getLogger("app.request")
 
@@ -28,8 +30,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         engine.dispose()
 
     app = FastAPI(title="PaperPilot API", version="0.1.0", lifespan=lifespan)
+    app.state.settings = settings
     app.state.engine = engine
     app.state.session_factory = create_session_factory(engine)
+    app.state.create_limiter = SlidingWindowLimiter(settings.create_rate_limit_per_minute)
 
     app.add_middleware(
         CORSMiddleware,
@@ -38,6 +42,17 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         allow_headers=["Content-Type", CORRELATION_HEADER],
         expose_headers=["Location", CORRELATION_HEADER],
     )
+
+    @app.middleware("http")
+    async def limit_body_size(
+        request: Request, call_next: Callable[[Request], Awaitable[Response]]
+    ) -> Response:
+        # Requests without Content-Length (chunked) are bounded by the schema's
+        # 500-character question limit; this rejects oversized bodies up front.
+        length = request.headers.get("content-length")
+        if length and (not length.isdigit() or int(length) > settings.max_request_body_bytes):
+            return JSONResponse(status_code=413, content={"detail": "Request body too large"})
+        return await call_next(request)
 
     @app.middleware("http")
     async def request_context(
