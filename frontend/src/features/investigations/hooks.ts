@@ -9,6 +9,7 @@ const keys = {
   detail: (id: string) => [...keys.all, 'detail', id] as const,
   tasks: (id: string) => [...keys.all, 'tasks', id] as const,
   papers: (id: string) => [...keys.all, 'papers', id] as const,
+  evidence: (id: string) => [...keys.all, 'evidence', id] as const,
 }
 
 const POLL_MS = 2000
@@ -46,6 +47,10 @@ export function useDiscoveredPapers(id: string, enabled: boolean) {
     queryFn: () => api.getDiscoveredPapers(id),
     enabled,
   })
+}
+
+export function useEvidence(id: string, enabled: boolean) {
+  return useQuery({ queryKey: keys.evidence(id), queryFn: () => api.getEvidence(id), enabled })
 }
 
 export function usePipelineStatus(enabled: boolean) {

@@ -8,21 +8,26 @@ import type { InvestigationTask, TaskStatus } from '../api/types'
 import { BackLink } from '../components/BackLink'
 import { ErrorState, LoadingState } from '../components/QueryState'
 import { StatusBadge } from '../components/StatusBadge'
+import { EvidencePreview } from '../features/evidence/EvidencePreview'
 import {
   useDiscoveredPapers,
+  useEvidence,
   useInvestigation,
   useInvestigationTasks,
   usePipelineStatus,
 } from '../features/investigations/hooks'
+import {
+  documentDetails,
+  evidenceDetails,
+  summarizeStage,
+  validationSummary,
+  type StageSummary,
+} from '../features/investigations/stages'
 import type { StatusTone } from '../features/investigations/status'
 import { PaperResult } from '../features/papers/PaperResult'
 import { formatDateTime, formatRelative } from '../lib/format'
 
-// Stages not built yet, with the milestone that adds each one.
-const LATER_STAGES = [
-  { name: 'Downloading and processing papers', milestone: 'M5' },
-  { name: 'Extracting evidence', milestone: 'M5' },
-  { name: 'Validating findings', milestone: 'M5' },
+const NOT_BUILT = [
   { name: 'Generating comparison', milestone: 'M6' },
   { name: 'Creating final report', milestone: 'M6' },
 ]
@@ -31,7 +36,7 @@ const TASK_DISPLAY: Record<TaskStatus, { label: string; tone: StatusTone }> = {
   pending: { label: 'Waiting', tone: 'neutral' },
   running: { label: 'In progress', tone: 'info' },
   succeeded: { label: 'Completed', tone: 'success' },
-  failed_retryable: { label: 'Failed (temporary)', tone: 'error' },
+  failed_retryable: { label: 'Retrying', tone: 'warning' },
   failed_permanent: { label: 'Failed', tone: 'error' },
   skipped: { label: 'Skipped', tone: 'neutral' },
 }
@@ -43,9 +48,12 @@ export function InvestigationPage() {
   const { investigationId = '' } = useParams()
   const investigation = useInvestigation(investigationId)
   const tasks = useInvestigationTasks(investigationId)
-  const discovery = tasks.data?.find((task) => task.kind === 'discover_papers')
+  const taskList = tasks.data ?? []
+  const discovery = taskList.find((task) => task.kind === 'discover_papers')
   const papers = useDiscoveredPapers(investigationId, discovery?.status === 'succeeded')
   const pipeline = usePipelineStatus(discovery?.status === 'pending')
+  const extraction = summarizeStage(taskList, 'extract_evidence')
+  const evidence = useEvidence(investigationId, extraction.state === 'active' || extraction.state === 'done')
   useRefreshWhenTasksChange(investigationId, tasks.data)
 
   if (investigation.isPending) return <LoadingState label="Loading investigation…" />
@@ -69,6 +77,9 @@ export function InvestigationPage() {
   const stalled =
     discovery?.status === 'pending' &&
     (pipeline.data?.oldest_pending_seconds ?? 0) > STALLED_AFTER_SECONDS
+  const documents = summarizeStage(taskList, 'process_document')
+  const validation = validationSummary(taskList, extraction)
+  const reportedEvidence = (evidence.data ?? []).some((i) => i.finding_status === 'reported')
 
   return (
     <div className="page">
@@ -101,7 +112,16 @@ export function InvestigationPage() {
           )}
           <ol className="stage-list">
             <DiscoveryStage task={discovery} loading={tasks.isPending} />
-            {LATER_STAGES.map((stage) => (
+            <StageRow
+              name="Downloading and processing papers"
+              summary={{ ...documents, details: [...documents.details, ...documentDetails(taskList)] }}
+            />
+            <StageRow
+              name="Extracting evidence"
+              summary={{ ...extraction, details: [...extraction.details, ...evidenceDetails(taskList)] }}
+            />
+            <StageRow name="Validating findings" summary={validation} />
+            {NOT_BUILT.map((stage) => (
               <li key={stage.name} className="stage-list__item">
                 <Circle className="stage-list__icon" aria-hidden="true" size={20} />
                 <span className="stage-list__name">{stage.name}</span>
@@ -111,10 +131,10 @@ export function InvestigationPage() {
               </li>
             ))}
           </ol>
-          {discovery?.status === 'succeeded' && (
+          {validation.state === 'done' && (
             <p className="hint">
-              The pipeline currently stops after discovery, so this investigation stays in progress
-              until evidence extraction is built.
+              The pipeline currently stops after validation, so this investigation stays in progress
+              until comparison and reports are built.
             </p>
           )}
         </section>
@@ -137,6 +157,18 @@ export function InvestigationPage() {
           </dl>
         </section>
       </div>
+
+      {reportedEvidence && evidence.data && (
+        <section className="card" aria-labelledby="evidence-heading">
+          <div className="card__header">
+            <h2 id="evidence-heading" className="card__title">
+              Extracted evidence
+            </h2>
+            <p className="results__source">Exact quotations from each paper, checked against the source text</p>
+          </div>
+          <EvidencePreview items={evidence.data} />
+        </section>
+      )}
 
       {discovery?.status === 'succeeded' && (
         <section className="card" aria-labelledby="papers-heading">
@@ -172,58 +204,71 @@ export function InvestigationPage() {
   )
 }
 
-function DiscoveryStage({ task, loading }: { task?: InvestigationTask; loading: boolean }) {
-  const name = 'Discovering relevant papers'
-  if (loading) {
-    return (
-      <li className="stage-list__item">
-        <Circle className="stage-list__icon" aria-hidden="true" size={20} />
-        <span className="stage-list__name">{name}</span>
-        <span className="status-badge status-badge--neutral">Loading</span>
-      </li>
-    )
-  }
-  if (!task) {
-    return (
-      <li className="stage-list__item">
-        <Circle className="stage-list__icon" aria-hidden="true" size={20} />
-        <span className="stage-list__name">{name}</span>
-        <span className="status-badge status-badge--neutral">Not started (created before the pipeline)</span>
-      </li>
-    )
-  }
+const STATE_ICON = {
+  done: CheckCircle2,
+  failed: XCircle,
+  active: Loader,
+  waiting: Circle,
+  none: Circle,
+}
 
-  const { label, tone } = TASK_DISPLAY[task.status]
-  const Icon =
-    task.status === 'succeeded'
-      ? CheckCircle2
-      : task.status.startsWith('failed')
-        ? XCircle
-        : task.status === 'running'
-          ? Loader
-          : Circle
-  const linked = task.result_summary?.papers_linked
+function StageRow({ name, summary }: { name: string; summary: StageSummary }) {
+  const Icon = STATE_ICON[summary.state]
   return (
     <li className="stage-list__item">
-      <Icon className={`stage-list__icon stage-list__icon--${tone}`} aria-hidden="true" size={20} />
+      <Icon className={`stage-list__icon stage-list__icon--${summary.tone}`} aria-hidden="true" size={20} />
       <span className="stage-list__name">
         {name}
-        {typeof linked === 'number' && <span className="stage-list__detail">{linked} papers found</span>}
-        {task.last_error && <span className="stage-list__detail stage-list__detail--error">{task.last_error}</span>}
-        {task.attempts > 1 && <span className="stage-list__detail">Attempt {task.attempts}</span>}
+        {summary.details.map((detail) => (
+          <span key={detail} className="stage-list__detail">
+            {detail}
+          </span>
+        ))}
       </span>
-      <span className={`status-badge status-badge--${tone}`}>{label}</span>
+      <span className={`status-badge status-badge--${summary.tone}`}>{summary.label}</span>
     </li>
   )
 }
 
-/** Investigation status and papers change when tasks do; refetch them then. */
+function DiscoveryStage({ task, loading }: { task?: InvestigationTask; loading: boolean }) {
+  const name = 'Discovering relevant papers'
+  if (loading) {
+    return <StageRow name={name} summary={{ label: 'Loading', tone: 'neutral', state: 'none', details: [] }} />
+  }
+  if (!task) {
+    return (
+      <StageRow
+        name={name}
+        summary={{ label: 'Not started (created before the pipeline)', tone: 'neutral', state: 'none', details: [] }}
+      />
+    )
+  }
+  const { label, tone } = TASK_DISPLAY[task.status]
+  const linked = task.result_summary?.papers_linked
+  const details = [
+    ...(typeof linked === 'number' ? [`${linked} papers found`] : []),
+    ...(task.last_error ? [task.last_error] : []),
+    ...(task.attempts > 1 ? [`Attempt ${task.attempts}`] : []),
+  ]
+  const state =
+    task.status === 'succeeded'
+      ? 'done'
+      : task.status === 'failed_permanent'
+        ? 'failed'
+        : task.status === 'running'
+          ? 'active'
+          : 'waiting'
+  return <StageRow name={name} summary={{ label, tone, state, details }} />
+}
+
+/** Investigation status, papers, and evidence change when tasks do; refetch them then. */
 function useRefreshWhenTasksChange(id: string, tasks?: InvestigationTask[]) {
   const queryClient = useQueryClient()
   const signature = tasks?.map((task) => `${task.id}:${task.status}`).join(',')
   useEffect(() => {
     if (signature === undefined) return
-    void queryClient.invalidateQueries({ queryKey: ['investigations', 'detail', id] })
-    void queryClient.invalidateQueries({ queryKey: ['investigations', 'papers', id] })
+    for (const part of ['detail', 'papers', 'evidence']) {
+      void queryClient.invalidateQueries({ queryKey: ['investigations', part, id] })
+    }
   }, [signature, id, queryClient])
 }

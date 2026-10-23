@@ -2,6 +2,7 @@
 
 import type {
   DiscoveredPaperPage,
+  EvidenceItem,
   Investigation,
   InvestigationPage,
   InvestigationStats,
@@ -74,6 +75,10 @@ export const api = {
   getDiscoveredPapers(id: string, limit = 25, offset = 0): Promise<DiscoveredPaperPage> {
     const params = new URLSearchParams({ limit: String(limit), offset: String(offset) })
     return request(`/api/v1/investigations/${encodeURIComponent(id)}/papers?${params}`)
+  },
+
+  getEvidence(id: string): Promise<EvidenceItem[]> {
+    return request(`/api/v1/investigations/${encodeURIComponent(id)}/evidence`)
   },
 
   getPipelineStatus(): Promise<PipelineStatus> {

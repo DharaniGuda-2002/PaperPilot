@@ -113,6 +113,36 @@ export interface PipelineStatus {
   oldest_pending_seconds: number | null
 }
 
+export type EvidenceField =
+  | 'method'
+  | 'dataset'
+  | 'split'
+  | 'baseline'
+  | 'metric_result'
+  | 'limitation'
+  | 'code_availability'
+
+export type FindingStatus = 'reported' | 'not_found' | 'uncertain' | 'unavailable' | 'not_applicable'
+
+export interface EvidenceItem {
+  id: string
+  paper_id: string
+  paper_title: string
+  field: EvidenceField
+  finding_status: FindingStatus
+  value: Record<string, unknown> | null
+  passage: string | null
+  passage_kind: 'quotation' | 'paraphrase' | null
+  page_number: number | null
+  extraction_method: string
+  extraction_version: string
+  retrieval_method: string | null
+  retrieval_score: number | null
+  validation_status: 'unvalidated' | 'verified' | 'rejected'
+  checks: { rule: string; outcome: 'pass' | 'fail'; details: string | null; validator_version: string }[]
+  created_at: string
+}
+
 export const SEARCH_QUERY_MIN_LENGTH = 3
 export const SEARCH_MAX_PAGE = 50
 

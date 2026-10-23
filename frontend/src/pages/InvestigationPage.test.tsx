@@ -63,7 +63,79 @@ describe('InvestigationPage', () => {
     expect(within(discoveryStage()).getByText('1 papers found')).toBeInTheDocument()
     expect(await screen.findByRole('link', { name: 'Fixture paper on graph learning' })).toBeInTheDocument()
     expect(screen.getByText(/Top 1 by relevance of 1,309 matches/)).toBeInTheDocument()
-    expect(screen.getAllByText(/Not built yet ·/)).toHaveLength(5)
+    expect(screen.getAllByText(/Not built yet ·/)).toHaveLength(2)
+  })
+
+  it('aggregates per-paper stages and shows evidence with quotations', async () => {
+    const paperTask = (kind: string, status: InvestigationTask['status'], summary: Record<string, unknown> | null) =>
+      makeTask({ id: `${kind}-${Math.random()}`, kind, subject_key: 'p1', status, result_summary: summary })
+    mockApi({
+      [BASE]: () => jsonResponse(makeInvestigation({ id: 'abc', status: 'running' })),
+      [`${BASE}/tasks`]: () =>
+        jsonResponse([
+          makeTask({ status: 'succeeded', result_summary: { papers_linked: 2 } }),
+          paperTask('process_document', 'succeeded', { content_kind: 'full_text' }),
+          paperTask('process_document', 'succeeded', { content_kind: 'abstract' }),
+          paperTask('extract_evidence', 'succeeded', { records: 3, verified: 2, rejected: 1 }),
+          paperTask('extract_evidence', 'running', null),
+        ]),
+      [`${BASE}/papers`]: () => jsonResponse({ items: [], total: 0, limit: 25, offset: 0 }),
+      [`${BASE}/evidence`]: () =>
+        jsonResponse([
+          {
+            id: 'e1',
+            paper_id: 'p1',
+            paper_title: 'Fixture paper on graph learning',
+            field: 'metric_result',
+            finding_status: 'reported',
+            value: { metric: 'AUC', value: 0.92, unit: 'ratio', method_hint: 'GNN' },
+            passage: 'The GNN reaches an AUC of 0.92.',
+            passage_kind: 'quotation',
+            page_number: 3,
+            extraction_method: 'rules',
+            extraction_version: 'rules-v1',
+            retrieval_method: 'fts+vector',
+            retrieval_score: 0.03,
+            validation_status: 'verified',
+            checks: [],
+            created_at: '2026-10-22T12:00:00Z',
+          },
+          {
+            id: 'e2',
+            paper_id: 'p1',
+            paper_title: 'Fixture paper on graph learning',
+            field: 'code_availability',
+            finding_status: 'not_found',
+            value: null,
+            passage: null,
+            passage_kind: null,
+            page_number: null,
+            extraction_method: 'rules',
+            extraction_version: 'rules-v1',
+            retrieval_method: null,
+            retrieval_score: null,
+            validation_status: 'unvalidated',
+            checks: [],
+            created_at: '2026-10-22T12:00:00Z',
+          },
+        ]),
+    })
+    renderRoute('/app/investigations/abc')
+
+    const documents = (await screen.findByText('Downloading and processing papers')).closest('li')!
+    expect(within(documents).getByText('2 of 2 papers done')).toBeInTheDocument()
+    expect(within(documents).getByText('1 full text, 1 abstract only')).toBeInTheDocument()
+    expect(within(documents).getByText('Completed')).toBeInTheDocument()
+    const extraction = screen.getByText('Extracting evidence').closest('li')!
+    expect(within(extraction).getByText('In progress')).toBeInTheDocument()
+    expect(within(extraction).getByText('3 facts extracted')).toBeInTheDocument()
+    const validation = screen.getByText('Validating findings').closest('li')!
+    expect(within(validation).getByText('2 verified, 1 rejected')).toBeInTheDocument()
+
+    expect(await screen.findByText('AUC 0.92 · GNN')).toBeInTheDocument()
+    expect(screen.getByText('“The GNN reaches an AUC of 0.92.”', { exact: false })).toBeInTheDocument()
+    expect(screen.getByText(/Page 3 · quotation · found by fts\+vector/)).toBeInTheDocument()
+    expect(screen.getByText(/Not found in the full text: Code\./)).toBeInTheDocument()
   })
 
   it('warns when the event is waiting and no worker is processing', async () => {
