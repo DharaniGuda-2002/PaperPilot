@@ -9,7 +9,7 @@ Each milestone is finished and verified before the next starts.
 - [x] UI redesign — landing page, sidebar app shell, dashboard with real status counts
       (2026-10-23; screens without backend data wait for their milestones)
 - [x] M2 — Paper discovery (OpenAlex search, cached and rate limited; verified locally and on the public demo)
-- [ ] M3 — Kafka pipeline (outbox, dispatcher, first idempotent consumer)
+- [x] M3 — Kafka pipeline (outbox, dispatcher, idempotent discovery worker; local deployment)
 - [ ] M4 — Distributed reliability (retries, DLQ, recovery, throughput)
 - [ ] M5 — Retrieval and evidence (PDFs, embeddings, hybrid search, extraction)
 - [ ] M6 — Comparison and reports (rules, progressive-disclosure report UI)
@@ -76,3 +76,22 @@ cd frontend && npm run typecheck && npm run lint && npm run contrast && npm test
 
 Open item: the public API calls OpenAlex without a key, sharing $0.10/day with other tenants
 on Render's outbound IP. Add `OPENALEX_API_KEY` on Render to get a dedicated $1/day budget.
+
+## M3 acceptance criteria and verification (2026-10-23)
+
+| Criterion | Result |
+|---|---|
+| Kafka runs locally with fixed topics and partitions | Pass: KRaft broker in Compose; `kafka-init` creates investigation-requests (3), paper-discovered (6), investigation-failures (1) |
+| Versioned event schemas | Pass: envelope plus a payload model per (type, version); unknown versions and extra fields rejected (tests) |
+| Transactional outbox | Pass: investigation, task, and event commit together; injected failure rolls all back (test) |
+| Dispatcher | Pass: lease-based claim, idempotent producer, backoff; concurrency and crash-recovery tests; broker-outage drill recovered |
+| First consumer links papers to investigations | Pass: real run linked 25 OpenAlex papers in 2.2 s end to end; UI shows live progress |
+| Task state | Pass: pending → running → succeeded / failed_retryable / failed_permanent, with attempts and errors |
+| Idempotency | Pass: duplicate and 4 concurrent deliveries link once (tests) |
+| Offsets committed after persistence | Pass: by design in `workers/consumer.py`; worker-down drill processed the waiting event on restart |
+| Consumer groups and partitions | Pass: two workers split partitions 1/2, lag 0 |
+| CI | Pass locally: Compose job boots Kafka and workers with the recorded sample provider and requires discovery to link papers |
+
+Not in M3, by plan: redelivery-based retries, dead-letter publishing, consumer-lag
+metrics, throughput benchmarks (M4). The public demo runs no workers; see
+docs/deployment.md.

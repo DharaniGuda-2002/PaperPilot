@@ -5,7 +5,7 @@ Two deployments exist:
 | | Local (reference) | Public demo |
 |---|---|---|
 | How | `docker compose up --build -d --wait` | Render Blueprint (`render.yaml`) + Neon |
-| Components | Everything | Frontend, API, Postgres. Kafka and workers will stay local-only (see below) |
+| Components | Everything, including Kafka, the outbox dispatcher, and discovery workers | Frontend, API, Postgres. Kafka and workers are local-only (see below) |
 | Cost | $0 | $0 on free plans, no payment method required |
 
 ## Free-tier research (checked 2026-10-22)
@@ -32,6 +32,11 @@ Sources: [Render free tier](https://render.com/docs/free),
 [Cloudflare Pages limits](https://developers.cloudflare.com/pages/platform/limits/).
 
 ### Consequences you will notice
+
+- **Investigations created on the public demo stay queued.** The API still writes
+  the task and outbox event, but no dispatcher or worker runs there. After a
+  minute the investigation page says so. Paper search works because it runs
+  inside the API.
 
 - **First request after 15 idle minutes takes about a minute** (Render spin-up), plus a
   short Neon wake-up. The frontend shows its normal loading state meanwhile.

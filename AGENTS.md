@@ -25,6 +25,8 @@ mypy app tests
 pytest                       # needs Postgres; see TEST_DATABASE_URL in .env.example
 alembic upgrade head
 uvicorn app.main:create_app --factory --reload
+python -m app.workers.outbox_dispatcher   # needs Kafka: docker compose up -d kafka kafka-init
+python -m app.workers.discovery
 ```
 
 Frontend (from `frontend/`):
@@ -49,3 +51,7 @@ Full stack: `docker compose up --build`.
   Status must be conveyed by text, not color alone.
 - Small Conventional Commits (`feat(api): ...`). Run checks before committing.
 - Do not add Redis, Kubernetes, or new services without a documented need.
+- Events: add new payload versions beside old ones in `app/events/envelope.py`;
+  publish only through the outbox (`app/events/outbox.enqueue`) inside the
+  transaction that changes state. Consumers must be idempotent and commit
+  offsets only after their transaction commits.

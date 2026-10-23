@@ -1,6 +1,6 @@
 # ADR 0003: Kafka with a transactional outbox and idempotent consumers
 
-- Status: accepted (implementation in M3)
+- Status: accepted; implemented in M3 (2026-10-23)
 - Date: 2026-10-22
 
 ## Problem
@@ -44,6 +44,21 @@ claim.
   concepts, not production broker redundancy.
 - Outbox polling adds latency (poll interval). Acceptable for minutes-long
   investigations.
+
+## Implementation notes (M3)
+
+- The dispatcher uses a **lease** (`locked_until`) instead of holding row locks
+  while talking to Kafka: claim in a short transaction, publish with no
+  transaction open, then record results. This follows the rule of never holding
+  a database transaction across network I/O.
+- Producer: `enable.idempotence=true`, `acks=all`, `delivery.timeout.ms`
+  shorter than the lease, so a failed delivery is reported before another
+  dispatcher can reclaim the row.
+- Consumers: `enable.auto.commit=false`, commit after the handler's transaction,
+  `cooperative-sticky` assignment.
+- Ordering is guaranteed per partition by Kafka. The outbox may reorder events
+  across retries, so consumers rely on idempotency and state checks, not on
+  strict global order.
 
 ## Verification (M3/M4)
 

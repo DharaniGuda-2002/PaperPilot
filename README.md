@@ -4,9 +4,10 @@ An evidence-backed research investigation engine. Ask a technical research quest
 PaperPilot finds relevant papers, extracts reported evidence with source passages,
 flags experiments that cannot be fairly compared, and produces a traceable report.
 
-> **Status: Milestone 2 (paper search).** You can search real papers through OpenAlex
-> and create and browse investigations. Linking papers to investigations (Kafka
-> pipeline), evidence extraction, and reports are not built yet.
+> **Status: Milestone 3 (event pipeline).** Creating an investigation starts a Kafka
+> pipeline (transactional outbox → dispatcher → discovery workers) that links relevant
+> OpenAlex papers to it. Evidence extraction and reports are not built yet.
+> The pipeline runs in the local Docker setup; the public demo has no workers.
 > See [docs/roadmap.md](docs/roadmap.md).
 
 **Live demo:** https://paperpilot-web-tfx4.onrender.com (free tier: first load after
@@ -30,7 +31,16 @@ docker compose up --build -d --wait
 | http://localhost:8000/docs | API reference (OpenAPI) |
 | http://localhost:8000/health/ready | Readiness: 200 when the database answers, else 503 |
 
-Stop with `docker compose down`. Add `-v` to also delete the database volume.
+Stop with `docker compose down`. Add `-v` to also delete the database and Kafka volumes.
+
+Pipeline operations:
+
+```bash
+docker compose up -d --scale discovery-worker=3        # more consumers in the group
+docker compose logs -f discovery-worker outbox-dispatcher
+docker compose exec kafka /opt/kafka/bin/kafka-consumer-groups.sh \
+  --bootstrap-server localhost:9092 --describe --group discovery-workers   # partitions and lag
+```
 
 ## Local development
 
@@ -70,7 +80,8 @@ with a transactional outbox. Details: [docs/architecture.md](docs/architecture.m
 the decision records in [docs/adr/](docs/adr/).
 
 ```
-backend/    FastAPI app, Alembic migrations, pytest suite
+backend/    FastAPI app, workers (app/workers), event contracts (app/events),
+            Alembic migrations, pytest suite
 frontend/   React + TypeScript + Vite, design tokens in src/styles/tokens.css
 docs/       architecture, ADRs, roadmap
 scripts/    smoke test
@@ -86,12 +97,15 @@ scripts/    smoke test
 | GET | `/api/v1/investigations/{id}` | 200, or 404 if unknown |
 | GET | `/api/v1/papers/search?q=...` | OpenAlex search; filters `from_year`, `to_year`, `open_access_only`, `sort` (`relevance`, `citations`, `newest`), `page`, `per_page` (≤25). Cached 24 h |
 | GET | `/api/v1/papers/{id}` | Stored paper metadata with provenance |
+| GET | `/api/v1/investigations/{id}/tasks` | Pipeline tasks: status, attempts, errors, results |
+| GET | `/api/v1/investigations/{id}/papers` | Discovered papers in rank order |
+| GET | `/api/v1/system/pipeline` | Outbox backlog and oldest pending age |
 | GET | `/health/live`, `/health/ready` | Liveness / readiness |
 
 ## Known limitations
 
-- No processing pipeline yet: investigations stay `queued`, and search is separate
-  from investigations until M3.
+- The pipeline ends after discovery, so investigations stay `running` until
+  evidence extraction exists. Retries via redelivery and dead-letter handling come in M4.
 - Paper search depends on OpenAlex usage limits; see
   [ADR 0005](docs/adr/0005-openalex-provider-and-search-cache.md).
 - No authentication. Creating investigations is rate limited per client and capped

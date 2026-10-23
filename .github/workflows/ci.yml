@@ -71,10 +71,14 @@ jobs:
     needs: [backend, frontend]
     steps:
       - uses: actions/checkout@v7
-      - name: Start full stack
+      - name: Start full stack (Kafka, workers; recorded OpenAlex sample, no live calls)
         run: docker compose up --build -d --wait
-      - name: Smoke test
+        env:
+          PAPER_PROVIDER: fixture
+      - name: Smoke test including the event pipeline
         run: ./scripts/smoke-test.sh http://localhost:8080
+        env:
+          EXPECT_PIPELINE: "1"
       - name: Logs on failure
         if: failure()
         run: docker compose logs

@@ -119,7 +119,7 @@ Planned tables (added by the milestone that first needs them):
 `finding_status` values: `reported`, `not_found`, `uncertain`, `unavailable`,
 `not_applicable`. "Not found" never means "false".
 
-## 5. Kafka event contracts (planned M3)
+## 5. Kafka event contracts
 
 Envelope, serialized as JSON and validated with Pydantic on both sides:
 
@@ -139,12 +139,21 @@ Envelope, serialized as JSON and validated with Pydantic on both sides:
 
 | Topic | Event type | Partition key | Why that key |
 |---|---|---|---|
-| investigation-requests | investigation.requested | investigation_id | one discovery run per investigation, ordered |
-| paper-discovered | paper.discovered | paper_id | spreads document work across partitions/workers |
-| document-processed | document.processed | paper_id | keeps a paper's stages ordered |
-| evidence-extracted | evidence.extracted | paper_id | same |
-| evidence-validated | evidence.validated | investigation_id | report stage aggregates per investigation |
-| investigation-failures | *.dead_lettered | original key | dead-letter topic for inspection and replay |
+| Topic (partitions) | Event type | Partition key | Why that key | Status |
+|---|---|---|---|---|
+| investigation-requests (3) | investigation.requested v1 | investigation_id | one discovery run per investigation, ordered | M3: produced by API, consumed by discovery workers |
+| paper-discovered (6) | paper.discovered v1 | paper_id | spreads per-paper work across partitions/workers | M3: produced by discovery; consumer arrives in M5 |
+| document-processed | document.processed | paper_id | keeps a paper's stages ordered | planned M5 |
+| evidence-extracted | evidence.extracted | paper_id | same | planned M5 |
+| evidence-validated | evidence.validated | investigation_id | report stage aggregates per investigation | planned M6 |
+| investigation-failures (1) | *.dead_lettered | original key | dead-letter topic for inspection and replay | topic created in M3; used in M4 |
+
+Contracts live in `backend/app/events/envelope.py`. Each `(event_type,
+schema_version)` maps to one Pydantic payload model; readers reject unknown
+pairs. To change a payload, add `v2` beside `v1`, deploy consumers that read
+both, then switch producers. Topics are created by `kafka-init` from
+`TOPIC_PARTITIONS`; broker auto-creation is off so a typo cannot create a topic.
+Retention is 7 days, which allows replay by resetting a consumer group's offsets.
 
 Rules: payloads carry IDs and small metadata, never PDFs or chunk text.
 Consumers commit offsets only after their DB transaction (results + a
@@ -152,7 +161,41 @@ Consumers commit offsets only after their DB transaction (results + a
 consumers make duplicates harmless. We do not claim end-to-end exactly-once.
 See [ADR 0003](adr/0003-kafka-transactional-outbox.md).
 
-## 6. Delivery guarantees in one paragraph
+## 6. M3 workflow
+
+```
+POST /investigations ──one transaction──▶ investigations + investigation_tasks(pending)
+                                          + outbox_events(investigation.requested)
+outbox-dispatcher ── claim rows with a 30 s lease (FOR UPDATE SKIP LOCKED), commit
+                  ── publish with idempotent producer (acks=all), no transaction open
+                  ── mark published, or back off 2^attempts s (max 300 s)
+discovery-worker (group discovery-workers)
+   1. skip if processed_events has (group, event_id)
+   2. claim task: UPDATE ... WHERE status IN (pending, failed_retryable)
+      OR running for > 10 min (crashed worker); investigation queued → running
+   3. search OpenAlex (cached, capped) with no transaction open
+   4. one transaction: investigation_papers + paper.discovered outbox events
+      + task succeeded + processed_events row
+   5. commit the Kafka offset
+```
+
+Investigation status after discovery stays `running`, because the later stages
+do not exist yet and the investigation is not finished. Failures set the task to
+`failed_retryable` (provider unavailable) or `failed_permanent` (no papers) and
+the investigation to `failed`, with the reason in `last_error`. Redelivery-based
+retries and the dead-letter topic come in M4.
+
+Verified failure behavior (local Compose, 2026-10-23):
+
+| Drill | Observed |
+|---|---|
+| Kafka stopped while creating an investigation | outbox row stayed unpublished with attempts and error recorded; after restart it was published and processed (25 papers linked) |
+| Discovery worker stopped | event waited in Kafka; on restart the worker processed it (25 papers linked) |
+| Two discovery workers | consumer group split the 3 partitions 1/2; both processed events; lag 0 |
+| Duplicate and 4 concurrent deliveries (tests) | papers linked and events emitted exactly once |
+| Dispatcher crash after publish (tests) | rows republished after the lease expired; consumers de-duplicate |
+
+## 7. Delivery guarantees in one paragraph
 
 The API writes the investigation row and its outbox event in one Postgres
 transaction, so either both exist or neither does. The dispatcher may publish an

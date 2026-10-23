@@ -3,6 +3,8 @@
 # Usage: scripts/smoke-test.sh [frontend_url] [api_url]
 #   Defaults: http://localhost:8080 for both (nginx proxies the API locally).
 # Creates one investigation row as a side effect.
+# Set EXPECT_PIPELINE=1 when workers run (local Compose) to also require that
+# discovery links papers to the new investigation.
 set -euo pipefail
 
 FRONTEND_URL="${1:-http://localhost:8080}"
@@ -35,6 +37,21 @@ echo "ok   created investigation $id"
 curl -sf "$BASE_URL/api/v1/investigations/$id" | grep -q '"status":"queued"' \
   || fail "created investigation not readable"
 echo "ok   investigation readable with status queued"
+
+if [ "${EXPECT_PIPELINE:-0}" = 1 ]; then
+  for _ in $(seq 1 60); do
+    tasks=$(curl -sf "$BASE_URL/api/v1/investigations/$id/tasks" || true)
+    case "$tasks" in
+      *'"status":"succeeded"'*) break ;;
+      *'"status":"failed_'*) fail "discovery failed: $tasks" ;;
+    esac
+    sleep 1
+  done
+  echo "$tasks" | grep -q '"status":"succeeded"' || fail "discovery did not finish in 60s: $tasks"
+  linked=$(curl -sf "$BASE_URL/api/v1/investigations/$id/papers" | sed -E 's/.*"total":([0-9]+).*/\1/')
+  [ "${linked:-0}" -gt 0 ] || fail "no papers linked"
+  echo "ok   pipeline: outbox -> Kafka -> discovery worker linked $linked papers"
+fi
 
 code=$(curl -s -o /dev/null -w '%{http_code}' -X POST "$BASE_URL/api/v1/investigations" \
   -H 'Content-Type: application/json' -d '{"question":"short"}')
