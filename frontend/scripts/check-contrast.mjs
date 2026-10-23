@@ -1,0 +1,56 @@
+// Verifies WCAG 2.2 contrast for the foreground/background token pairs the UI uses.
+// Reads real values from src/styles/tokens.css. Exit code 1 on any failure.
+import { readFileSync } from 'node:fs'
+
+const css = readFileSync(new URL('../src/styles/tokens.css', import.meta.url), 'utf8')
+const tokens = Object.fromEntries(
+  [...css.matchAll(/--([\w-]+):\s*(#[0-9a-fA-F]{6})\s*;/g)].map(([, name, hex]) => [name, hex]),
+)
+
+// [foreground, background, minimum ratio, where it is used]
+const TEXT = 4.5
+const NON_TEXT = 3
+const PAIRS = [
+  ['color-text-primary', 'color-bg-page', TEXT, 'body text on page'],
+  ['color-text-primary', 'color-bg-surface', TEXT, 'body text on cards'],
+  ['color-text-secondary', 'color-bg-surface', TEXT, 'secondary text'],
+  ['color-text-secondary', 'color-bg-subtle', TEXT, 'neutral badge'],
+  ['color-text-muted', 'color-bg-surface', TEXT, 'hints and metadata'],
+  ['color-text-secondary', 'color-bg-page', TEXT, 'loading/empty text (.muted) on page'],
+  ['color-text-secondary', 'color-bg-subtle', TEXT, 'disabled button label'],
+  ['color-brand-900', 'color-bg-surface', TEXT, 'headings'],
+  ['color-brand-600', 'color-bg-surface', TEXT, 'links'],
+  ['color-brand-700', 'color-bg-surface', TEXT, 'link hover'],
+  ['color-text-inverse', 'color-brand-900', TEXT, 'primary button'],
+  ['color-text-inverse', 'color-brand-700', TEXT, 'primary button hover'],
+  ['color-info', 'color-info-bg', TEXT, 'info badge / notice'],
+  ['color-success', 'color-success-bg', TEXT, 'success badge'],
+  ['color-warning', 'color-warning-bg', TEXT, 'warning badge'],
+  ['color-error', 'color-error-bg', TEXT, 'error badge / alert'],
+  ['color-error', 'color-bg-surface', TEXT, 'field error text'],
+  ['color-focus-ring', 'color-bg-surface', NON_TEXT, 'focus ring on cards'],
+  ['color-focus-ring', 'color-bg-page', NON_TEXT, 'focus ring on page'],
+  ['color-text-muted', 'color-bg-surface', NON_TEXT, 'text input boundary'],
+  // Not checked: border-default/border-strong are decorative dividers (no 3:1 requirement).
+]
+
+function luminance(hex) {
+  const channels = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
+  const [r, g, b] = channels.map((c) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4))
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b
+}
+
+function ratio(a, b) {
+  const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x)
+  return (hi + 0.05) / (lo + 0.05)
+}
+
+let failures = 0
+for (const [fg, bg, min, use] of PAIRS) {
+  if (!tokens[fg] || !tokens[bg]) throw new Error(`Unknown token in pair ${fg} / ${bg}`)
+  const r = ratio(tokens[fg], tokens[bg])
+  const ok = r >= min
+  if (!ok) failures++
+  console.log(`${ok ? 'PASS' : 'FAIL'}  ${r.toFixed(2).padStart(5)}:1 (min ${min})  ${fg} on ${bg}  — ${use}`)
+}
+process.exit(failures ? 1 : 0)

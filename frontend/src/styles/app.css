@@ -1,0 +1,316 @@
+/* Application styles. Colors, spacing, radii, and fonts come from tokens.css only. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+a {
+  color: var(--color-brand-600);
+}
+
+a:hover {
+  color: var(--color-brand-700);
+}
+
+h1,
+h2,
+h3 {
+  color: var(--color-brand-900);
+  line-height: 1.25;
+  margin: 0;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.skip-link {
+  position: absolute;
+  left: var(--space-4);
+  top: -100px;
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-bg-surface);
+  border-radius: var(--radius-sm);
+}
+
+.skip-link:focus {
+  top: var(--space-2);
+}
+
+/* Shell */
+.site-header {
+  background: var(--color-bg-surface);
+  border-bottom: 1px solid var(--color-border-default);
+}
+
+.site-header__inner,
+.page {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 0 var(--space-4);
+}
+
+.site-header__inner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  min-height: 56px;
+}
+
+.brand {
+  font-family: var(--font-reading);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-brand-900);
+  text-decoration: none;
+}
+
+.site-nav a {
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  font-weight: 500;
+  padding: var(--space-1) 0;
+}
+
+.site-nav a[aria-current="page"] {
+  color: var(--color-brand-900);
+  border-bottom: 2px solid var(--color-brand-600);
+}
+
+.page {
+  padding-top: var(--space-8);
+  padding-bottom: var(--space-8);
+  display: grid;
+  gap: var(--space-6);
+}
+
+/* Surfaces */
+.card {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-6);
+}
+
+.card > h2 {
+  font-size: 1.125rem;
+  margin-bottom: var(--space-4);
+}
+
+.lead {
+  color: var(--color-text-secondary);
+  margin: var(--space-2) 0 0;
+}
+
+/* Question form */
+.question-form {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.question-form label {
+  font-weight: 600;
+}
+
+.question-form textarea {
+  width: 100%;
+  min-height: 96px;
+  padding: var(--space-3);
+  font: inherit;
+  color: var(--color-text-primary);
+  background: var(--color-bg-surface);
+  /* border-strong is only 2.06:1 on white; inputs need 3:1 (WCAG 1.4.11). */
+  border: 1px solid var(--color-text-muted);
+  border-radius: var(--radius-md);
+  resize: vertical;
+}
+
+.question-form textarea[aria-invalid="true"] {
+  border-color: var(--color-error);
+}
+
+.question-form__footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.hint {
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+.field-error {
+  color: var(--color-error);
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+/* Buttons */
+.button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  font: inherit;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+
+.button--primary {
+  background: var(--color-brand-900);
+  color: var(--color-text-inverse);
+}
+
+.button--primary:hover {
+  background: var(--color-brand-700);
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  background: var(--color-bg-subtle);
+  color: var(--color-text-secondary);
+  border-color: var(--color-border-default);
+}
+
+/* Investigation list */
+.investigation-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.investigation-list li + li {
+  border-top: 1px solid var(--color-border-default);
+}
+
+.investigation-list a {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--space-1) var(--space-4);
+  padding: var(--space-3) 0;
+  text-decoration: none;
+  color: var(--color-text-primary);
+}
+
+.investigation-list a:hover .investigation-list__question {
+  color: var(--color-brand-600);
+  text-decoration: underline;
+}
+
+.investigation-list__meta {
+  grid-column: 1;
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+
+/* Status badge: text label always present; color is supplementary. */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  align-self: start;
+  justify-self: start;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-sm);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+  border: 1px solid currentcolor;
+}
+
+.status-badge--neutral {
+  color: var(--color-text-secondary);
+  background: var(--color-bg-subtle);
+}
+
+.status-badge--info {
+  color: var(--color-info);
+  background: var(--color-info-bg);
+}
+
+.status-badge--success {
+  color: var(--color-success);
+  background: var(--color-success-bg);
+}
+
+.status-badge--warning {
+  color: var(--color-warning);
+  background: var(--color-warning-bg);
+}
+
+.status-badge--error {
+  color: var(--color-error);
+  background: var(--color-error-bg);
+}
+
+/* Page states */
+.notice {
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin: 0;
+}
+
+.notice--info {
+  background: var(--color-info-bg);
+  color: var(--color-info);
+}
+
+.notice--error {
+  background: var(--color-error-bg);
+  color: var(--color-error);
+}
+
+.muted {
+  /* text-muted fails 4.5:1 on the ivory page; secondary passes on every background. */
+  color: var(--color-text-secondary);
+}
+
+.detail-list {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--space-2) var(--space-6);
+  margin: 0;
+}
+
+.detail-list dt {
+  color: var(--color-text-secondary);
+  font-weight: 600;
+}
+
+.detail-list dd {
+  margin: 0;
+}
+
+.question-title {
+  font-family: var(--font-reading);
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+@media (width <= 600px) {
+  .investigation-list a {
+    grid-template-columns: 1fr;
+  }
+
+  .detail-list {
+    grid-template-columns: 1fr;
+  }
+
+  .question-title {
+    font-size: 1.25rem;
+  }
+}

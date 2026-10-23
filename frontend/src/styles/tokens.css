@@ -1,0 +1,79 @@
+:root {
+  color-scheme: light;
+
+  /* Brand */
+  --color-brand-900: #173653;
+  --color-brand-700: #234F76;
+  --color-brand-600: #326AA3;
+  --color-brand-100: #EAF0F6;
+  --color-brand-50: #F3F6FA;
+
+  /* Backgrounds */
+  --color-bg-page: #F7F5EF;
+  --color-bg-surface: #FFFFFF;
+  --color-bg-subtle: #F1F0EB;
+
+  /* Typography */
+  --color-text-primary: #172B40;
+  --color-text-secondary: #536273;
+  --color-text-muted: #667587;
+  --color-text-inverse: #FFFFFF;
+
+  /* Borders and focus */
+  --color-border-default: #D8E0E8;
+  --color-border-strong: #A9B6C4;
+  --color-focus-ring: #326AA3;
+
+  /* Semantic status colors */
+  --color-success: #246B50;
+  --color-success-bg: #E8F2EC;
+
+  --color-warning: #875716;
+  --color-warning-bg: #F7EEDC;
+
+  --color-error: #A33430;
+  --color-error-bg: #F9E9E7;
+
+  --color-info: #315B83;
+  --color-info-bg: #EAF0F6;
+
+  /* Layout */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  --shadow-card: 0 1px 3px rgb(23 43 64 / 6%);
+  --shadow-overlay: 0 8px 24px rgb(23 43 64 / 12%);
+
+  --font-sans: Inter, "Segoe UI", sans-serif;
+  --font-reading: Georgia, "Times New Roman", serif;
+}
+
+html {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg-page);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  line-height: 1.6;
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: var(--color-brand-100);
+  color: var(--color-text-primary);
+}
