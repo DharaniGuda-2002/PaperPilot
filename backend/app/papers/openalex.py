@@ -7,6 +7,7 @@ long Retry-After (not worth retrying in-request).
 """
 
 import logging
+import re
 import threading
 import time
 from typing import Any
@@ -87,7 +88,7 @@ class OpenAlexClient:
 
     def search_works(self, params: PaperSearchParams) -> ProviderSearchResult:
         query: dict[str, str | int] = {
-            "search": params.q,
+            "search": search_text(params.q),
             "page": params.page,
             "per_page": params.per_page,
             "sort": _SORT[params.sort],
@@ -160,6 +161,19 @@ class OpenAlexClient:
     @staticmethod
     def _backoff(attempt: int, retry_after: float | None = None) -> None:
         time.sleep(retry_after if retry_after is not None else 0.5 * 2 ** (attempt - 1))
+
+
+_WILDCARDS = re.compile(r"[*?]")
+_OPERATORS = re.compile(r"\b(AND|OR|NOT)\b")
+
+
+def search_text(query: str) -> str:
+    """Plain-text search for OpenAlex. `*` and `?` are wildcards there (and are
+    rejected with stemmed search), and uppercase AND/OR/NOT are boolean
+    operators; user text should mean neither."""
+    cleaned = _WILDCARDS.sub(" ", query)
+    cleaned = _OPERATORS.sub(lambda m: m.group(0).lower(), cleaned)
+    return " ".join(cleaned.split())
 
 
 def _filters(params: PaperSearchParams) -> str:

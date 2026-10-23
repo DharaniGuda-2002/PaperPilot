@@ -1,4 +1,5 @@
 from functools import lru_cache
+from typing import Literal
 
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -21,6 +22,8 @@ class Settings(BaseSettings):
     paper_search_rate_limit_per_minute: int = 20  # per client IP, per API process
 
     # OpenAlex. Without a key, calls share a small daily budget per outbound IP.
+    # "fixture" serves a recorded sample for every query: automated tests only.
+    paper_provider: Literal["openalex", "fixture"] = "openalex"
     openalex_base_url: str = "https://api.openalex.org"
     openalex_api_key: str | None = None
     openalex_contact_email: str | None = None

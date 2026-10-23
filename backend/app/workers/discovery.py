@@ -44,7 +44,8 @@ from app.investigations.models import (
     TaskStatus,
 )
 from app.papers import service as papers_service
-from app.papers.openalex import OpenAlexClient, ProviderUnavailableError
+from app.papers.openalex import ProviderUnavailableError
+from app.papers.providers import make_provider
 from app.papers.schemas import FullTextAvailability, PaperRead, PaperSearchParams
 from app.papers.service import PaperProvider
 from app.workers.consumer import run_consumer
@@ -271,11 +272,7 @@ def main() -> None:
     settings = get_settings()
     configure_logging(settings.log_level)
     session_factory = create_session_factory(create_db_engine(settings))
-    provider = OpenAlexClient(
-        base_url=settings.openalex_base_url,
-        api_key=settings.openalex_api_key,
-        contact_email=settings.openalex_contact_email,
-    )
+    provider = make_provider(settings)
 
     def handle(envelope: EventEnvelope) -> str:
         result = handle_investigation_requested(session_factory, provider, envelope, settings)

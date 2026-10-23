@@ -13,11 +13,14 @@ from app.papers.openalex import (
     ProviderUnavailableError,
     normalize_work,
     reconstruct_abstract,
+    search_text,
 )
 from app.papers.schemas import PaperSearchParams, SearchSort
 
 FIXTURE = json.loads(
-    (Path(__file__).parent / "fixtures" / "openalex_search_gnn_fraud.json").read_text()
+    (
+        Path(__file__).parent.parent / "app" / "papers" / "fixtures" / "openalex_sample.json"
+    ).read_text()
 )
 
 
@@ -176,3 +179,17 @@ def test_network_errors_become_provider_unavailable() -> None:
 
     with pytest.raises(ProviderUnavailableError, match="reached"):
         client_with(handler).search_works(PaperSearchParams(q="gnn"))
+
+
+@pytest.mark.parametrize(
+    ("query", "expected"),
+    [
+        ("Do GNNs beat XGBoost on imbalanced data?", "Do GNNs beat XGBoost on imbalanced data"),
+        ("graph* neural", "graph neural"),
+        ("fraud AND detection OR NOT spam", "fraud and detection or not spam"),
+        ("ANDROID malware", "ANDROID malware"),
+    ],
+)
+def test_search_text_removes_wildcards_and_operators(query: str, expected: str) -> None:
+    """A question ending in '?' made OpenAlex return 400 (found in the M3 end-to-end run)."""
+    assert search_text(query) == expected

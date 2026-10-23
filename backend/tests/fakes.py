@@ -6,7 +6,9 @@ from app.papers.schemas import PaperSearchParams, ProviderSearchHit, ProviderSea
 
 # Real OpenAlex response recorded 2026-10-22 (CC0), trimmed to two works.
 FIXTURE = json.loads(
-    (Path(__file__).parent / "fixtures" / "openalex_search_gnn_fraud.json").read_text()
+    (
+        Path(__file__).parent.parent / "app" / "papers" / "fixtures" / "openalex_sample.json"
+    ).read_text()
 )
 
 

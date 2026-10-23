@@ -10,6 +10,16 @@ x-api-env: &api-env
   DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-paperpilot}:${POSTGRES_PASSWORD:-paperpilot-local-only}@db:5432/${POSTGRES_DB:-paperpilot}
   CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173,http://localhost:8080}
   LOG_LEVEL: ${LOG_LEVEL:-INFO}
+  KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+  OPENALEX_API_KEY: ${OPENALEX_API_KEY:-}
+  PAPER_PROVIDER: ${PAPER_PROVIDER:-openalex}
+
+# API, migrations, and workers share one image with different commands.
+# Only `migrate` builds it; the others reuse the tag (parallel builds would collide).
+x-backend: &backend
+  image: paperpilot-backend:local
+  pull_policy: never
+  environment: *api-env
 
 services:
   db:
@@ -27,16 +37,15 @@ services:
 
   # One-shot: applies migrations, then exits. The API waits for it to succeed.
   migrate:
+    <<: *backend
     build: ./backend
     command: ["alembic", "upgrade", "head"]
-    environment: *api-env
     depends_on:
       db:
         condition: service_healthy
 
   api:
-    build: ./backend
-    environment: *api-env
+    <<: *backend
     ports:
       - "127.0.0.1:8000:8000"
     depends_on:
@@ -47,6 +56,67 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  # Single-node KRaft broker: shows topics, partitions, and consumer groups;
+  # it does not demonstrate broker redundancy.
+  kafka:
+    image: apache/kafka:4.2.2
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,EXTERNAL://localhost:9094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_HEAP_OPTS: -Xmx512m -Xms256m
+    ports:
+      - "127.0.0.1:9094:9094"
+    volumes:
+      - kafkadata:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 > /dev/null"]
+      interval: 10s
+      timeout: 10s
+      retries: 12
+      start_period: 15s
+
+  # One-shot: creates topics with fixed partition counts (auto-create is off).
+  kafka-init:
+    <<: *backend
+    command: ["python", "-m", "app.events.topics"]
+    depends_on:
+      kafka:
+        condition: service_healthy
+
+  outbox-dispatcher:
+    <<: *backend
+    command: ["python", "-m", "app.workers.outbox_dispatcher"]
+    restart: unless-stopped
+    stop_grace_period: 30s
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      kafka-init:
+        condition: service_completed_successfully
+
+  # Scale with: docker compose up -d --scale discovery-worker=3
+  discovery-worker:
+    <<: *backend
+    command: ["python", "-m", "app.workers.discovery"]
+    restart: unless-stopped
+    stop_grace_period: 30s
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      kafka-init:
+        condition: service_completed_successfully
 
   frontend:
     build: ./frontend
@@ -63,3 +133,4 @@ services:
 
 volumes:
   pgdata:
+  kafkadata:

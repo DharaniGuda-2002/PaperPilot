@@ -13,7 +13,7 @@ from app.core.config import Settings, get_settings
 from app.core.db import create_db_engine, create_session_factory
 from app.core.logging import configure_logging, correlation_id_var
 from app.core.rate_limit import SlidingWindowLimiter
-from app.papers.openalex import OpenAlexClient
+from app.papers.providers import make_provider
 from app.papers.service import PaperProvider
 
 logger = logging.getLogger("app.request")
@@ -27,22 +27,14 @@ def create_app(
     settings = settings or get_settings()
     configure_logging(settings.log_level)
     engine = create_db_engine(settings)
-    openalex = (
-        None
-        if paper_provider
-        else OpenAlexClient(
-            base_url=settings.openalex_base_url,
-            api_key=settings.openalex_api_key,
-            contact_email=settings.openalex_contact_email,
-        )
-    )
+    owned_provider = None if paper_provider else make_provider(settings)
 
     @asynccontextmanager
     async def lifespan(_: FastAPI) -> AsyncIterator[None]:
         yield
         engine.dispose()
-        if openalex:
-            openalex.close()
+        if owned_provider:
+            owned_provider.close()
 
     app = FastAPI(title="PaperPilot API", version="0.1.0", lifespan=lifespan)
     app.state.settings = settings
@@ -50,7 +42,7 @@ def create_app(
     app.state.session_factory = create_session_factory(engine)
     app.state.create_limiter = SlidingWindowLimiter(settings.create_rate_limit_per_minute)
     app.state.search_limiter = SlidingWindowLimiter(settings.paper_search_rate_limit_per_minute)
-    app.state.paper_provider = paper_provider or openalex
+    app.state.paper_provider = paper_provider or owned_provider
 
     app.add_middleware(
         CORSMiddleware,
