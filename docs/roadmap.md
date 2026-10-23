@@ -5,7 +5,7 @@ Each milestone is finished and verified before the next starts.
 ## Checklist
 
 - [x] M0 — Repository inspection, architecture, ADRs, acceptance criteria
-- [ ] M1 — Application foundation (in progress; public deployment pending)
+- [ ] M1 — Application foundation (local stack verified; CI and public deployment pending)
 - [ ] M2 — Paper discovery (OpenAlex)
 - [ ] M3 — Kafka pipeline (outbox, dispatcher, first idempotent consumer)
 - [ ] M4 — Distributed reliability (retries, DLQ, recovery, throughput)
@@ -40,11 +40,22 @@ Each milestone is finished and verified before the next starts.
 ## Verification commands (M1)
 
 ```bash
-docker compose up --build -d
-docker compose ps
-curl -s localhost:8000/health/ready
-curl -s -X POST localhost:8000/api/v1/investigations -H 'content-type: application/json' \
-  -d '{"question":"Do graph neural networks outperform gradient boosting for fraud detection?"}'
+docker compose down -v && docker compose up --build -d --wait
+./scripts/smoke-test.sh
 cd backend && ruff check . && ruff format --check . && mypy app && pytest
-cd frontend && npm run typecheck && npm run lint && npm test && npm run build
+cd frontend && npm run typecheck && npm run lint && npm run contrast && npm test && npm run build
 ```
+
+## M1 verification log (2026-10-22, local machine, Docker 29.1.3)
+
+| Criterion | Result |
+|---|---|
+| 1. Clean `compose up --wait` (volumes wiped) | Pass: db, api, frontend healthy; migrate exited 0 |
+| 2. Liveness/readiness | Pass: ready 200; with db stopped ready 503, live 200; recovers on db start |
+| 3–5. API behavior | Pass: 22 pytest tests + smoke test |
+| 6. Migration round trip | Pass: `test_upgrade_downgrade_upgrade_from_empty`, drift check |
+| 7. Real-API dashboard | Pass: submitted via keyboard in browser, landed on detail page with DB data |
+| 8. Tokens, focus, text status | Pass: contrast script 20/20 pairs; 3 failing usages fixed; no page overflow at 375px |
+| 9. Checks | Pass locally: ruff, mypy, pytest (22), typecheck, oxlint, vitest (8), build |
+| 9. GitHub Actions | Not run yet: no GitHub remote |
+| 10. Public deployment | Not done |
