@@ -135,3 +135,19 @@ def test_crash_after_publish_republishes_after_lease_expires(
     assert dispatch_once(sessions, publisher, batch_size=10, lease_seconds=30) == (3, 0)
     assert {e.event_id for e in publisher.published} == {e.event_id for e in claimed}
     assert all(attempts == 2 for _, _, attempts in outbox_rows(engine))
+
+
+def test_scheduled_events_wait_until_available(
+    three_events: list[str], sessions: sessionmaker[Session], engine: Engine
+) -> None:
+    with engine.begin() as conn:
+        conn.execute(text("UPDATE outbox_events SET available_at = now() + interval '1 hour'"))
+    assert dispatch_once(sessions, FakePublisher(), batch_size=10, lease_seconds=30) == (0, 0)
+    with sessions() as session:
+        backlog, waiting = outbox_backlog(session)
+    assert backlog == 3
+    assert waiting is None  # scheduled retries are not a stall
+
+    with engine.begin() as conn:
+        conn.execute(text("UPDATE outbox_events SET available_at = now() - interval '1 second'"))
+    assert dispatch_once(sessions, FakePublisher(), batch_size=10, lease_seconds=30) == (3, 0)

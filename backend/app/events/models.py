@@ -15,10 +15,10 @@ class OutboxEvent(Base):
 
     __tablename__ = "outbox_events"
     __table_args__ = (
-        # The dispatcher only scans unpublished rows, oldest first.
+        # The dispatcher only scans unpublished rows, earliest due first.
         Index(
-            "ix_outbox_events_unpublished",
-            "created_at",
+            "ix_outbox_events_unpublished_due",
+            "available_at",
             postgresql_where=text("published_at IS NULL"),
         ),
     )
@@ -30,6 +30,10 @@ class OutboxEvent(Base):
     schema_version: Mapped[int] = mapped_column(Integer)
     envelope: Mapped[dict[str, Any]] = mapped_column(JSONB)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    # Not published before this time; retries use it to schedule redelivery.
+    available_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
     published_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     # Lease: a dispatcher claims rows until this time, then publishes without holding locks.
     locked_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

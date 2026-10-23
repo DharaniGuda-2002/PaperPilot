@@ -93,6 +93,7 @@ class InvestigationTask(Base):
     status: Mapped[str] = mapped_column(String(32), default=TaskStatus.PENDING.value)
     attempts: Mapped[int] = mapped_column(Integer, server_default="0")
     last_error: Mapped[str | None] = mapped_column(Text)
+    next_attempt_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     result_summary: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
     started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

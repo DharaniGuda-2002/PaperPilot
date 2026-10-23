@@ -5,14 +5,18 @@ Idempotency: the task is claimed with a conditional UPDATE, and results are
 committed together with a processed_events row. A redelivered event finds
 that row and is skipped, so duplicates never add links or events twice.
 
-Failure handling in M3: provider failures mark the task failed_retryable and
-the investigation failed. Redelivery-based retries and a dead-letter topic
-arrive in M4.
+Retries: a temporary provider failure marks the task failed_retryable and
+schedules redelivery by writing a new investigation.requested event to the
+outbox with a delay (exponential backoff with jitter). The current message is
+finished and committed, so a failing investigation never blocks its
+partition. After the last attempt the task fails permanently and the
+message goes to the dead-letter topic for inspection and replay.
 
 Run: python -m app.workers.discovery
 """
 
 import logging
+import random
 import uuid
 from dataclasses import dataclass
 from datetime import timedelta
@@ -27,6 +31,7 @@ from app.core.config import Settings, get_settings
 from app.core.db import create_db_engine, create_session_factory
 from app.core.logging import configure_logging
 from app.events.envelope import (
+    INVESTIGATION_REQUESTED,
     PAPER_DISCOVERED,
     EventEnvelope,
     InvestigationRequestedV1,
@@ -48,7 +53,7 @@ from app.papers.openalex import ProviderUnavailableError
 from app.papers.providers import make_provider
 from app.papers.schemas import FullTextAvailability, PaperRead, PaperSearchParams
 from app.papers.service import PaperProvider
-from app.workers.consumer import run_consumer
+from app.workers.consumer import HandlerResult, run_consumer
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +67,8 @@ STALE_RUNNING_AFTER = timedelta(minutes=10)
 class Outcome(StrEnum):
     LINKED = "linked"
     NO_PAPERS = "no_papers"
-    PROVIDER_FAILED = "provider_failed"
+    RETRY_SCHEDULED = "retry_scheduled"
+    RETRIES_EXHAUSTED = "retries_exhausted"
     DUPLICATE = "duplicate"
     BUSY_ELSEWHERE = "busy_elsewhere"
     TASK_MISSING = "task_missing"
@@ -72,6 +78,16 @@ class Outcome(StrEnum):
 class DiscoveryResult:
     outcome: Outcome
     papers_linked: int = 0
+    retry_in_seconds: float | None = None
+    failure_reason: str | None = None
+
+
+def retry_delay_seconds(attempt: int, settings: Settings, jitter: float | None = None) -> float:
+    """Exponential backoff for attempt n (1-based), capped, with ±20% jitter so
+    many failures at once do not all retry in the same second."""
+    base = min(settings.retry_base_seconds * 2 ** (attempt - 1), settings.retry_max_seconds)
+    factor = jitter if jitter is not None else random.uniform(0.8, 1.2)  # noqa: S311
+    return float(base * factor)
 
 
 def search_query(question: str, max_length: int = 200) -> str:
@@ -97,7 +113,8 @@ def handle_investigation_requested(
         if session.get(InvestigationTask, payload.task_id) is None:
             _mark_processed(session, envelope.event_id)
             return DiscoveryResult(Outcome.TASK_MISSING)
-        if not _claim_task(session, payload.task_id):
+        attempt = _claim_task(session, payload.task_id)
+        if attempt is None:
             return DiscoveryResult(Outcome.BUSY_ELSEWHERE)
         session.execute(
             update(Investigation)
@@ -123,10 +140,9 @@ def handle_investigation_requested(
             )
     except (ProviderUnavailableError, papers_service.ProviderQuotaExceededError) as exc:
         reason = str(exc) or "paper search daily limit reached"
-        _finish_failed(
-            session_factory, envelope, payload.task_id, TaskStatus.FAILED_RETRYABLE, reason
+        return _handle_temporary_failure(
+            session_factory, envelope, payload, attempt, reason, settings
         )
-        return DiscoveryResult(Outcome.PROVIDER_FAILED)
 
     if not response.results:
         _finish_failed(
@@ -179,22 +195,24 @@ def _mark_processed(session: Session, event_id: uuid.UUID) -> None:
     session.flush()
 
 
-def _claim_task(session: Session, task_id: uuid.UUID) -> bool:
+def _claim_task(session: Session, task_id: uuid.UUID) -> int | None:
+    """Mark the task running and return its attempt number, or None if another
+    worker owns it or it is already finished."""
     claimed = session.execute(
         text(
             """
             UPDATE investigation_tasks
-               SET status = 'running', attempts = attempts + 1,
-                   started_at = now(), finished_at = NULL, last_error = NULL
+               SET status = 'running', attempts = attempts + 1, started_at = now(),
+                   finished_at = NULL, last_error = NULL, next_attempt_at = NULL
              WHERE id = :id
                AND (status IN ('pending', 'failed_retryable')
                     OR (status = 'running' AND started_at < now() - :stale))
-            RETURNING id
+            RETURNING attempts
             """
         ),
         {"id": task_id, "stale": STALE_RUNNING_AFTER},
     ).first()
-    return claimed is not None
+    return int(claimed.attempts) if claimed else None
 
 
 def _link_paper(
@@ -250,6 +268,55 @@ def _finish_task(
     )
 
 
+def _handle_temporary_failure(
+    session_factory: sessionmaker[Session],
+    envelope: EventEnvelope,
+    payload: InvestigationRequestedV1,
+    attempt: int,
+    reason: str,
+    settings: Settings,
+) -> DiscoveryResult:
+    if attempt >= settings.discovery_max_attempts:
+        final = f"Gave up after {attempt} attempts: {reason}"
+        _finish_failed(
+            session_factory, envelope, payload.task_id, TaskStatus.FAILED_PERMANENT, final
+        )
+        return DiscoveryResult(Outcome.RETRIES_EXHAUSTED, failure_reason=final)
+
+    delay = retry_delay_seconds(attempt, settings)
+    retry = new_event(
+        INVESTIGATION_REQUESTED,
+        payload,
+        investigation_id=envelope.investigation_id,
+        entity_id=payload.task_id,
+        correlation_id=envelope.correlation_id,
+        causation_id=envelope.event_id,
+    )
+    logger.warning(
+        "discovery attempt failed; retry scheduled",
+        extra={"task_id": str(payload.task_id), "attempt": attempt, "retry_in_s": round(delay)},
+    )
+    with session_factory() as session, session.begin():
+        _mark_processed(session, envelope.event_id)
+        session.execute(
+            update(InvestigationTask)
+            .where(InvestigationTask.id == payload.task_id)
+            .values(
+                status=TaskStatus.FAILED_RETRYABLE,
+                last_error=reason,
+                finished_at=func.now(),
+                next_attempt_at=func.now() + timedelta(seconds=delay),
+            )
+        )
+        enqueue(
+            session,
+            retry,
+            partition_key=str(envelope.investigation_id),
+            deliver_after=timedelta(seconds=delay),
+        )
+    return DiscoveryResult(Outcome.RETRY_SCHEDULED, retry_in_seconds=delay, failure_reason=reason)
+
+
 def _finish_failed(
     session_factory: sessionmaker[Session],
     envelope: EventEnvelope,
@@ -274,9 +341,14 @@ def main() -> None:
     session_factory = create_session_factory(create_db_engine(settings))
     provider = make_provider(settings)
 
-    def handle(envelope: EventEnvelope) -> str:
+    def handle(envelope: EventEnvelope) -> HandlerResult:
         result = handle_investigation_requested(session_factory, provider, envelope, settings)
-        return f"{result.outcome} ({result.papers_linked} papers)"
+        return HandlerResult(
+            summary=f"{result.outcome} ({result.papers_linked} papers)",
+            dead_letter_reason=(
+                result.failure_reason if result.outcome == Outcome.RETRIES_EXHAUSTED else None
+            ),
+        )
 
     run_consumer(settings, group_id=CONSUMER_GROUP, topic=TOPIC, handler=handle)
     provider.close()

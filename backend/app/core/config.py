@@ -31,11 +31,17 @@ class Settings(BaseSettings):
     daily_provider_call_cap: int = 500  # uncached searches per rolling 24 hours
 
     # Kafka and background workers (local deployment).
-    kafka_bootstrap_servers: str = "localhost:9094"
+    kafka_bootstrap_servers: str = "127.0.0.1:9094"  # IPv4: compose publishes on 127.0.0.1 only
     outbox_batch_size: int = 100
     outbox_poll_seconds: float = 1.0
     outbox_lease_seconds: float = 30.0
     discovery_papers_per_investigation: int = 25
+    discovery_max_attempts: int = 4
+    retry_base_seconds: float = 30.0
+    retry_max_seconds: float = 900.0
+    # A message whose handler raises this many times in a row is dead-lettered
+    # so one bad message cannot block its partition.
+    consumer_max_handler_failures: int = 5
 
     @field_validator("database_url")
     @classmethod

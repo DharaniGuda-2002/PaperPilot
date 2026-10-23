@@ -14,6 +14,7 @@ from app.events.envelope import EventEnvelope
 from app.workers.discovery import (
     Outcome,
     handle_investigation_requested,
+    retry_delay_seconds,
     search_query,
 )
 from tests.fakes import FIXTURE, FakeProvider
@@ -115,19 +116,78 @@ def test_concurrent_deliveries_link_papers_once(
     assert len(s["discovered_events"]) == 2  # type: ignore[arg-type]
 
 
-def test_provider_failure_marks_task_retryable_and_investigation_failed(
+def latest_retry_event(engine: Engine) -> tuple[EventEnvelope, bool]:
+    with engine.connect() as conn:
+        row = conn.execute(
+            text(
+                "SELECT envelope, available_at > now() AS delayed FROM outbox_events "
+                "WHERE event_type = 'investigation.requested' ORDER BY created_at DESC LIMIT 1"
+            )
+        ).one()
+    return EventEnvelope.model_validate(row.envelope), row.delayed
+
+
+def test_temporary_failure_schedules_delayed_redelivery(
     requested: EventEnvelope, sessions: sessionmaker[Session], settings: Settings, engine: Engine
 ) -> None:
     provider = FakeProvider()
     provider.fail = True
     result = handle_investigation_requested(sessions, provider, requested, settings)
 
-    assert result.outcome == Outcome.PROVIDER_FAILED
+    assert result.outcome == Outcome.RETRY_SCHEDULED
+    assert result.retry_in_seconds is not None and 24 <= result.retry_in_seconds <= 36
     s = state(engine)
-    assert s["investigation"] == "failed"
+    assert s["investigation"] == "running"  # not failed while retries remain
     assert s["task"].status == "failed_retryable"  # type: ignore[attr-defined]
     assert "simulated outage" in s["task"].last_error  # type: ignore[attr-defined]
-    assert s["links"] == []
+    retry, delayed = latest_retry_event(engine)
+    assert retry.event_id != requested.event_id
+    assert retry.causation_id == requested.event_id
+    assert retry.correlation_id == requested.correlation_id
+    assert retry.payload == requested.payload
+    assert delayed  # the dispatcher will not publish it before the backoff
+
+    # The redelivered event succeeds once the provider recovers.
+    provider.fail = False
+    again = handle_investigation_requested(sessions, provider, retry, settings)
+    assert again.outcome == Outcome.LINKED
+    task = state(engine)["task"]
+    assert (task.status, task.attempts) == ("succeeded", 2)  # type: ignore[attr-defined]
+
+
+def test_retries_exhausted_fails_and_requests_dead_letter(
+    requested: EventEnvelope,
+    sessions: sessionmaker[Session],
+    migrated_database: str,
+    engine: Engine,
+) -> None:
+    settings = Settings(database_url=migrated_database, discovery_max_attempts=2)
+    provider = FakeProvider()
+    provider.fail = True
+
+    first = handle_investigation_requested(sessions, provider, requested, settings)
+    assert first.outcome == Outcome.RETRY_SCHEDULED
+    retry, _ = latest_retry_event(engine)
+    last = handle_investigation_requested(sessions, provider, retry, settings)
+
+    assert last.outcome == Outcome.RETRIES_EXHAUSTED
+    assert last.failure_reason == "Gave up after 2 attempts: simulated outage"
+    s = state(engine)
+    assert s["investigation"] == "failed"
+    assert s["task"].status == "failed_permanent"  # type: ignore[attr-defined]
+    with engine.connect() as conn:  # no third attempt is scheduled
+        count = conn.scalar(
+            text("SELECT count(*) FROM outbox_events WHERE event_type = 'investigation.requested'")
+        )
+    assert count == 2
+
+
+@pytest.mark.parametrize(("attempt", "expected"), [(1, 30), (2, 60), (3, 120), (6, 900), (9, 900)])
+def test_retry_delay_is_exponential_and_capped(
+    settings: Settings, attempt: int, expected: float
+) -> None:
+    assert retry_delay_seconds(attempt, settings, jitter=1.0) == expected
+    assert 0.8 * expected <= retry_delay_seconds(attempt, settings) <= 1.2 * expected
 
 
 def test_no_results_fails_without_inventing_papers(

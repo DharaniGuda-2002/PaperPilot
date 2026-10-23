@@ -61,8 +61,9 @@ _CLAIM_SQL = text(
      WHERE event_id IN (
            SELECT event_id FROM outbox_events
             WHERE published_at IS NULL
+              AND available_at <= now()
               AND (locked_until IS NULL OR locked_until < now())
-            ORDER BY created_at
+            ORDER BY available_at, created_at
             LIMIT :batch_size
             FOR UPDATE SKIP LOCKED)
     RETURNING event_id, topic, partition_key, envelope, attempts, created_at

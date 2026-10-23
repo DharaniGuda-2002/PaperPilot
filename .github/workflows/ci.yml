@@ -29,9 +29,31 @@ jobs:
         options: >-
           --health-cmd "pg_isready -U paperpilot"
           --health-interval 5s --health-timeout 3s --health-retries 10
+      kafka:
+        image: apache/kafka:4.2.2
+        env:
+          KAFKA_NODE_ID: 1
+          KAFKA_PROCESS_ROLES: broker,controller
+          KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094
+          KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://127.0.0.1:9092,EXTERNAL://127.0.0.1:9094
+          KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT
+          KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+          KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+          KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+          KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+          KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+          KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+          KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+          KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+        ports: ["9094:9094"]
+        options: >-
+          --health-cmd "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092"
+          --health-interval 10s --health-timeout 10s --health-retries 12 --health-start-period 15s
     env:
       TEST_DATABASE_URL: postgresql+psycopg://paperpilot:ci-only@localhost:5432/paperpilot_test
       DATABASE_URL: postgresql+psycopg://paperpilot:ci-only@localhost:5432/paperpilot
+      KAFKA_TEST_BOOTSTRAP: 127.0.0.1:9094
+      REQUIRE_KAFKA: "1"
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
