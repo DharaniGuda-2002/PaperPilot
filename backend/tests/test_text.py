@@ -4,6 +4,7 @@ contain synthetic fixture text, not real papers."""
 import pymupdf
 import pytest
 
+from app.documents.sentences import split_sentences
 from app.documents.text import (
     CHUNK_MAX_CHARS,
     ExtractionError,
@@ -13,7 +14,6 @@ from app.documents.text import (
     clean_text,
     drop_references,
     extract_pages,
-    split_sentences,
 )
 
 
