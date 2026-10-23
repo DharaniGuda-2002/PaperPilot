@@ -1,6 +1,7 @@
 """Discovery -> document -> evidence through real Postgres + pgvector, with a fake
 fetcher serving a generated PDF of synthetic fixture text (not a real paper)."""
 
+import uuid
 from collections.abc import Sequence
 from typing import Any
 
@@ -159,3 +160,36 @@ def test_duplicate_delivery_does_not_duplicate_evidence(
     before = len(evidence(engine))
     assert handle_document_processed(sessions, HashingEmbedder(), event).outcome == "duplicate"
     assert len(evidence(engine)) == before
+
+
+def test_api_returns_evidence_with_checks_and_document_info(
+    client: TestClient, engine: Engine, sessions: sessionmaker[Session], settings: Settings
+) -> None:
+    event = run_pipeline(client, engine, sessions, settings)
+    items = client.get(f"/api/v1/investigations/{event.investigation_id}/evidence").json()
+    metric = next(
+        i for i in items if i["field"] == "metric_result" and i["value"]["value"] == 0.921
+    )
+    assert metric["paper_title"].startswith("Alleviating")
+    assert metric["page_number"] == 3
+    assert metric["passage_kind"] == "quotation"
+    assert {c["rule"] for c in metric["checks"]} == {
+        "passage_in_source",
+        "page_reference",
+        "numbers_in_passage",
+        "value_range",
+    }
+    assert all(c["outcome"] == "pass" for c in metric["checks"])
+    only_code = client.get(
+        f"/api/v1/investigations/{event.investigation_id}/evidence",
+        params={"field": "code_availability"},
+    ).json()
+    assert [(i["finding_status"], i["checks"]) for i in only_code] == [("not_found", [])]
+
+    document = client.get(f"/api/v1/papers/{event.payload['paper_id']}/document").json()
+    assert document["content_kind"] == "full_text"
+    assert document["page_count"] == 3
+    assert document["chunk_count"] == 3
+    assert document["embedding_models"] == ["hashing-bow-v1"]
+    missing = client.get(f"/api/v1/investigations/{uuid.uuid4()}/evidence")
+    assert missing.status_code == 404
