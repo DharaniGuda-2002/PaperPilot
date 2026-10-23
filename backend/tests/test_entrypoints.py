@@ -48,6 +48,7 @@ API_IMAGE_ENTRY_POINTS = [
     "app.workers.reports",
     "app.ops.dead_letters",
     "app.ops.metrics",
+    "app.ops.reports",
     "app.events.topics",
 ]
 ML_ONLY_PACKAGES = ["pymupdf", "fitz", "torch", "sentence_transformers"]

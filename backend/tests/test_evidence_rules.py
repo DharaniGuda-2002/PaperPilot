@@ -234,6 +234,10 @@ def test_retrieval_and_language_model_methods_are_recognized() -> None:
         ("XGBoost beats GCN, while GraphSAGE is slower.", [("XGBoost", "GCN")]),
         ("These methods outperform prior work.", []),
         ("GCN and GAT are used as baselines.", []),
+        # Claimants outside the lexicon (compare-v2); sentences are synthetic.
+        ("Again, GAR outperforms BM25 on every question type.", [("GAR", "BM25")]),
+        ("Qwen2 significantly outperformed Llama in accuracy.", [("Qwen2", "Llama")]),
+        ("Overall, the proposed system outperforms BM25.", []),  # no name before the verb
     ],
 )  # fmt: skip
 def test_outperformance_claims_are_read_from_one_clause(

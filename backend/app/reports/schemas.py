@@ -70,6 +70,7 @@ class Scope(BaseModel):
     abstract_only: int
     no_text: int
     papers_with_evidence: int
+    duplicates_merged: int = 0  # same study listed twice (e.g. preprint and published version)
     selection: str
 
 

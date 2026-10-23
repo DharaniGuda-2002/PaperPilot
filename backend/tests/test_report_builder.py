@@ -143,3 +143,56 @@ def test_findings_are_capped_and_related_by_shared_papers() -> None:
     assert "caveat-comparability" in ids
     assert "claim-1" in ids["caveat-comparability"].related  # both cite paper A
     assert all(f.strength is None for f in report.key_findings if f.kind == FindingKind.CAVEAT)
+
+
+def test_partial_text_coverage_is_always_a_visible_caveat() -> None:
+    full, abstract, none = paper("Full"), paper("Abs", kind="abstract"), paper("None", kind="none")
+    report = build([full, abstract, none], [])
+    coverage = next(f for f in report.key_findings if f.id == "caveat-coverage")
+    assert coverage.summary.startswith(
+        "2 papers could not be read in full: 1 as abstracts only and 1 with no text"
+    )
+    assert len(report.key_findings) >= 3
+
+
+def test_preprint_and_published_version_count_as_one_study() -> None:
+    """Regression: an arXiv preprint and its conference version (different DOIs,
+    same title) were counted as two papers, inflating evidence strength."""
+    from datetime import UTC, datetime
+
+    from app.papers.models import Paper
+    from app.reports.service import distinct_works
+
+    def make(title: str, doi: str) -> Paper:
+        return Paper(
+            id=uuid.uuid4(), provider="fixture", provider_id=doi, doi=doi, title=title, authors=[],
+            is_open_access=True, metadata_fetched_at=datetime.now(UTC),
+        )  # fmt: skip
+
+    published = make("Generation-Augmented Retrieval for Open-Domain QA", "10.1/acl")
+    preprint = make("Generation-Augmented Retrieval for Open-domain QA", "10.48550/arxiv.1")
+    other = make("A different study", "10.1/other")
+    rows: list[tuple[Paper, str | None]] = [
+        (published, "abstract"),
+        (preprint, "full_text"),
+        (other, None),
+    ]
+    kept, merged = distinct_works(rows)
+    assert merged == 1
+    assert [p.doi for p, _ in kept] == ["10.48550/arxiv.1", "10.1/other"]  # full-text version kept
+
+
+def test_bottom_line_does_not_lead_with_claims_unrelated_to_the_question() -> None:
+    a = paper("A")
+    report = build_report(
+        question="Does retrieval-augmented generation reduce hallucination in QA?",
+        papers=[ref(a)],
+        papers_discovered=1,
+        comparison=compare([a], [claim(a, "Again, GAR outperforms BM25 everywhere.", "BM25")]),
+        versions={"extraction": "rules-v2"},
+    )
+    assert report.bottom_line.startswith(
+        "None of the analyzed papers explicitly compares Retrieval-augmented generation with "
+        "another method; 1 other comparison between methods is listed below."
+    )
+    assert report.key_findings[0].title == "GAR reported to outperform BM25"  # still reported

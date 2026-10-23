@@ -337,6 +337,12 @@ def methods_in(text: str) -> list[str]:
 
 
 _OUTPERFORM = re.compile(r"\b(outperform(?:s|ed|ing)?|surpass(?:es|ed)?|beats?)\b", re.IGNORECASE)
+# A method name the lexicon does not know: two or more capitals or digits
+# ("GAR", "Qwen2", "RAG2"), followed by at most three words before the verb.
+_NAMED_CLAIMANT = re.compile(
+    r"\b((?=[A-Za-z0-9+-]*[A-Z0-9][A-Za-z0-9+-]*[A-Z0-9])[A-Z][A-Za-z0-9+-]{1,15})"
+    r"(?:\s+[a-z]+){0,3}\s*$"
+)
 # The comparison ends where a new clause starts ("A beats B, while C is slower").
 _CLAUSE_BREAK = re.compile(
     r";|,\s*(?:while|whereas|but|although|though|however|which)\b|\bbut\b", re.IGNORECASE
@@ -357,6 +363,11 @@ def outperformance_claims(sentence: str) -> list[tuple[str, str]]:
     clause_end = clause_break.start() if clause_break else len(sentence)
     before = [name for start, name in positioned if start < match.start()]
     after = [name for start, name in positioned if match.end() < start < clause_end]
+    if not before:
+        # Methods outside the lexicon ("GAR outperforms BM25", "Qwen2 outperformed
+        # Llama"): accept a name-like token just before the verb.
+        named = _NAMED_CLAIMANT.search(sentence[: match.start()])
+        before = [named.group(1)] if named else []
     if not before or not after:
         return []
     claimant = before[-1]

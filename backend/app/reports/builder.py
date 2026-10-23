@@ -78,6 +78,7 @@ def build_report(
     papers_discovered: int,
     comparison: Comparison,
     versions: dict[str, str],
+    duplicates_merged: int = 0,
 ) -> Report:
     rows = {r.paper_id: r for r in comparison.matrix}
     analyzed = sum(r.content_kind != "none" for r in comparison.matrix)
@@ -106,9 +107,19 @@ def build_report(
             abstract_only=abstract,
             no_text=len(comparison.matrix) - full - abstract,
             papers_with_evidence=with_evidence,
-            selection=f"Top {papers_discovered} OpenAlex results for the question, by relevance.",
+            duplicates_merged=duplicates_merged,
+            selection=(
+                f"Top OpenAlex results for the question, by relevance; {papers_discovered} "
+                "distinct studies"
+                + (
+                    f" after merging {duplicates_merged} duplicate listing"
+                    f"{'' if duplicates_merged == 1 else 's'} of the same study."
+                    if duplicates_merged
+                    else "."
+                )
+            ),
         ),
-        bottom_line=_bottom_line(claims, comparison, analyzed, abstract),
+        bottom_line=_bottom_line(question, claims, comparison, analyzed, abstract),
         overall_strength=overall,
         key_findings=findings,
         limitations=_limitations(comparison, full, abstract, versions),
@@ -288,6 +299,23 @@ def _caveat_findings(comparison: Comparison, rows: dict[uuid.UUID, MatrixRow]) -
                 [],
             )
         )
+    not_full = [r for r in comparison.matrix if r.content_kind != "full_text"]
+    if not_full:
+        abstract = sum(r.content_kind == "abstract" for r in not_full)
+        no_text = len(not_full) - abstract
+        findings.append(
+            _caveat(
+                "caveat-coverage",
+                "Part of the literature was read only partially",
+                f"{_n(len(not_full), 'paper')} could not be read in full: {abstract} as "
+                f"abstracts only and {no_text} with no text at all. Their methods and results "
+                "may be missing from this report.",
+                [
+                    _support(r, "Abstract only" if r.content_kind == "abstract" else "No text", [])
+                    for r in not_full
+                ],
+            )
+        )
     stated = [
         r
         for r in comparison.matrix
@@ -334,11 +362,24 @@ def _link_related(findings: list[Finding]) -> None:
 
 
 def _bottom_line(
-    claims: list[_ClaimFinding], comparison: Comparison, analyzed: int, abstract: int
+    question: str,
+    claims: list[_ClaimFinding],
+    comparison: Comparison,
+    analyzed: int,
+    abstract: int,
 ) -> str:
     parts = []
-    if claims:
-        top = claims[0]
+    named = list(dict.fromkeys(family(m) for m in methods_in(question)))
+    relevant = [c for c in claims if not named or {c.better, c.worse} & set(named)]
+    if named and claims and not relevant:
+        # Lead only with claims about what the question asks; others stay in the findings.
+        parts.append(
+            f"None of the analyzed papers explicitly compares {' or '.join(named)} with another "
+            f"method; {_n(len(claims), 'other comparison')} between methods "
+            f"{'is' if len(claims) == 1 else 'are'} listed below."
+        )
+    elif relevant:
+        top = relevant[0]
         opposite = (
             f", while {len(top.finding.conflicting)} report the opposite"
             if top.finding.conflicting

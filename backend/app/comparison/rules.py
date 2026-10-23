@@ -25,7 +25,7 @@ from pydantic import BaseModel
 
 from app.evidence.rules import outperformance_claims
 
-COMPARISON_VERSION = "compare-v1"
+COMPARISON_VERSION = "compare-v2"  # v2: claimants outside the method lexicon
 
 
 @dataclass(frozen=True)

@@ -1,6 +1,7 @@
 """Load persisted, validated evidence for an investigation, compare it, build
 the report, and store it as a new immutable version."""
 
+import re
 import uuid
 
 from sqlalchemy import func, select
@@ -42,13 +43,14 @@ def pipeline_state(session: Session, investigation_id: uuid.UUID) -> tuple[bool,
 
 
 def assemble_report(session: Session, investigation: Investigation) -> Report:
-    rows = session.execute(
+    result = session.execute(
         select(Paper, PaperDocument.content_kind)
         .join(InvestigationPaper, InvestigationPaper.paper_id == Paper.id)
         .outerjoin(PaperDocument, PaperDocument.paper_id == Paper.id)
         .where(InvestigationPaper.investigation_id == investigation.id)
         .order_by(InvestigationPaper.rank)
     ).all()
+    rows, merged = distinct_works([(paper, kind) for paper, kind in result])
     papers = [
         PaperInput(paper.id, paper.title, paper.publication_year, kind or "none")
         for paper, kind in rows
@@ -87,10 +89,13 @@ def assemble_report(session: Session, investigation: Investigation) -> Report:
         )
         for r in records
     ]
+    kept = {p.paper_id for p in papers}
+    evidence = [e for e in evidence if e.paper_id in kept]
     return build_report(
         question=investigation.question,
         papers=refs,
         papers_discovered=len(papers),
+        duplicates_merged=merged,
         comparison=compare(papers, evidence),
         versions={
             "extraction": EXTRACTION_VERSION,
@@ -98,6 +103,29 @@ def assemble_report(session: Session, investigation: Investigation) -> Report:
             "comparison": COMPARISON_VERSION,
         },
     )
+
+
+def _work_key(title: str) -> str:
+    return re.sub(r"[^a-z0-9]", "", title.lower())
+
+
+def distinct_works(
+    rows: list[tuple[Paper, str | None]],
+) -> tuple[list[tuple[Paper, str | None]], int]:
+    """One entry per study. A preprint and its published version (different DOIs,
+    same title) must not count as two independent papers. Prefer the version
+    read in full, then the higher-ranked one. Returns (rows, duplicates merged)."""
+    chosen: dict[str, tuple[Paper, str | None]] = {}
+    order: list[str] = []
+    for row in rows:
+        paper, kind = row
+        key = _work_key(paper.title)
+        if key not in chosen:
+            chosen[key] = row
+            order.append(key)
+        elif chosen[key][1] != "full_text" and kind == "full_text":
+            chosen[key] = row
+    return [chosen[k] for k in order], len(rows) - len(order)
 
 
 def save_report(session: Session, investigation_id: uuid.UUID, report: Report) -> int:
