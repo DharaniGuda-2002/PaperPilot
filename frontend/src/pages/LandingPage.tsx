@@ -51,8 +51,8 @@ export function LandingPage() {
             </p>
             <QuickStartForm label="Research question" placeholder="Ask a research question…" />
             <p className="notice notice--info hero__preview">
-              Early preview: you can create and track investigations today. Paper discovery,
-              evidence extraction, and reports are being built.
+              Early preview: paper search and investigation tracking work today. Evidence
+              extraction and reports are being built.
             </p>
           </div>
 

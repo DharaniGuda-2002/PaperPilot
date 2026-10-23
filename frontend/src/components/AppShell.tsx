@@ -1,4 +1,4 @@
-import { FileSearch, Home } from 'lucide-react'
+import { FileSearch, Home, Search } from 'lucide-react'
 import { NavLink, Outlet } from 'react-router-dom'
 
 import { Logo } from './Logo'
@@ -6,6 +6,7 @@ import { Logo } from './Logo'
 const NAV = [
   { to: '/app', label: 'Home', icon: Home, end: true },
   { to: '/app/investigations', label: 'Investigations', icon: FileSearch, end: false },
+  { to: '/app/search', label: 'Search', icon: Search, end: false },
 ]
 
 export function AppShell() {
@@ -25,7 +26,7 @@ export function AppShell() {
           ))}
         </nav>
         <p className="sidebar__note">
-          Early preview. Paper discovery and reports are in development.
+          Early preview. Paper search works; evidence extraction and reports are in development.
         </p>
       </aside>
       <main id="main" className="app-main" tabIndex={-1}>

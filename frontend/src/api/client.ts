@@ -1,6 +1,13 @@
 // Centralized HTTP client. All API calls go through `request` so errors are uniform.
 
-import type { Investigation, InvestigationPage, InvestigationStats } from './types'
+import type {
+  Investigation,
+  InvestigationPage,
+  InvestigationStats,
+  Paper,
+  PaperSearchParams,
+  PaperSearchResponse,
+} from './types'
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? ''
 
@@ -55,6 +62,18 @@ export const api = {
 
   getInvestigation(id: string): Promise<Investigation> {
     return request(`/api/v1/investigations/${encodeURIComponent(id)}`)
+  },
+
+  searchPapers(params: PaperSearchParams): Promise<PaperSearchResponse> {
+    const query = new URLSearchParams()
+    for (const [key, value] of Object.entries(params)) {
+      if (value !== undefined && value !== '') query.set(key, String(value))
+    }
+    return request(`/api/v1/papers/search?${query}`)
+  },
+
+  getPaper(id: string): Promise<Paper> {
+    return request(`/api/v1/papers/${encodeURIComponent(id)}`)
   },
 
   createInvestigation(question: string): Promise<Investigation> {

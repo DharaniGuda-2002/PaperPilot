@@ -8,6 +8,8 @@ import { LandingPage } from './pages/LandingPage'
 import { LegacyInvestigationRedirect } from './pages/LegacyInvestigationRedirect'
 import { NewInvestigationPage } from './pages/NewInvestigationPage'
 import { NotFoundPage } from './pages/NotFoundPage'
+import { PaperPage } from './pages/PaperPage'
+import { SearchPage } from './pages/SearchPage'
 
 export const routes: RouteObject[] = [
   { path: '/', element: <LandingPage /> },
@@ -20,6 +22,8 @@ export const routes: RouteObject[] = [
       { path: 'investigations', element: <InvestigationsPage /> },
       { path: 'investigations/new', element: <NewInvestigationPage /> },
       { path: 'investigations/:investigationId', element: <InvestigationPage /> },
+      { path: 'search', element: <SearchPage /> },
+      { path: 'papers/:paperId', element: <PaperPage /> },
       { path: '*', element: <NotFoundPage /> },
     ],
   },
