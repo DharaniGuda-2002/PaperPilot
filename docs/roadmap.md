@@ -5,7 +5,7 @@ Each milestone is finished and verified before the next starts.
 ## Checklist
 
 - [x] M0 — Repository inspection, architecture, ADRs, acceptance criteria
-- [ ] M1 — Application foundation (local stack verified; CI and public deployment pending)
+- [ ] M1 — Application foundation (local stack and CI verified; public deployment pending)
 - [ ] M2 — Paper discovery (OpenAlex)
 - [ ] M3 — Kafka pipeline (outbox, dispatcher, first idempotent consumer)
 - [ ] M4 — Distributed reliability (retries, DLQ, recovery, throughput)
@@ -57,5 +57,5 @@ cd frontend && npm run typecheck && npm run lint && npm run contrast && npm test
 | 7. Real-API dashboard | Pass: submitted via keyboard in browser, landed on detail page with DB data |
 | 8. Tokens, focus, text status | Pass: contrast script 20/20 pairs; 3 failing usages fixed; no page overflow at 375px |
 | 9. Checks | Pass locally: ruff, mypy, pytest (22), typecheck, oxlint, vitest (8), build |
-| 9. GitHub Actions | Not run yet: no GitHub remote |
+| 9. GitHub Actions | Pass: run 39892780167 (backend 22 tests, frontend 8 tests, Compose smoke test) |
 | 10. Public deployment | Not done |
