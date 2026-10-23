@@ -4,11 +4,11 @@ An evidence-backed research investigation engine. Ask a technical research quest
 PaperPilot finds relevant papers, extracts reported evidence with source passages,
 flags experiments that cannot be fairly compared, and produces a traceable report.
 
-> **Status: Milestone 4 (reliable pipeline).** Creating an investigation starts a Kafka
-> pipeline (transactional outbox → dispatcher → discovery workers) that links relevant
-> OpenAlex papers to it, with scheduled retries, a dead-letter topic, replay tools,
-> lag metrics, and [measured throughput](docs/benchmarks.md). Evidence extraction and
-> reports are not built yet.
+> **Status: Milestone 5 (evidence).** An investigation runs a Kafka pipeline:
+> discovery (OpenAlex) → permitted open-access PDFs (SSRF-safe, robots-aware) → page-exact
+> chunks with local embeddings → hybrid search → rule-based evidence with exact quotations
+> and deterministic validation. Comparison and reports come in M6.
+> Quality checks so far: [docs/evaluation.md](docs/evaluation.md).
 > The pipeline runs in the local Docker setup; the public demo has no workers.
 > See [docs/roadmap.md](docs/roadmap.md).
 
@@ -104,12 +104,18 @@ scripts/    smoke test
 | GET | `/api/v1/investigations/{id}/tasks` | Pipeline tasks: status, attempts, errors, results |
 | GET | `/api/v1/investigations/{id}/papers` | Discovered papers in rank order |
 | GET | `/api/v1/system/pipeline` | Outbox backlog and oldest pending age |
+| GET | `/api/v1/investigations/{id}/evidence` | Evidence with quotations, pages, provenance, and validation checks |
+| GET | `/api/v1/papers/{id}/document` | What text is held for a paper (full text or abstract and why) |
 | GET | `/health/live`, `/health/ready` | Liveness / readiness |
 
 ## Known limitations
 
-- The pipeline ends after discovery, so investigations stay `running` until
-  evidence extraction exists.
+- The pipeline ends after evidence validation, so investigations stay `running`
+  until comparison and reports exist (M6).
+- Evidence extraction is rule-based; see the weaknesses in
+  [docs/evaluation.md](docs/evaluation.md). Full text comes only from open-access PDFs.
+- The document and evidence workers use a 2.2 GB image (CPU-only torch and the
+  embedding model); the first `docker compose up --build` takes several minutes.
 - Paper search depends on OpenAlex usage limits; see
   [ADR 0005](docs/adr/0005-openalex-provider-and-search-cache.md).
 - No authentication. Creating investigations is rate limited per client and capped

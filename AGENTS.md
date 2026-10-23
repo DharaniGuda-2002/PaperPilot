@@ -19,6 +19,7 @@ Evidence-backed research investigation engine. Read
 Backend (from `backend/`, with `.venv` active):
 
 ```bash
+pip install torch==2.14.1 --index-url https://download.pytorch.org/whl/cpu  # CPU-only on Linux
 pip install -r requirements-dev.txt
 ruff check . && ruff format --check .
 mypy app tests
@@ -27,6 +28,8 @@ alembic upgrade head
 uvicorn app.main:create_app --factory --reload
 python -m app.workers.outbox_dispatcher   # needs Kafka: docker compose up -d kafka kafka-init
 python -m app.workers.discovery
+python -m app.workers.documents           # ml dependencies; EMBEDDING_PROVIDER=hashing skips the model
+python -m app.workers.evidence
 ```
 
 Frontend (from `frontend/`):
@@ -51,6 +54,11 @@ Full stack: `docker compose up --build`.
   Status must be conveyed by text, not color alone.
 - Small Conventional Commits (`feat(api): ...`). Run checks before committing.
 - Do not add Redis, Kubernetes, or new services without a documented need.
+- Fetch external URLs only through `app.documents.fetch.SafeFetcher` (SSRF checks,
+  robots.txt, shared crawl delay).
+- Evidence passages are exact quotations from stored text; bump
+  `EXTRACTION_VERSION` when rules change and add a regression test with a
+  synthetic sentence for every real-world failure.
 - Events: add new payload versions beside old ones in `app/events/envelope.py`;
   publish only through the outbox (`app/events/outbox.enqueue`) inside the
   transaction that changes state. Consumers must be idempotent and commit

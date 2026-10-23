@@ -50,10 +50,10 @@ work is ready*, identified by IDs; it never holds the only copy of anything.
 | `app.core` | Settings, logging, DB engine/session | M1 |
 | `app.papers` | OpenAlex search client, normalization, cached search, paper storage | M2 |
 | `app.events` | Event envelopes, outbox, dispatcher, consumer base | planned M3 |
-| `app.workers` | Worker entry points | planned M3–M5 |
-| `app.documents` | Permitted document fetch, PDF text extraction, SSRF guard | planned M5 |
-| `app.retrieval` | Full-text + pgvector hybrid ranking | planned M5 |
-| `app.evidence` | Structured extraction, validation | planned M5 |
+| `app.workers` | Discovery, document, and evidence workers; consume loop; task helpers | M3–M5 |
+| `app.documents` | SSRF-safe, robots-aware PDF fetch; page-exact extraction and chunking; shared host schedule | M5 |
+| `app.retrieval` | Local embeddings; full-text + pgvector hybrid search with RRF | M5 |
+| `app.evidence` | Rule-based extraction with exact quotations; deterministic validation | M5 |
 | `app.comparison` | Deterministic comparability rules | planned M6 |
 | `app.reports` | Report assembly from persisted evidence | planned M6 |
 
@@ -101,6 +101,13 @@ Because each key is refreshed at most once per 24 h, counting rows with
 `fetched_at` in the last 24 h equals the number of provider calls, which enforces the
 daily provider-call cap.
 
+Implemented in M5 (`0005_*`, `0006_*`): `paper_documents` (one per paper:
+full text, abstract, or none, with fetch provenance and extractor version),
+`paper_chunks` (page-exact text, generated `tsvector` with a GIN index,
+`vector(384)` with an HNSW cosine index, embedding model version),
+`evidence_records`, append-only `evidence_validations`, and
+`fetch_host_schedule` (shared per-host request spacing).
+
 Planned tables (added by the milestone that first needs them):
 
 | Table | Key columns | Key constraints | Milestone |
@@ -109,10 +116,6 @@ Planned tables (added by the milestone that first needs them):
 | outbox_events | event_id, topic, partition_key, event_type, schema_version, payload, published_at | partial index where published_at is null | M3 |
 | processed_events | consumer_group, event_id | PK(consumer_group, event_id) — idempotency | M3 |
 | investigation_tasks | investigation_id, kind, subject_id, status, attempts, next_attempt_at, last_error | unique(investigation_id, kind, subject_id) | M3 |
-| paper_documents | paper_id, source_url, content_kind (abstract/full_text), license, sha256, extractor_version | unique(paper_id, sha256) | M5 |
-| paper_chunks | document_id, ordinal, page_start, page_end, text, tsv, embedding vector(384), embedding_model | unique(document_id, ordinal); GIN(tsv); HNSW(embedding) | M5 |
-| evidence_records | investigation_id, paper_id, chunk_id, field, value (jsonb), finding_status, passage, passage_kind, page, extraction_method/version, validation_status | FK to chunk for provenance | M5 |
-| evidence_validations | evidence_id, rule, outcome, details | append-only history | M5 |
 | comparison_results | investigation_id, rules_version, matrix, warnings | | M6 |
 | investigation_reports | investigation_id, version, content, generator_version | unique(investigation_id, version) | M6 |
 
@@ -208,7 +211,29 @@ Verified failure behavior (local Compose, 2026-10-23; M4 drills in roadmap.md):
 | Duplicate and 4 concurrent deliveries (tests) | papers linked and events emitted exactly once |
 | Dispatcher crash after publish (tests) | rows republished after the lease expired; consumers de-duplicate |
 
-## 7. Delivery guarantees in one paragraph
+## 7. Documents, retrieval, and evidence (M5)
+
+```
+paper.discovered ─▶ document-worker (group document-workers, ml image)
+   permitted?  OpenAlex says open access and lists a PDF ─▶ SafeFetcher
+               (SSRF checks, robots.txt, shared crawl-delay schedule)
+   PyMuPDF text per page ─▶ ~900-char chunks inside one page ─▶ MiniLM embeddings
+   else abstract (reason recorded) ─▶ paper_documents + paper_chunks (shared by investigations)
+   ─▶ document.processed (key: paper)
+document.processed ─▶ evidence-worker (group evidence-workers, ml image)
+   hybrid search (FTS + vector, RRF) for the question and one query per field
+   rules-v2 extraction: exact sentence, page, chunk, retrieval method
+   checks-v1 validation: quote in stored text, page consistent, numbers in quote, value range
+   ─▶ evidence_records + evidence_validations ─▶ evidence.extracted (key: investigation)
+```
+
+Field outcomes: `reported` (quoted), `uncertain` (quoted, unit unclear),
+`not_found` (full text searched, nothing matched), and `unavailable` (abstract
+only). Absence is never recorded as a negative finding. Details and
+trade-offs: [ADR 0006](adr/0006-documents-retrieval-and-evidence.md);
+measured quality: [evaluation.md](evaluation.md).
+
+## 8. Delivery guarantees in one paragraph
 
 The API writes the investigation row and its outbox event in one Postgres
 transaction, so either both exist or neither does. The dispatcher may publish an

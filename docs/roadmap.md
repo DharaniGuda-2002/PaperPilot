@@ -11,7 +11,7 @@ Each milestone is finished and verified before the next starts.
 - [x] M2 — Paper discovery (OpenAlex search, cached and rate limited; verified locally and on the public demo)
 - [x] M3 — Kafka pipeline (outbox, dispatcher, idempotent discovery worker; local deployment)
 - [x] M4 — Distributed reliability (scheduled retries, dead letters, replay, lag metrics, benchmarks)
-- [ ] M5 — Retrieval and evidence (PDFs, embeddings, hybrid search, extraction)
+- [x] M5 — Retrieval and evidence (permitted PDFs, SSRF guard, embeddings, hybrid search, rule-based extraction, validation)
 - [ ] M6 — Comparison and reports (rules, progressive-disclosure report UI)
 - [ ] M7 — Hardening and final deployment
 
@@ -119,3 +119,33 @@ Open items:
   made a drill fail with "paper search daily limit reached". The benchmark data was
   removed afterwards. The cap behaved as designed; benchmark runs should use a separate
   database or clean up after themselves.
+
+## M5 acceptance criteria and verification (2026-10-23)
+
+| Criterion | Result |
+|---|---|
+| Permitted PDF retrieval only | Pass: fetch only when OpenAlex marks open access and lists a PDF; robots.txt honored; crawl delay shared across workers (Postgres schedule); abstract fallback with the reason recorded |
+| SSRF protection | Pass: 39 fetch tests (schemes, ports, credentials, private/loopback/link-local/CGNAT/IPv4-mapped addresses, redirect hops, connected-peer check, size caps). Live: cloud-metadata IP, localhost port, and `127.0.0.1.nip.io` blocked |
+| Text extraction with page references | Pass: page-exact chunks; two-column reading order fixed after a real arXiv paper interleaved columns; 5 of 5 cited pages confirmed against original PDFs |
+| Local embeddings | Pass: all-MiniLM-L6-v2 at a pinned revision, baked into a CPU-only ML image (2.2 GB; the api image stays 331 MB) |
+| pgvector hybrid retrieval | Pass: FTS + cosine with RRF; per-candidate method and ranks; retrieval tests on real Postgres + pgvector |
+| Structured evidence with provenance | Pass: 7 fields; exact quotation, page, chunk, retrieval method, extraction version; reported / uncertain / not_found / unavailable |
+| Validation | Pass: 4 deterministic checks per record, stored as history; failures kept as rejected |
+| End to end | Pass: real run of 25 papers in 122 s (17 full text); CI pipeline with recorded papers and fetching off checks documents and evidence for every paper |
+
+Quality (details and sample sizes in [evaluation.md](evaluation.md)): metric values
+correct 9 of 10 and method credit correct 7 of 10, reviewed by hand (n = 10).
+
+Bugs found by the full-stack run, each fixed with a regression test:
+workers missing other modules' tables (`NoReferencedTableError`), events outliving
+their investigations, nginx caching the API's old address, the smoke test exiting
+silently under pipefail, rules-v1 misreading numbers in names, and duplicate works
+from the provider.
+
+Open items:
+- A paper's document is shared. If it was stored as abstract-only for a temporary
+  reason (fetching disabled, fetch failed), later investigations reuse it instead of
+  retrying full text. A re-fetch policy is not built.
+- Lexicon coverage is limited to ML-adjacent fields; extraction recall is not
+  measured yet (M6 evaluation set).
+- The public demo (Render) runs no workers, so documents and evidence are local only.
