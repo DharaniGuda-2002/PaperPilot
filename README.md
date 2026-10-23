@@ -8,6 +8,9 @@ flags experiments that cannot be fairly compared, and produces a traceable repor
 > through a real API and database. Paper discovery, the Kafka pipeline, evidence
 > extraction, and reports are not built yet. See [docs/roadmap.md](docs/roadmap.md).
 
+**Live demo:** https://paperpilot-web-tfx4.onrender.com (free tier: first load after
+idle can take about a minute). API docs: https://paperpilot-api-2ykf.onrender.com/docs
+
 PaperPilot evaluates *reported* evidence. It does not prove scientific reproducibility.
 
 ## Quick start (Docker)
@@ -86,5 +89,5 @@ scripts/    smoke test
 - No processing pipeline yet: investigations stay `queued`.
 - No authentication. Creating investigations is rate limited per client and capped
   per day; see [docs/deployment.md](docs/deployment.md#public-demo-safeguards).
-- Public demo runs on free tiers (Render + Neon) and sleeps when idle; the first
-  request can take about a minute. Setup and limits: [docs/deployment.md](docs/deployment.md).
+- The public demo runs on free tiers (Render + Neon) and sleeps when idle; the first
+  request can take about a minute. Kafka and workers (from M3) will be local-only. Setup and limits: [docs/deployment.md](docs/deployment.md).

@@ -5,7 +5,7 @@ Each milestone is finished and verified before the next starts.
 ## Checklist
 
 - [x] M0 — Repository inspection, architecture, ADRs, acceptance criteria
-- [ ] M1 — Application foundation (local stack and CI verified; public deployment pending)
+- [x] M1 — Application foundation (local, CI, and public demo verified)
 - [ ] M2 — Paper discovery (OpenAlex)
 - [ ] M3 — Kafka pipeline (outbox, dispatcher, first idempotent consumer)
 - [ ] M4 — Distributed reliability (retries, DLQ, recovery, throughput)
@@ -34,8 +34,8 @@ Each milestone is finished and verified before the next starts.
    keyboard focus visible; status shown as text, not color alone.
 9. Backend: ruff, mypy, pytest pass. Frontend: typecheck, lint, tests, build
    pass. A GitHub Actions workflow runs the same checks.
-10. Public deployment: deferred until a GitHub remote and hosting accounts
-    exist (see ADR 0004). Requires your approval to create.
+10. Public deployment on free tiers (see ADR 0004 and docs/deployment.md),
+    smoke-tested at its public URLs, with create rate limits in place.
 
 ## Verification commands (M1)
 
@@ -58,4 +58,4 @@ cd frontend && npm run typecheck && npm run lint && npm run contrast && npm test
 | 8. Tokens, focus, text status | Pass: contrast script 20/20 pairs; 3 failing usages fixed; no page overflow at 375px |
 | 9. Checks | Pass locally: ruff, mypy, pytest (22), typecheck, oxlint, vitest (8), build |
 | 9. GitHub Actions | Pass: run 39892780167 (backend 22 tests, frontend 8 tests, Compose smoke test) |
-| 10. Public deployment | Not done |
+| 10. Public deployment | Pass (2026-10-23): Render + Neon. `smoke-test.sh` passed against the public URLs (frontend, deep links, readiness with DB, create/read, 422, CORS). Also: 413 on 20 KB body, no CORS header for a foreign origin, per-IP limit 201×3 then 429 behind Render's proxy. Browser: dashboard list, 429 message, and submit → detail page all worked |
