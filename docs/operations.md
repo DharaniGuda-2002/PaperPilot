@@ -108,6 +108,33 @@ partitions later is possible but changes which partition a key maps to, which
 is acceptable here because ordering is only needed per investigation and each
 investigation's events are independent.
 
+## Reports
+
+The report worker builds a report once every paper of an investigation has
+finished, then sets the final status. Each build is a new immutable version.
+After changing comparison or report rules, rebuild from the stored evidence
+(earlier versions are kept):
+
+```bash
+docker compose run --rm --no-deps api python -m app.ops.reports rebuild <investigation_id>
+```
+
+It refuses while papers are still being processed.
+
+## Evaluation
+
+Score retrieval and extraction against the gold set (read-only; needs the gold
+papers processed locally):
+
+```bash
+evaluation/run-gold.sh                  # prints the summary, writes evaluation/results/
+evaluation/run-gold.sh rag-hallucination-v1 --list-unjudged
+```
+
+After an extraction change, records that match no gold fact are listed with
+`--list-unjudged`. Each needs a verdict in the `.judgements.json` file before
+precision is complete.
+
 ## Housekeeping
 
 `processed_events` is never pruned automatically. Rows older than the topic

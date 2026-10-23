@@ -1,4 +1,4 @@
-"""Deterministic comparability rules (compare-v1).
+"""Deterministic comparability rules (compare-v2).
 
 Input: verified evidence for one investigation. Output: a per-paper matrix,
 groups of results that can be compared directly, results that cannot (with

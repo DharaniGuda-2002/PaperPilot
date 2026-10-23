@@ -4,11 +4,12 @@ An evidence-backed research investigation engine. Ask a technical research quest
 PaperPilot finds relevant papers, extracts reported evidence with source passages,
 flags experiments that cannot be fairly compared, and produces a traceable report.
 
-> **Status: Milestone 5 (evidence).** An investigation runs a Kafka pipeline:
+> **Status: Milestone 6 (comparison and reports).** An investigation runs a Kafka pipeline:
 > discovery (OpenAlex) → permitted open-access PDFs (SSRF-safe, robots-aware) → page-exact
 > chunks with local embeddings → hybrid search → rule-based evidence with exact quotations
-> and deterministic validation. Comparison and reports come in M6.
-> Quality checks so far: [docs/evaluation.md](docs/evaluation.md).
+> and deterministic validation → deterministic comparability rules → a versioned report
+> with published strength labels, readable in three levels down to the quoted source.
+> Measured quality (small, manually reviewed gold set): [docs/evaluation.md](docs/evaluation.md).
 > The pipeline runs in the local Docker setup; the public demo has no workers.
 > See [docs/roadmap.md](docs/roadmap.md).
 
@@ -106,14 +107,16 @@ scripts/    smoke test
 | GET | `/api/v1/system/pipeline` | Outbox backlog and oldest pending age |
 | GET | `/api/v1/investigations/{id}/evidence` | Evidence with quotations, pages, provenance, and validation checks |
 | GET | `/api/v1/papers/{id}/document` | What text is held for a paper (full text or abstract and why) |
+| GET | `/api/v1/investigations/{id}/report` | Latest report version (summary, findings, comparison, sources); 404 until built |
+| GET | `/api/v1/evidence/{id}` | One evidence record with its paper, document source, and validation checks |
 | GET | `/health/live`, `/health/ready` | Liveness / readiness |
 
 ## Known limitations
 
-- The pipeline ends after evidence validation, so investigations stay `running`
-  until comparison and reports exist (M6).
-- Evidence extraction is rule-based; see the weaknesses in
+- Evidence extraction is rule-based. On the gold set it finds about 1 in 10 key
+  facts, so reports understate what papers contain. Measurements and causes:
   [docs/evaluation.md](docs/evaluation.md). Full text comes only from open-access PDFs.
+- Reports are assembled from templates. They never rank methods and say so.
 - The document and evidence workers use a 2.2 GB image (CPU-only torch and the
   embedding model); the first `docker compose up --build` takes several minutes.
 - Paper search depends on OpenAlex usage limits; see

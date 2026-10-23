@@ -50,12 +50,13 @@ work is ready*, identified by IDs; it never holds the only copy of anything.
 | `app.core` | Settings, logging, DB engine/session | M1 |
 | `app.papers` | OpenAlex search client, normalization, cached search, paper storage | M2 |
 | `app.events` | Event envelopes, outbox, dispatcher, consumer base | planned M3 |
-| `app.workers` | Discovery, document, and evidence workers; consume loop; task helpers | M3–M5 |
+| `app.workers` | Discovery, document, evidence, and report workers; consume loop; task helpers | M3–M6 |
 | `app.documents` | SSRF-safe, robots-aware PDF fetch; page-exact extraction and chunking; shared host schedule | M5 |
 | `app.retrieval` | Local embeddings; full-text + pgvector hybrid search with RRF | M5 |
 | `app.evidence` | Rule-based extraction with exact quotations; deterministic validation | M5 |
-| `app.comparison` | Deterministic comparability rules | planned M6 |
-| `app.reports` | Report assembly from persisted evidence | planned M6 |
+| `app.comparison` | Deterministic comparability rules (compare-v2) | M6 |
+| `app.reports` | Template-based report assembly from verified evidence; versioned storage | M6 |
+| `app.evaluation` | Gold-set scoring: retrieval Recall@K, extraction precision/recall | M6 |
 
 ## 3. Investigation state machine
 
@@ -67,10 +68,13 @@ queued ──▶ running ──▶ completed
 ```
 
 Terminal states: `completed`, `partially_completed`, `failed`, `cancelled`.
-M1 implements `queued` only (no pipeline yet); the DB constraint already
-accepts every state so later milestones need no enum migration.
+The discovery worker moves an investigation to `running`. The report worker
+(M6) ends it: `completed` when every paper went through every stage, or
+`partially_completed` when a paper failed permanently or had no text. Evidence
+strength is reported separately, so a report with insufficient evidence still
+belongs to a completed investigation.
 
-Task states (planned M3): `pending → running → succeeded | failed_retryable →
+Task states (M3): `pending → running → succeeded | failed_retryable →
 (retry) | failed_permanent | skipped`.
 
 ## 4. Database schema
@@ -233,7 +237,25 @@ only). Absence is never recorded as a negative finding. Details and
 trade-offs: [ADR 0006](adr/0006-documents-retrieval-and-evidence.md);
 measured quality: [evaluation.md](evaluation.md).
 
-## 8. Delivery guarantees in one paragraph
+## 8. Comparison and reports (M6)
+
+```
+evidence.extracted ─▶ report-worker (group report-workers, api image)
+   wait until every per-paper task is terminal; claim the build_report task (once)
+   load verified evidence + absence records; merge duplicate works (same title)
+   compare-v2: per-paper matrix; groups only when metric, dataset, protocol, unit known
+               claims "A outperforms B" from one clause; opposite claims = conflicts
+   report-v1: 3–5 findings from templates, strength by published counting rules,
+              question-aware bottom line, limitations / missing information / open questions
+   ─▶ investigation_reports (new immutable version) ─▶ investigation completed | partially_completed
+```
+
+The UI reads `GET /investigations/{id}/report` (level 1 summary, level 2 findings
+expanding in place) and `GET /evidence/{id}` (level 3 inspector: quotation, page,
+source document, retrieval and extraction provenance, validation checks). Design and
+trade-offs: [ADR 0007](adr/0007-comparison-and-reports.md).
+
+## 9. Delivery guarantees in one paragraph
 
 The API writes the investigation row and its outbox event in one Postgres
 transaction, so either both exist or neither does. The dispatcher may publish an

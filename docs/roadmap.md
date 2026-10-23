@@ -12,7 +12,7 @@ Each milestone is finished and verified before the next starts.
 - [x] M3 — Kafka pipeline (outbox, dispatcher, idempotent discovery worker; local deployment)
 - [x] M4 — Distributed reliability (scheduled retries, dead letters, replay, lag metrics, benchmarks)
 - [x] M5 — Retrieval and evidence (permitted PDFs, SSRF guard, embeddings, hybrid search, rule-based extraction, validation)
-- [ ] M6 — Comparison and reports (rules, progressive-disclosure report UI)
+- [x] M6 — Comparison and reports (rules, versioned reports, progressive-disclosure UI, gold-set evaluation)
 - [ ] M7 — Hardening and final deployment
 
 ## M1 acceptance criteria
@@ -149,3 +149,47 @@ Open items:
 - Lexicon coverage is limited to ML-adjacent fields; extraction recall is not
   measured yet (M6 evaluation set).
 - The public demo (Render) runs no workers, so documents and evidence are local only.
+
+## M6 acceptance criteria and verification (2026-10-23)
+
+| Criterion | Result |
+|---|---|
+| Deterministic comparability rules | Pass: compare-v2 groups results only on known and equal metric, dataset, protocol, and unit; every excluded result carries its reasons; percentages and ratios on one 0–1 scale; author claims and cross-paper conflicts listed; no cross-group ranking |
+| Evidence-backed report generation | Pass: report-v1 from templates over verified evidence ids; published strength rules (counting checkable sources, downgraded by conflicts); limitations, missing information, unresolved questions; immutable versions with all rule versions recorded; `app.ops.reports rebuild` |
+| Pipeline end and final status | Pass: report worker (api image) builds once every per-paper task is terminal; `completed` or `partially_completed`; idempotent through the build_report task; backfilled 5 earlier finished investigations on first start |
+| Progressive-disclosure UI | Pass: level 1 bottom line, strength, scope, limits; level 2 findings expand in place with their caveat visible while collapsed; level 3 evidence inspector dialog with quotation, page, source, provenance, checks; comparison matrix and sources tabs (`?view=`, arrow keys). Checked in the browser on the real investigation, including a 471 px window |
+| Evaluation set with Recall@K and precision/recall | Pass, with caveats: 84 facts from 5 papers, annotated by the AI assistant, pending human review. Hybrid Recall@8 0.583 per field query; pipeline coverage 0.929; extraction recall 0.10 and precision 0.47 overall (n = 17 records) |
+
+Real investigation ("Does retrieval-augmented generation reduce hallucination in
+open-domain question answering?", 25 papers; 24 distinct studies after merging 1 duplicate):
+- The investigation ended `partially_completed`: 1 paper had no text.
+- The report rates the evidence "limited", with 5 key findings.
+- 0 of 10 extracted results can be compared directly, because no dataset,
+  protocol, or unit is known for any of them.
+- No analyzed paper compares RAG against another method in a way the rules
+  could read.
+
+Bugs found by the full-stack run, each fixed (most with a regression test):
+- The report worker and API crashed with `ModuleNotFoundError: pymupdf`.
+  Comparison imported the sentence splitter from the PDF module. The splitter
+  now has its own module, and a test runs every api-image entry point with
+  PyMuPDF, torch, and sentence-transformers blocked.
+- The first real report had 0 claims, because claimants outside the method
+  lexicon were dropped. compare-v2 reads name-like claimants.
+- A preprint and its published version counted as two studies and raised the
+  strength to "moderate". Works with the same title are now merged.
+- The bottom line led with a claim unrelated to the question. It now answers
+  from claims that involve the question's methods, or says that none do.
+- Family-level disagreements were missing from unresolved questions.
+- In the UI, the comparison table widened the page at phone width (grid
+  `min-width`). A no-text paper was labeled "abstract only". Singular counts
+  read "1 paper report".
+- In the evaluation, a fixed numeric tolerance treated 0.87 and 0.89 as equal.
+  Tolerance now follows the gold value's written precision.
+
+Open items:
+- Extraction recall is the limiting factor, not retrieval (see evaluation.md).
+  Improving the rules needs a second, held-out gold set, so that the rules are
+  not tuned to the one used for measurement.
+- The gold set needs a human review pass.
+- The public demo still has no workers, so reports exist only locally.
