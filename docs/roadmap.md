@@ -244,6 +244,11 @@ Other fixes:
   Link and accent text moved from brand-600 (3.65:1) to brand-700; the contrast script has the
   new pairs and passes. 43 frontend tests, no horizontal overflow at 375 px, screenshots
   retaken from the local stack.
+- Services renamed to `paperpilot-research` (web) and `paperpilot-research-api` for cleaner
+  URLs; both live and smoke-tested (ready 200, CORS, 422 on bad input, 20 x 200 then 429).
+- Plain-language pass: rewritten landing page, glossary tooltips (`InfoTip`) on strength,
+  abstract-only, comparable, protocol, quotation and validation terms, a "How to read this
+  report" panel, a FAQ page (common and harder questions) and an About page.
 - Not done: a second held-out gold set (needs a human reviewer).
 
 ### Final definition of done

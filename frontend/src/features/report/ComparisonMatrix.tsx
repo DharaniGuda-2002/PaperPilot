@@ -1,3 +1,4 @@
+import { InfoTip } from '../../components/InfoTip'
 import type { Comparison, ResultCell } from '../../api/report'
 
 const KIND = { full_text: 'Full text', abstract: 'Abstract', none: 'No text' } as Record<string, string>
@@ -14,7 +15,7 @@ export function ComparisonMatrix({ comparison, onCite }: { comparison: Compariso
     <div className="comparison">
       <section aria-labelledby="groups-heading">
         <h2 id="groups-heading" className="card__title">
-          Directly comparable results
+          Directly comparable results <InfoTip term="comparable" label="comparable" />
         </h2>
         {comparable.length === 0 ? (
           <p className="notice notice--warning">
@@ -32,7 +33,7 @@ export function ComparisonMatrix({ comparison, onCite }: { comparison: Compariso
                   <tr>
                     <th scope="col">Paper</th>
                     <th scope="col">Method</th>
-                    <th scope="col">Reported value</th>
+                    <th scope="col">Reported value <InfoTip term="reported" label="reported value" /></th>
                     <th scope="col">0–1 scale</th>
                   </tr>
                 </thead>
@@ -75,7 +76,7 @@ export function ComparisonMatrix({ comparison, onCite }: { comparison: Compariso
                 <th scope="col">Text</th>
                 <th scope="col">Methods</th>
                 <th scope="col">Datasets</th>
-                <th scope="col">Protocol</th>
+                <th scope="col">Protocol <InfoTip term="protocol" label="protocol" /></th>
                 <th scope="col">Baselines</th>
                 <th scope="col">Reported results</th>
                 <th scope="col">Comparability warnings</th>

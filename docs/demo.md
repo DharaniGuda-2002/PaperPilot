@@ -56,7 +56,7 @@ generation reduce hallucination in open-domain question answering?*
 
 ## Public demo
 
-https://paperpilot-web-tfx4.onrender.com runs the API and frontend on free tiers
+https://paperpilot-research.onrender.com runs the API and frontend on free tiers
 (Render + Neon).
 - It shows the UI, paper search (OpenAlex, cached), creating investigations,
   and the rate limits.

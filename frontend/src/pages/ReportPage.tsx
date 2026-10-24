@@ -9,8 +9,10 @@ import { useReport } from '../features/investigations/hooks'
 import { ComparisonMatrix } from '../features/report/ComparisonMatrix'
 import { EvidenceInspector } from '../features/report/EvidenceInspector'
 import { FindingCard } from '../features/report/FindingCard'
+import { InfoTip } from '../components/InfoTip'
 import { StrengthBadge } from '../features/report/StrengthBadge'
 import { StrengthMeter } from '../features/report/StrengthMeter'
+import type { GlossaryKey } from '../lib/glossary'
 import { formatDateTime } from '../lib/format'
 import { safeExternalUrl } from '../lib/safeUrl'
 
@@ -58,6 +60,17 @@ export function ReportPage() {
           <p className="page-subtitle">Generated {formatDateTime(report.generated_at)}</p>
         </div>
       </header>
+
+      <details className="howto">
+        <summary>How to read this report</summary>
+        <ul>
+          <li><strong>Summary</strong> gives the bottom line and the main findings. Open a finding to see its sources.</li>
+          <li>Click any highlighted number or citation to see the exact quotation and the page it came from.</li>
+          <li><strong>Comparison</strong> shows results side by side. Only results measured the same way are compared.</li>
+          <li><strong>Sources</strong> lists every paper and whether its full text or only its abstract was read.</li>
+          <li>All numbers are what the papers report. PaperPilot did not re-run any experiment.</li>
+        </ul>
+      </details>
 
       <Tabs view={view} onChange={(next) => setSearchParams(next === 'summary' ? {} : { view: next })} />
 
@@ -134,15 +147,18 @@ function Summary({ report, onCite, onOpenComparison }: { report: Report; onCite:
           <h2 id="bottom-line-heading" className="card__title">
             Bottom line
           </h2>
-          <StrengthBadge strength={report.overall_strength} definition={report.strength_definitions[report.overall_strength]} />
+          <span className="badge-with-tip">
+            <StrengthBadge strength={report.overall_strength} definition={report.strength_definitions[report.overall_strength]} />
+            <InfoTip term="strength" label="evidence strength" />
+          </span>
         </div>
         <p className="bottom-line__text">{report.bottom_line}</p>
         <StrengthMeter strength={report.overall_strength} definition={report.strength_definitions[report.overall_strength]} />
         <div className="stats" role="list" aria-label="Report scope">
           <Stat value={scope.papers_discovered} label="Papers discovered" />
           <Stat value={scope.full_text} label="Full texts analyzed" />
-          <Stat value={scope.abstract_only} label="Abstracts only" />
-          <Stat value={scope.papers_with_evidence} label="Papers with evidence" />
+          <Stat value={scope.abstract_only} label="Abstracts only" tip="abstractOnly" />
+          <Stat value={scope.papers_with_evidence} label="Papers with evidence" tip="evidence" />
         </div>
         <p className="hint">
           {scope.selection} <button type="button" className="text-link" onClick={onOpenComparison}>Open the comparison matrix</button>
@@ -198,12 +214,15 @@ function Summary({ report, onCite, onOpenComparison }: { report: Report; onCite:
   )
 }
 
-function Stat({ value, label }: { value: number; label: string }) {
+function Stat({ value, label, tip }: { value: number; label: string; tip?: GlossaryKey }) {
   return (
     <div className="stat" role="listitem">
       <span>
         <span className="stat__value">{value}</span>
-        <span className="stat__label">{label}</span>
+        <span className="stat__label">
+          {label}
+          {tip && <InfoTip term={tip} label={label} />}
+        </span>
       </span>
     </div>
   )

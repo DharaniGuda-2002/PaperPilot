@@ -40,7 +40,7 @@ Sources: [Render free tier](https://render.com/docs/free),
 
 - **First request after 15 idle minutes takes about a minute** (Render spin-up), plus a
   short Neon wake-up. The frontend shows its normal loading state meanwhile.
-- **The browser calls the API cross-origin** (`paperpilot-web` → `paperpilot-api`).
+- **The browser calls the API cross-origin** (`paperpilot-research` → `paperpilot-research-api`).
   The API allows only the frontend's origin via `CORS_ORIGINS`.
 - **Migrations run at API startup** (`alembic upgrade head && uvicorn ...`). Safe because
   the free plan runs exactly one instance; with several instances, move migrations to a
@@ -75,7 +75,7 @@ Implemented before the first public deploy:
    pick the `PaperPilot` repository, and confirm the two services from `render.yaml`.
 3. When Render asks for `DATABASE_URL`, paste the Neon string. Apply.
 4. **Optional, least-privilege database role.** In the Render shell of
-   `paperpilot-api` (or locally with the owner URL exported as
+   `paperpilot-research-api` (or locally with the owner URL exported as
    `MIGRATION_DATABASE_URL`), run
    `APP_DB_PASSWORD=<new password> python -m app.ops.runtime_role`.
    Then in Render set `MIGRATION_DATABASE_URL` to the owner string and change
@@ -84,7 +84,7 @@ Implemented before the first public deploy:
    Skipping this leaves the demo on the owner role, as documented in
    [security.md](security.md).
 5. **OpenAlex key (recommended):** create a free key at https://openalex.org/settings/api
-   and add it as `OPENALEX_API_KEY` in the `paperpilot-api` service's **Environment** tab.
+   and add it as `OPENALEX_API_KEY` in the `paperpilot-research-api` service's **Environment** tab.
    Without it, searches share a $0.10/day budget with every other service on Render's
    outbound IP and may fail with "provider unavailable".
 5. Wait for both services to go live. If Render had to rename a service (name taken),
@@ -93,8 +93,8 @@ Implemented before the first public deploy:
 ## Verifying a deployment
 
 ```bash
-curl -s https://paperpilot-api-2ykf.onrender.com/health/ready     # may take ~1 min if asleep
-./scripts/smoke-test.sh https://paperpilot-web-tfx4.onrender.com https://paperpilot-api-2ykf.onrender.com
+curl -s https://paperpilot-research-api.onrender.com/health/ready     # may take ~1 min if asleep
+./scripts/smoke-test.sh https://paperpilot-research.onrender.com https://paperpilot-research-api.onrender.com
 ```
 
 The smoke test creates one investigation. Record results in [roadmap.md](roadmap.md).

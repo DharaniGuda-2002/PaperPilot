@@ -13,8 +13,8 @@ flags experiments that cannot be fairly compared, and produces a traceable repor
 > The pipeline runs in the local Docker setup; the public demo has no workers.
 > See [docs/roadmap.md](docs/roadmap.md).
 
-**Live demo:** https://paperpilot-web-tfx4.onrender.com (free tier: first load after
-idle can take about a minute). API docs: https://paperpilot-api-2ykf.onrender.com/docs
+**Live demo:** https://paperpilot-research.onrender.com (free tier: first load after
+idle can take about a minute). API docs: https://paperpilot-research-api.onrender.com/docs
 
 PaperPilot evaluates *reported* evidence. It does not prove scientific reproducibility.
 

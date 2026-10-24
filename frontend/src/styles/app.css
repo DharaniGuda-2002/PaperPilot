@@ -1399,7 +1399,7 @@ button.text-link {
 
 .display {
   font-family: var(--font-reading);
-  font-size: clamp(2.25rem, 4.5vw, 3.25rem);
+  font-size: clamp(2rem, 3.6vw, 2.75rem);
   font-weight: 700;
   line-height: 1.1;
   letter-spacing: -0.01em;
@@ -1482,8 +1482,9 @@ button.text-link {
 }
 
 .stage-card__list li {
-  display: flex;
-  align-items: center;
+  display: grid;
+  grid-template-columns: 24px 1fr;
+  align-items: start;
   gap: var(--space-3);
 }
 
@@ -1828,4 +1829,264 @@ button.text-link {
     font-size: 0.6875rem;
     overflow-wrap: anywhere;
   }
+}
+
+/* ---------- Plain-language help: tooltips, FAQ, about ---------- */
+.infotip {
+  position: relative;
+  display: inline-flex;
+  vertical-align: middle;
+  margin-left: var(--space-1);
+}
+
+.infotip__button {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-brand-700);
+  cursor: help;
+}
+
+.infotip__button:hover {
+  background: var(--color-bg-selected);
+}
+
+.infotip__bubble {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 6px);
+  left: 50%;
+  width: max-content;
+  max-width: min(280px, 80vw);
+  padding: var(--space-2) var(--space-3);
+  transform: translateX(-50%);
+  border-radius: var(--radius-md);
+  background: var(--color-brand-900);
+  color: var(--color-text-inverse);
+  box-shadow: var(--shadow-overlay);
+  font-size: 0.8125rem;
+  font-weight: 400;
+  line-height: 1.5;
+  text-align: left;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+@media (max-width: 640px) {
+  .infotip__bubble {
+    left: 0;
+    transform: none;
+  }
+}
+
+.badge-with-tip {
+  display: inline-flex;
+  align-items: center;
+}
+
+.stages-intro {
+  margin: 0 0 var(--space-3);
+}
+
+.howto {
+  margin: 0 0 var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-surface);
+}
+
+.howto summary {
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--color-brand-700);
+}
+
+.howto ul {
+  margin: var(--space-2) 0 0;
+  padding-left: var(--space-4);
+  color: var(--color-text-secondary);
+}
+
+.sidebar__nav--help {
+  margin-top: var(--space-4);
+}
+
+.expect {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-4);
+  max-width: 1040px;
+  margin: var(--space-8) auto;
+  padding: 0 var(--space-6);
+}
+
+.expect__col {
+  padding: var(--space-4) var(--space-6);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-surface);
+  box-shadow: var(--shadow-card);
+}
+
+.expect__col h2 {
+  margin: 0 0 var(--space-2);
+  font-size: 1.125rem;
+  color: var(--color-brand-900);
+}
+
+.expect__col ul {
+  margin: 0;
+  padding-left: var(--space-4);
+  color: var(--color-text-secondary);
+}
+
+.landing__more {
+  margin: 0 0 var(--space-8);
+  text-align: center;
+  color: var(--color-text-secondary);
+}
+
+.landing__more a {
+  text-decoration: underline;
+}
+
+.site-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-6);
+  border-top: 1px solid var(--color-border-default);
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+}
+
+.site-footer p {
+  margin: 0;
+}
+
+.site-footer nav {
+  display: flex;
+  gap: var(--space-4);
+}
+
+.site-footer a {
+  text-decoration: underline;
+}
+
+.prose {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: var(--space-8) var(--space-6);
+}
+
+.display--page {
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  margin: 0 0 var(--space-3);
+}
+
+.prose__lead {
+  font-size: 1.125rem;
+  color: var(--color-text-secondary);
+}
+
+.prose h2 {
+  margin: var(--space-8) 0 var(--space-3);
+  font-size: 1.25rem;
+  color: var(--color-brand-900);
+}
+
+.prose li {
+  margin: var(--space-1) 0;
+}
+
+.faq-item {
+  margin: 0 0 var(--space-2);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-surface);
+}
+
+.faq-item summary {
+  padding: var(--space-3) var(--space-4);
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--color-brand-900);
+}
+
+.faq-item[open] summary {
+  border-bottom: 1px solid var(--color-border-default);
+  background: var(--color-bg-subtle);
+}
+
+.faq-item__answer {
+  padding: 0 var(--space-4);
+  color: var(--color-text-secondary);
+}
+
+.person {
+  margin-top: var(--space-8);
+  padding: var(--space-4) var(--space-6);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-surface);
+  box-shadow: var(--shadow-card);
+}
+
+.person h2 {
+  margin-top: 0;
+}
+
+.person__name {
+  margin: 0;
+  font-family: var(--font-reading);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-brand-900);
+}
+
+.person__role {
+  margin: 0 0 var(--space-3);
+  color: var(--color-text-secondary);
+}
+
+.person__links {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-3);
+  padding: 0;
+  list-style: none;
+}
+
+.person__links li {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.person__links a {
+  color: var(--color-brand-700);
+  text-decoration: underline;
+}
+
+@media (max-width: 640px) {
+  .expect {
+    grid-template-columns: 1fr;
+    padding: 0 var(--space-4);
+  }
+
+  .prose {
+    padding: var(--space-6) var(--space-4);
+  }
+}
+
+.faq-item__answer p {
+  margin: var(--space-3) 0;
 }

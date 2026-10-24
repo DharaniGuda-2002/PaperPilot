@@ -7,6 +7,7 @@ import { ApiError } from '../api/client'
 import type { InvestigationTask, TaskStatus } from '../api/types'
 import { BackLink } from '../components/BackLink'
 import { ErrorState, LoadingState } from '../components/QueryState'
+import { InfoTip } from '../components/InfoTip'
 import { StageStepper } from '../features/investigations/StageStepper'
 import { StatusBadge } from '../components/StatusBadge'
 import { EvidencePreview } from '../features/evidence/EvidencePreview'
@@ -112,6 +113,7 @@ export function InvestigationPage() {
           <div className="title-row">
             <h1 className="page-title">{data.question}</h1>
             <StatusBadge status={data.status} />
+            {data.status === 'queued' && <InfoTip term="queued" label="Queued" />}
           </div>
           <p className="page-subtitle">
             Created{' '}
@@ -133,6 +135,10 @@ export function InvestigationPage() {
               pipeline runs in the local Docker setup.
             </p>
           )}
+          <p className="hint stages-intro">
+            PaperPilot works through five steps for each question. This page updates by itself; you can leave it
+            open or come back later.
+          </p>
           <StageStepper stages={stages.map(({ short, summary }) => ({ name: short, state: summary.state, tone: summary.tone }))} />
           <ol className="stage-list">
             {stages.map((stage) => (

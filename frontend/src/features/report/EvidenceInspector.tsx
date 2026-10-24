@@ -1,6 +1,7 @@
 import { X } from 'lucide-react'
 import { useEffect, useRef } from 'react'
 
+import { InfoTip } from '../../components/InfoTip'
 import { ErrorState, LoadingState } from '../../components/QueryState'
 import { formatDateTime } from '../../lib/format'
 import { safeExternalUrl } from '../../lib/safeUrl'
@@ -78,6 +79,7 @@ export function EvidenceInspector({ evidenceId, onClose }: { evidenceId: string 
             <figure className="inspector__quote">
               <figcaption>
                 {data.passage_kind === 'quotation' ? 'Exact quotation from the paper' : 'Paraphrase (not a quotation)'}
+                {data.passage_kind === 'quotation' && <InfoTip term="quotation" label="exact quotation" />}
                 {' · '}
                 {data.page_number ? `page ${data.page_number}` : 'from the abstract (no page)'}
               </figcaption>
@@ -111,7 +113,7 @@ export function EvidenceInspector({ evidenceId, onClose }: { evidenceId: string 
           {data.checks.length > 0 && (
             <section aria-labelledby="checks-heading">
               <h3 id="checks-heading" className="card__subtitle">
-                Validation checks ({data.checks[0].validator_version})
+                Validation checks ({data.checks[0].validator_version}) <InfoTip term="validation" label="validation checks" />
               </h3>
               <ul className="check-list">
                 {data.checks.map((check) => (

@@ -1,6 +1,9 @@
 import type { RouteObject } from 'react-router-dom'
 
 import { AppShell } from './components/AppShell'
+import { PublicLayout } from './components/PublicLayout'
+import { AboutPage } from './pages/AboutPage'
+import { FaqPage } from './pages/FaqPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { InvestigationPage } from './pages/InvestigationPage'
 import { InvestigationsPage } from './pages/InvestigationsPage'
@@ -13,7 +16,14 @@ import { ReportPage } from './pages/ReportPage'
 import { SearchPage } from './pages/SearchPage'
 
 export const routes: RouteObject[] = [
-  { path: '/', element: <LandingPage /> },
+  {
+    element: <PublicLayout />,
+    children: [
+      { path: '/', element: <LandingPage /> },
+      { path: '/faq', element: <FaqPage /> },
+      { path: '/about', element: <AboutPage /> },
+    ],
+  },
   { path: '/investigations/:investigationId', element: <LegacyInvestigationRedirect /> },
   {
     path: '/app',

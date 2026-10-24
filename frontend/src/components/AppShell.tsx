@@ -1,4 +1,4 @@
-import { FileSearch, Home, Search } from 'lucide-react'
+import { FileSearch, HelpCircle, Home, Info, Search } from 'lucide-react'
 import { NavLink, Outlet } from 'react-router-dom'
 
 import { Logo } from './Logo'
@@ -25,9 +25,19 @@ export function AppShell() {
             </NavLink>
           ))}
         </nav>
+        <nav aria-label="Help" className="sidebar__nav sidebar__nav--help">
+          <NavLink to="/faq" className="sidebar__link">
+            <HelpCircle aria-hidden="true" size={18} />
+            Questions (FAQ)
+          </NavLink>
+          <NavLink to="/about" className="sidebar__link">
+            <Info aria-hidden="true" size={18} />
+            About
+          </NavLink>
+        </nav>
         <p className="sidebar__note">
-          Findings quote their sources. The hosted demo runs no background workers, so its
-          investigations stay queued; the full pipeline runs locally.
+          Every fact links to its exact quote. On the public demo, new investigations stay &quot;Queued&quot;
+          because the analysis workers run only on a local install.
         </p>
       </aside>
       <main id="main" className="app-main" tabIndex={-1}>
