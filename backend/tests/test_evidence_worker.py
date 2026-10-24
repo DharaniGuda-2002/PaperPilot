@@ -196,6 +196,24 @@ def test_api_returns_evidence_with_checks_and_document_info(
     assert missing.status_code == 404
 
 
+def test_evidence_list_pages_and_reports_the_total(
+    client: TestClient, engine: Engine, sessions: sessionmaker[Session], settings: Settings
+) -> None:
+    event = run_pipeline(client, engine, sessions, settings)
+    url = f"/api/v1/investigations/{event.investigation_id}/evidence"
+    everything = client.get(url)
+    total = int(everything.headers["X-Total-Count"])
+    assert total == len(everything.json()) > 2
+    first = client.get(url, params={"limit": 2})
+    second = client.get(url, params={"limit": 2, "offset": 2})
+    assert first.headers["X-Total-Count"] == second.headers["X-Total-Count"] == str(total)
+    ids = [i["id"] for i in everything.json()]
+    assert [i["id"] for i in first.json()] == ids[:2]
+    assert [i["id"] for i in second.json()] == ids[2:4]
+    filtered = client.get(url, params={"field": "code_availability"})
+    assert filtered.headers["X-Total-Count"] == str(len(filtered.json()))
+
+
 def test_unknown_unit_is_recorded_as_uncertain_not_rejected() -> None:
     from app.evidence.rules import SourceChunk
     from app.evidence.service import build_evidence

@@ -11,6 +11,8 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=(".env", "../.env"), extra="ignore")
 
     database_url: str
+    # Owner connection for migrations and role setup. Empty means "use database_url".
+    migration_database_url: str = ""
     cors_origins: str = "http://localhost:5173"
     log_level: str = "INFO"
     db_connect_timeout_seconds: int = 3
@@ -58,7 +60,7 @@ class Settings(BaseSettings):
     # should make no outbound document requests).
     document_fetch_enabled: bool = True
 
-    @field_validator("database_url")
+    @field_validator("database_url", "migration_database_url")
     @classmethod
     def use_psycopg_driver(cls, url: str) -> str:
         # Hosted Postgres providers hand out postgres:// or postgresql:// URLs;
@@ -67,6 +69,10 @@ class Settings(BaseSettings):
             if url.startswith(prefix):
                 return "postgresql+psycopg://" + url.removeprefix(prefix)
         return url
+
+    @property
+    def migration_url(self) -> str:
+        return self.migration_database_url or self.database_url
 
     @property
     def cors_origin_list(self) -> list[str]:

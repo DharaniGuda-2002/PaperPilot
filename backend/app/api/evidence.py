@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from pydantic import BaseModel
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -63,9 +63,11 @@ class DocumentInfo(BaseModel):
 def list_evidence(
     investigation_id: uuid.UUID,
     session: SessionDep,
+    response: Response,
     paper_id: uuid.UUID | None = None,
     field: EvidenceField | None = None,
     limit: Annotated[int, Query(ge=1, le=1000)] = 500,
+    offset: Annotated[int, Query(ge=0)] = 0,
 ) -> list[EvidenceItem]:
     if session.get(Investigation, investigation_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Investigation not found")
@@ -73,14 +75,20 @@ def list_evidence(
         select(EvidenceRecord, Paper.title)
         .join(Paper, Paper.id == EvidenceRecord.paper_id)
         .where(EvidenceRecord.investigation_id == investigation_id)
-        .order_by(Paper.title, EvidenceRecord.field, EvidenceRecord.page_number, EvidenceRecord.id)
-        .limit(limit)
     )
     if paper_id:
         query = query.where(EvidenceRecord.paper_id == paper_id)
     if field:
         query = query.where(EvidenceRecord.field == field)
-    rows = session.execute(query).all()
+    total = session.scalar(select(func.count()).select_from(query.order_by(None).subquery()))
+    response.headers["X-Total-Count"] = str(total or 0)
+    rows = session.execute(
+        query.order_by(
+            Paper.title, EvidenceRecord.field, EvidenceRecord.page_number, EvidenceRecord.id
+        )
+        .limit(limit)
+        .offset(offset)
+    ).all()
 
     checks: dict[uuid.UUID, list[ValidationCheck]] = {}
     ids = [record.id for record, _ in rows]

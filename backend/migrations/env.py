@@ -14,9 +14,9 @@ target_metadata = Base.metadata
 
 
 def _database_url() -> str:
-    # Tests pass an explicit URL via config attributes; otherwise use app settings.
+    # Tests pass an explicit URL via config attributes; otherwise the owner URL from app settings.
     url = config.attributes.get("database_url")
-    return str(url) if url else get_settings().database_url
+    return str(url) if url else get_settings().migration_url
 
 
 def run_migrations_offline() -> None:

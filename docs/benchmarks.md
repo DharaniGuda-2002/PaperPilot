@@ -112,7 +112,8 @@ image (embeddings computed beforehand, so this is database time only).
   the real limit on the demo.
 - The evidence list is the outlier: 273 KB and every validation check for every
   record in one response. It is the first candidate for paging if
-  investigations grow. At 13 ms p50 it does not justify the change yet.
+  investigations grow. At 13 ms p50 it did not justify the change then. Paging was
+  added afterwards (`offset`, `X-Total-Count`); these numbers predate it.
 - Retrieval is not a bottleneck. A paper's 7 queries take about 10 ms in
   total, against seconds for PDF download and embedding.
 

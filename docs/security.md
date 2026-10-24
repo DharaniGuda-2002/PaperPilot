@@ -34,6 +34,7 @@ user accounts, and every investigation is public on purpose.
 | Headers (API) | `nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`, CSP `default-src 'none'; frame-ancestors 'none'` (not on `/docs` and `/redoc`, which load Swagger UI from a CDN) | `app/core/http.py` | `test_limits.py`; curl |
 | Headers (web) | Same-origin CSP with no inline scripts or styles, `X-Frame-Options: DENY`, `Permissions-Policy`, `nosniff`, `Referrer-Policy`. Render adds HSTS | `frontend/nginx.conf`, `render.yaml` | curl; browser console showed no CSP violations across the app's pages |
 | Errors and logs | 500s return a generic body; logs are JSON with a correlation id; a caller-supplied request id is accepted only if it is a UUID; no bodies, secrets, or IP addresses are logged | `app/main.py`, `app/core/logging.py` | Tests; log review |
+| Database role | Compose runs the API and workers as `paperpilot_app`: SELECT/INSERT/UPDATE/DELETE on application tables, sequence use. No DDL, no `alembic_version`, no role or database creation. Only the one-shot `migrate` service holds the owner URL (`MIGRATION_DATABASE_URL`) and provisions the role | `app/ops/runtime_role.py`, `docker-compose.yml` | `test_runtime_role.py` (DML works; DROP, ALTER, CREATE, TRUNCATE, CREATE ROLE, reading `alembic_version` are refused); full pipeline run through Compose with the role, no permission errors in service logs |
 | Secrets | Only in the environment: Render dashboard `sync: false` values, local `.env` (git-ignored). `.env.example` holds placeholders | `.gitignore`, `render.yaml` | gitleaks over the full history: 49 commits, no leaks (also in CI) |
 | Dependencies | Exact pins. CI runs `pip-audit` (api and ml requirements) and `npm audit --omit=dev` | `.github/workflows/ci.yml` | 2026-10-23: no known vulnerabilities in either |
 | Containers | API and workers run as uid 10001; nginx runs unprivileged on 8080; Postgres, Kafka, and the API bind to 127.0.0.1 in Compose | Dockerfiles, `docker-compose.yml` | `docker compose ps` |
@@ -41,11 +42,10 @@ user accounts, and every investigation is public on purpose.
 
 ## Known gaps
 
-- **Database role.** The API and workers connect as the database owner, both
-  locally and on Neon, so least privilege is not applied in the database. The
-  fix: a runtime role with only SELECT/INSERT/UPDATE/DELETE on the
-  application tables, with migrations run under the owner role. It is
-  documented, not built.
+- **Database role on the public demo.** Compose and the code use a
+  least-privilege role (below). The Render demo still connects as the Neon
+  owner, because switching it needs the Neon and Render dashboards. Steps are
+  in [deployment.md](deployment.md).
 - **Per-client limits are in memory.** They reset when the process restarts
   and are per instance. The database-backed daily caps are the real
   backstop.

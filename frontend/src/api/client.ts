@@ -14,6 +14,8 @@ import type {
 } from './types'
 import type { EvidenceDetail, ReportEnvelope } from './report'
 
+const EVIDENCE_PAGE_SIZE = 500
+const MAX_EVIDENCE_PAGES = 20
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? ''
 
 export class ApiError extends Error {
@@ -78,8 +80,21 @@ export const api = {
     return request(`/api/v1/investigations/${encodeURIComponent(id)}/papers?${params}`)
   },
 
-  getEvidence(id: string): Promise<EvidenceItem[]> {
-    return request(`/api/v1/investigations/${encodeURIComponent(id)}/evidence`)
+  async getEvidence(id: string): Promise<EvidenceItem[]> {
+    // The API pages this list; read pages until one comes back short.
+    const items: EvidenceItem[] = []
+    for (let page = 0; page < MAX_EVIDENCE_PAGES; page++) {
+      const params = new URLSearchParams({
+        limit: String(EVIDENCE_PAGE_SIZE),
+        offset: String(items.length),
+      })
+      const batch = await request<EvidenceItem[]>(
+        `/api/v1/investigations/${encodeURIComponent(id)}/evidence?${params}`,
+      )
+      items.push(...batch)
+      if (batch.length < EVIDENCE_PAGE_SIZE) break
+    }
+    return items
   },
 
   getReport(id: string): Promise<ReportEnvelope> {

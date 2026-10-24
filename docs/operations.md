@@ -138,12 +138,17 @@ precision is complete.
 ## Housekeeping
 
 `processed_events` is never pruned automatically. Rows older than the topic
-retention (7 days) cannot match any redelivery, so they are safe to delete:
+retention (7 days) cannot match any redelivery, so they are safe to delete.
+The command refuses a cutoff of 7 days or less and defaults to 8:
 
 ```bash
-docker compose exec db psql -U paperpilot -c \
-  "DELETE FROM processed_events WHERE processed_at < now() - interval '8 days'"
+docker compose run --rm migrate python -m app.ops.maintenance prune-processed-events --dry-run
+docker compose run --rm migrate python -m app.ops.maintenance prune-processed-events
 ```
+
+(`migrate` is used because the runtime role may delete rows too, but this
+service already has the image and environment.) Schedule it with cron if the
+stack runs for long.
 
 ## Recovery behavior
 

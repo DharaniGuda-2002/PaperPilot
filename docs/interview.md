@@ -131,9 +131,8 @@ show partitions are the first ceiling.
 **What would you do next?**
 - A second, held-out gold set, so the extraction rules can be improved
   without tuning them to the set used for measurement.
-- A least-privilege database role.
-- Pruning of `processed_events`.
-- Paging the evidence endpoint.
+- Apply the least-privilege role on the public demo (built and tested in Compose).
+- Schedule the `processed_events` prune (the command exists).
 
 **What are you least happy with?** Extraction recall. The system says "not
 found" far more than a human reader would. It never fabricates, but the

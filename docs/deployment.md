@@ -74,7 +74,16 @@ Implemented before the first public deploy:
 2. **Render**: sign up at https://render.com with GitHub. Choose **New → Blueprint**,
    pick the `PaperPilot` repository, and confirm the two services from `render.yaml`.
 3. When Render asks for `DATABASE_URL`, paste the Neon string. Apply.
-4. **OpenAlex key (recommended):** create a free key at https://openalex.org/settings/api
+4. **Optional, least-privilege database role.** In the Render shell of
+   `paperpilot-api` (or locally with the owner URL exported as
+   `MIGRATION_DATABASE_URL`), run
+   `APP_DB_PASSWORD=<new password> python -m app.ops.runtime_role`.
+   Then in Render set `MIGRATION_DATABASE_URL` to the owner string and change
+   `DATABASE_URL` to the same string with user `paperpilot_app` and the new
+   password. The start script migrates through `MIGRATION_DATABASE_URL`.
+   Skipping this leaves the demo on the owner role, as documented in
+   [security.md](security.md).
+5. **OpenAlex key (recommended):** create a free key at https://openalex.org/settings/api
    and add it as `OPENALEX_API_KEY` in the `paperpilot-api` service's **Environment** tab.
    Without it, searches share a $0.10/day budget with every other service on Render's
    outbound IP and may fail with "provider unavailable".

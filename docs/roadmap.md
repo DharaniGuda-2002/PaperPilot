@@ -113,8 +113,8 @@ Findings fixed during M4:
   IPv4, causing intermittent transport failures and slow tests. It now advertises 127.0.0.1.
 
 Open items:
-- `processed_events` grows without bound. Rows older than topic retention (7 days) can
-  never match a redelivery and can be pruned by a scheduled job (not built).
+- `processed_events` grows without bound unless pruned. A prune command exists (post-M7);
+  scheduling it is up to the operator.
 - The benchmark spent the local daily provider-call cap (it counts cache rows), which then
   made a drill fail with "paper search daily limit reached". The benchmark data was
   removed afterwards. The cap behaved as designed; benchmark runs should use a separate
@@ -226,6 +226,20 @@ Security bugs found and fixed:
 Other fixes:
 - A "6:2:2" split ratio was shown as percentages (compare-v3).
 - The smoke test's pipeline wait is configurable (`PIPELINE_TIMEOUT`).
+
+### Post-M7 hardening (2026-10-24)
+
+- Evidence list takes `offset`; the response carries `X-Total-Count`. The UI reads
+  pages of 500 until one is short. Test: `test_evidence_list_pages_and_reports_the_total`.
+- `python -m app.ops.maintenance prune-processed-events` (refuses a cutoff within the 7-day
+  topic retention). Tests: `test_maintenance.py`.
+- Least-privilege runtime role (`app.ops.runtime_role`), wired into Compose: `migrate` owns
+  the schema and provisions `paperpilot_app`; services use it. `test_runtime_role.py` shows
+  the role does DML and is refused DDL. A full Compose rebuild plus smoke test and a
+  pipeline run completed with no permission errors in service logs. Not applied to the
+  Render/Neon demo (needs dashboard changes by the owner).
+- Not done: a second held-out gold set (needs a human reviewer) and the visual redesign
+  (deferred by the user).
 
 ### Final definition of done
 

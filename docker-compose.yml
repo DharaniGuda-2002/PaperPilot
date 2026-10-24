@@ -6,8 +6,9 @@ x-db-env: &db-env
   POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-paperpilot-local-only}
   POSTGRES_DB: ${POSTGRES_DB:-paperpilot}
 
+# Services run as the least-privilege role (DML only). Only `migrate` gets the owner URL.
 x-api-env: &api-env
-  DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-paperpilot}:${POSTGRES_PASSWORD:-paperpilot-local-only}@db:5432/${POSTGRES_DB:-paperpilot}
+  DATABASE_URL: postgresql+psycopg://${APP_DB_USER:-paperpilot_app}:${APP_DB_PASSWORD:-paperpilot-app-local-only}@db:5432/${POSTGRES_DB:-paperpilot}
   CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173,http://localhost:8080}
   LOG_LEVEL: ${LOG_LEVEL:-INFO}
   KAFKA_BOOTSTRAP_SERVERS: kafka:9092
@@ -62,7 +63,14 @@ services:
     build:
       context: ./backend
       target: api
-    command: ["alembic", "upgrade", "head"]
+    environment:
+      <<: *api-env
+      MIGRATION_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-paperpilot}:${POSTGRES_PASSWORD:-paperpilot-local-only}@db:5432/${POSTGRES_DB:-paperpilot}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:-paperpilot-app-local-only}
+    command:
+      - sh
+      - -c
+      - alembic upgrade head && python -m app.ops.runtime_role --role "$${APP_DB_USER:-paperpilot_app}"
     depends_on:
       db:
         condition: service_healthy

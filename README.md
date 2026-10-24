@@ -116,7 +116,7 @@ scripts/    smoke test
 | GET | `/api/v1/investigations/{id}/tasks` | Pipeline tasks: status, attempts, errors, results |
 | GET | `/api/v1/investigations/{id}/papers` | Discovered papers in rank order |
 | GET | `/api/v1/system/pipeline` | Outbox backlog and oldest pending age |
-| GET | `/api/v1/investigations/{id}/evidence` | Evidence with quotations, pages, provenance, and validation checks |
+| GET | `/api/v1/investigations/{id}/evidence` | Evidence with quotations, pages, provenance, and validation checks (`limit`, `offset`; total in `X-Total-Count`) |
 | GET | `/api/v1/papers/{id}/document` | What text is held for a paper (full text or abstract and why) |
 | GET | `/api/v1/investigations/{id}/report` | Latest report version (summary, findings, comparison, sources); 404 until built |
 | GET | `/api/v1/evidence/{id}` | One evidence record with its paper, document source, and validation checks |
