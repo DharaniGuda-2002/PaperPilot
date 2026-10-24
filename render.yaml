@@ -1,7 +1,7 @@
 # Render Blueprint for the public demo (free plan). Database is Neon; see docs/deployment.md.
 services:
   - type: web
-    name: paperpilot-api
+    name: paperpilot-research-api
     runtime: docker
     plan: free
     rootDir: backend
@@ -17,7 +17,7 @@ services:
       - key: DATABASE_URL
         sync: false  # Neon connection string; entered in the Render dashboard, never committed
       - key: CORS_ORIGINS
-        value: https://paperpilot-web-tfx4.onrender.com
+        value: https://paperpilot-research.onrender.com
       - key: LOG_LEVEL
         value: INFO
       - key: DAILY_INVESTIGATION_CAP
@@ -36,7 +36,7 @@ services:
         value: "20"
 
   - type: web
-    name: paperpilot-web
+    name: paperpilot-research
     runtime: static
     rootDir: frontend
     buildCommand: npm ci && npm run build
@@ -61,7 +61,7 @@ services:
         value: camera=(), microphone=(), geolocation=(), payment=()
       - path: /*
         name: Content-Security-Policy
-        value: "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self' https://paperpilot-api-2ykf.onrender.com; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+        value: "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self' https://paperpilot-research-api.onrender.com; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
     envVars:
       - key: VITE_API_BASE_URL
-        value: https://paperpilot-api-2ykf.onrender.com
+        value: https://paperpilot-research-api.onrender.com
