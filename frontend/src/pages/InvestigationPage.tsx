@@ -44,7 +44,7 @@ const STALLED_AFTER_SECONDS = 60
 export function InvestigationPage() {
   const { investigationId = '' } = useParams()
   const investigation = useInvestigation(investigationId)
-  const tasks = useInvestigationTasks(investigationId)
+  const tasks = useInvestigationTasks(investigationId, investigation.data?.status)
   const taskList = tasks.data ?? []
   const discovery = taskList.find((task) => task.kind === 'discover_papers')
   const papers = useDiscoveredPapers(investigationId, discovery?.status === 'succeeded')

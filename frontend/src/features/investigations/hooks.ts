@@ -1,6 +1,7 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { api } from '../../api/client'
+import type { InvestigationStatus } from '../../api/types'
 
 const keys = {
   all: ['investigations'] as const,
@@ -14,6 +15,7 @@ const keys = {
 }
 
 const POLL_MS = 2000
+const IDLE_POLL_MS = 5000
 const ACTIVE_TASK = new Set(['pending', 'running'])
 
 export function useInvestigationList(limit = 10, offset = 0) {
@@ -32,13 +34,19 @@ export function useInvestigation(id: string) {
   return useQuery({ queryKey: keys.detail(id), queryFn: () => api.getInvestigation(id) })
 }
 
-/** Polls while any task is pending or running; stops once work settles. */
-export function useInvestigationTasks(id: string) {
+const SETTLED_INVESTIGATION = new Set<InvestigationStatus>(['completed', 'partially_completed', 'failed', 'cancelled'])
+
+/** Polls fast while any task is pending or running. Later stages create their tasks only after
+ *  the previous stage finishes, so while the investigation itself is unfinished keep checking
+ *  slowly; otherwise the report task would never appear on an open page. */
+export function useInvestigationTasks(id: string, status?: InvestigationStatus) {
   return useQuery({
     queryKey: keys.tasks(id),
     queryFn: () => api.getInvestigationTasks(id),
-    refetchInterval: (query) =>
-      query.state.data?.some((task) => ACTIVE_TASK.has(task.status)) ? POLL_MS : false,
+    refetchInterval: (query) => {
+      if (query.state.data?.some((task) => ACTIVE_TASK.has(task.status))) return POLL_MS
+      return status !== undefined && !SETTLED_INVESTIGATION.has(status) ? IDLE_POLL_MS : false
+    },
   })
 }
 
