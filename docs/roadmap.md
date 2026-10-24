@@ -238,8 +238,13 @@ Other fixes:
   the role does DML and is refused DDL. A full Compose rebuild plus smoke test and a
   pipeline run completed with no permission errors in service logs. Not applied to the
   Render/Neon demo (needs dashboard changes by the owner).
-- Not done: a second held-out gold set (needs a human reviewer) and the visual redesign
-  (deferred by the user).
+- UI redesign (teal palette from the user's tokens): pipeline stepper on the investigation
+  page, four-step evidence strength meter with the published definition, hatched empty cells in
+  the comparison matrix, evidence inspector as a right-hand drawer (full sheet under 640 px).
+  Link and accent text moved from brand-600 (3.65:1) to brand-700; the contrast script has the
+  new pairs and passes. 43 frontend tests, no horizontal overflow at 375 px, screenshots
+  retaken from the local stack.
+- Not done: a second held-out gold set (needs a human reviewer).
 
 ### Final definition of done
 
@@ -257,7 +262,7 @@ Other fixes:
 | Evidence traceable to source | Yes: exact quotation, page, chunk, retrieval and validation provenance |
 | Reports separate findings, uncertainty, missing information | Yes |
 | Progressive disclosure | Yes: three levels |
-| Light-theme design system applied | Tokens and contrast checks everywhere. The collage-style visual redesign was deferred at the user's request |
+| Light-theme design system applied | Yes: teal token palette, contrast script passes, redesigned progress, strength meter, inspector drawer (post-M7) |
 | Tests and CI pass | Yes |
 | Benchmarks are real and reproducible | Yes |
 | Deployment instructions match | Yes: updated in M7 |

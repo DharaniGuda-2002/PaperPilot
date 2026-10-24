@@ -10,6 +10,7 @@ import { ComparisonMatrix } from '../features/report/ComparisonMatrix'
 import { EvidenceInspector } from '../features/report/EvidenceInspector'
 import { FindingCard } from '../features/report/FindingCard'
 import { StrengthBadge } from '../features/report/StrengthBadge'
+import { StrengthMeter } from '../features/report/StrengthMeter'
 import { formatDateTime } from '../lib/format'
 import { safeExternalUrl } from '../lib/safeUrl'
 
@@ -136,6 +137,7 @@ function Summary({ report, onCite, onOpenComparison }: { report: Report; onCite:
           <StrengthBadge strength={report.overall_strength} definition={report.strength_definitions[report.overall_strength]} />
         </div>
         <p className="bottom-line__text">{report.bottom_line}</p>
+        <StrengthMeter strength={report.overall_strength} definition={report.strength_definitions[report.overall_strength]} />
         <div className="stats" role="list" aria-label="Report scope">
           <Stat value={scope.papers_discovered} label="Papers discovered" />
           <Stat value={scope.full_text} label="Full texts analyzed" />

@@ -68,7 +68,11 @@ https://paperpilot-web-tfx4.onrender.com runs the API and frontend on free tiers
 
 ## Screenshots
 
-| Report summary (level 1–2) | Evidence inspector (level 3) |
+| Investigation progress | Landing page |
+|---|---|
+| ![Investigation progress stepper](screenshots/investigation-progress.png) | ![Landing page](screenshots/landing.png) |
+
+| Report summary (level 1–2) | Evidence inspector (level 3, drawer) |
 |---|---|
 | ![Report summary](screenshots/report-summary.png) | ![Evidence inspector](screenshots/evidence-inspector.png) |
 

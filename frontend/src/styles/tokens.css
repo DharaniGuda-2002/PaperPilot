@@ -2,19 +2,20 @@
   color-scheme: light;
 
   /* Brand */
-  --color-brand-900: #173653;
-  --color-brand-700: #234F76;
-  --color-brand-600: #326AA3;
-  --color-brand-100: #EAF0F6;
-  --color-brand-50: #F3F6FA;
+  --color-brand-900: #173C4F;
+  --color-brand-700: #245C6B;
+  --color-brand-600: #3E9295;
+  --color-brand-100: #DDEEF0;
+  --color-brand-50: #EFF6F6;
 
   /* Backgrounds */
-  --color-bg-page: #F7F5EF;
+  --color-bg-page: #F4F8F7;
   --color-bg-surface: #FFFFFF;
-  --color-bg-subtle: #F1F0EB;
+  --color-bg-subtle: #EFF6F6;
+  --color-bg-selected: #DDEEF0;
 
   /* Text */
-  --color-text-primary: #172B40;
+  --color-text-primary: #173C4F;
   --color-text-secondary: #536273;
   --color-text-muted: #667587;
   --color-text-inverse: #FFFFFF;
@@ -22,7 +23,7 @@
   /* Borders and focus */
   --color-border-default: #D8E0E8;
   --color-border-strong: #A9B6C4;
-  --color-focus-ring: #326AA3;
+  --color-focus-ring: #245C6B;
 
   /* Semantic states */
   --color-success: #246B50;
@@ -42,8 +43,8 @@
   --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 12px;
-  --shadow-card: 0 1px 3px rgb(23 43 64 / 6%);
-  --shadow-overlay: 0 8px 24px rgb(23 43 64 / 12%);
+  --shadow-card: 0 1px 3px rgb(23 60 79 / 6%);
+  --shadow-overlay: 0 8px 24px rgb(23 60 79 / 12%);
 
   /* Spacing */
   --space-1: 4px;

@@ -19,8 +19,12 @@ const PAIRS = [
   ['color-text-secondary', 'color-bg-page', TEXT, 'loading/empty text (.muted) on page'],
   ['color-text-secondary', 'color-bg-subtle', TEXT, 'disabled button label'],
   ['color-brand-900', 'color-bg-surface', TEXT, 'headings'],
-  ['color-brand-600', 'color-bg-surface', TEXT, 'links'],
-  ['color-brand-700', 'color-bg-surface', TEXT, 'link hover'],
+  ['color-brand-700', 'color-bg-surface', TEXT, 'links'],
+  ['color-brand-900', 'color-bg-surface', TEXT, 'link hover'],
+  ['color-brand-600', 'color-bg-surface', NON_TEXT, 'meter bar and stepper outline'],
+  ['color-text-inverse', 'color-brand-600', NON_TEXT, 'stepper check mark on done node'],
+  ['color-text-secondary', 'color-brand-100', TEXT, 'empty comparison cell (hatch)'],
+  ['color-brand-900', 'color-bg-selected', TEXT, 'active stepper node'],
   ['color-text-inverse', 'color-brand-900', TEXT, 'primary button'],
   ['color-text-inverse', 'color-brand-700', TEXT, 'primary button hover'],
   ['color-info', 'color-info-bg', TEXT, 'info badge / notice'],
@@ -47,7 +51,7 @@ const PAIRS = [
   ['color-brand-700', 'color-brand-50', TEXT, 'row title on hover'],
   ['color-text-secondary', 'color-bg-subtle', TEXT, 'sidebar preview note'],
   ['color-text-secondary', 'color-bg-page', TEXT, 'landing nav and lead text'],
-  ['color-brand-600', 'color-bg-page', TEXT, 'hero accent text on page'],
+  ['color-brand-700', 'color-bg-page', TEXT, 'hero accent text on page'],
   ['color-brand-900', 'color-bg-page', TEXT, 'page titles on page'],
   // Not checked: border-default/border-strong are decorative dividers (no 3:1 requirement).
 ]

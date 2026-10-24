@@ -7,6 +7,7 @@ import { ApiError } from '../api/client'
 import type { InvestigationTask, TaskStatus } from '../api/types'
 import { BackLink } from '../components/BackLink'
 import { ErrorState, LoadingState } from '../components/QueryState'
+import { StageStepper } from '../features/investigations/StageStepper'
 import { StatusBadge } from '../components/StatusBadge'
 import { EvidencePreview } from '../features/evidence/EvidencePreview'
 import {
@@ -87,6 +88,22 @@ export function InvestigationPage() {
       }
     : { label: 'Waiting', tone: 'neutral', state: validation.state === 'done' ? 'active' : 'waiting', details: [] }
 
+  const stages = [
+    { name: 'Discovering relevant papers', short: 'Discover', summary: discoverySummary(discovery, tasks.isPending) },
+    {
+      name: 'Downloading and processing papers',
+      short: 'Read',
+      summary: { ...documents, details: [...documents.details, ...documentDetails(taskList)] },
+    },
+    {
+      name: 'Extracting evidence',
+      short: 'Extract',
+      summary: { ...extraction, details: [...extraction.details, ...evidenceDetails(taskList)] },
+    },
+    { name: 'Validating findings', short: 'Validate', summary: validation },
+    { name: 'Comparing results and writing the report', short: 'Report', summary: reportStage },
+  ]
+
   return (
     <div className="page">
       <BackLink to="/app/investigations">Back to investigations</BackLink>
@@ -116,18 +133,11 @@ export function InvestigationPage() {
               pipeline runs in the local Docker setup.
             </p>
           )}
+          <StageStepper stages={stages.map(({ short, summary }) => ({ name: short, state: summary.state, tone: summary.tone }))} />
           <ol className="stage-list">
-            <DiscoveryStage task={discovery} loading={tasks.isPending} />
-            <StageRow
-              name="Downloading and processing papers"
-              summary={{ ...documents, details: [...documents.details, ...documentDetails(taskList)] }}
-            />
-            <StageRow
-              name="Extracting evidence"
-              summary={{ ...extraction, details: [...extraction.details, ...evidenceDetails(taskList)] }}
-            />
-            <StageRow name="Validating findings" summary={validation} />
-            <StageRow name="Comparing results and writing the report" summary={reportStage} />
+            {stages.map((stage) => (
+              <StageRow key={stage.name} name={stage.name} summary={stage.summary} />
+            ))}
           </ol>
           {reportTask?.status === 'succeeded' && (
             <Link to={`/app/investigations/${data.id}/report`} className="button button--primary report-link">
@@ -227,18 +237,10 @@ function StageRow({ name, summary }: { name: string; summary: StageSummary }) {
   )
 }
 
-function DiscoveryStage({ task, loading }: { task?: InvestigationTask; loading: boolean }) {
-  const name = 'Discovering relevant papers'
-  if (loading) {
-    return <StageRow name={name} summary={{ label: 'Loading', tone: 'neutral', state: 'none', details: [] }} />
-  }
+function discoverySummary(task: InvestigationTask | undefined, loading: boolean): StageSummary {
+  if (loading) return { label: 'Loading', tone: 'neutral', state: 'none', details: [] }
   if (!task) {
-    return (
-      <StageRow
-        name={name}
-        summary={{ label: 'Not started (created before the pipeline)', tone: 'neutral', state: 'none', details: [] }}
-      />
-    )
+    return { label: 'Not started (created before the pipeline)', tone: 'neutral', state: 'none', details: [] }
   }
   const { label, tone } = TASK_DISPLAY[task.status]
   const linked = task.result_summary?.papers_linked
@@ -255,7 +257,7 @@ function DiscoveryStage({ task, loading }: { task?: InvestigationTask; loading: 
         : task.status === 'running'
           ? 'active'
           : 'waiting'
-  return <StageRow name={name} summary={{ label, tone, state, details }} />
+  return { label, tone, state, details }
 }
 
 /** Investigation status, papers, and evidence change when tasks do; refetch them then. */

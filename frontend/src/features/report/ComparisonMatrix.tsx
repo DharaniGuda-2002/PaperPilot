@@ -95,14 +95,14 @@ export function ComparisonMatrix({ comparison, onCite }: { comparison: Compariso
                   <td>{listOrDash(row.baselines)}</td>
                   <td>
                     {row.results.length === 0
-                      ? '—'
+                      ? <Empty />
                       : row.results.map((r) => (
                           <button key={r.evidence_id} type="button" className="text-link cite result-cite" onClick={() => onCite(r.evidence_id)}>
                             {formatResult(r)}
                           </button>
                         ))}
                   </td>
-                  <td>{row.warnings.length ? <ul className="cell-list">{row.warnings.map((w) => <li key={w}>{w}</li>)}</ul> : '—'}</td>
+                  <td>{row.warnings.length ? <ul className="cell-list">{row.warnings.map((w) => <li key={w}>{w}</li>)}</ul> : <Empty />}</td>
                 </tr>
               ))}
             </tbody>
@@ -114,5 +114,15 @@ export function ComparisonMatrix({ comparison, onCite }: { comparison: Compariso
 }
 
 function listOrDash(items: string[]) {
-  return items.length ? items.join(', ') : '—'
+  return items.length ? items.join(', ') : <Empty />
+}
+
+/** Nothing reported for this cell; hatched so absence reads as absence, not an error. */
+function Empty() {
+  return (
+    <span className="cell-empty" title="Not reported or not found in the text read">
+      <span aria-hidden="true">—</span>
+      <span className="visually-hidden">Not reported</span>
+    </span>
+  )
 }
