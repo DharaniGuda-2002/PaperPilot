@@ -5,7 +5,8 @@ import { ApiError } from '../api/client'
 import type { Report } from '../api/report'
 import { BackLink } from '../components/BackLink'
 import { ErrorState, LoadingState } from '../components/QueryState'
-import { useReport } from '../features/investigations/hooks'
+import { ExampleNotice } from '../components/ExampleNotice'
+import { useInvestigation, useReport } from '../features/investigations/hooks'
 import { ComparisonMatrix } from '../features/report/ComparisonMatrix'
 import { EvidenceInspector } from '../features/report/EvidenceInspector'
 import { FindingCard } from '../features/report/FindingCard'
@@ -27,6 +28,7 @@ export function ReportPage() {
   const { investigationId = '' } = useParams()
   const [searchParams, setSearchParams] = useSearchParams()
   const { data, isPending, isError, error } = useReport(investigationId)
+  const investigation = useInvestigation(investigationId)
   const [inspecting, setInspecting] = useState<string | null>(null)
   const view = (TABS.find((t) => t.id === searchParams.get('view'))?.id ?? 'summary') as TabId
   const back = <BackLink to={`/app/investigations/${investigationId}`}>Back to investigation</BackLink>
@@ -53,6 +55,7 @@ export function ReportPage() {
   return (
     <div className="page report">
       {back}
+      {investigation.data?.is_example && <ExampleNotice />}
       <header className="page-header">
         <div>
           <p className="eyebrow">Investigation report · version {data.version}</p>

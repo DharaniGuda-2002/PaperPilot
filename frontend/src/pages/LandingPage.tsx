@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom'
 
+import { useExamples } from '../features/investigations/hooks'
+
 const STEPS = [
   { title: 'Ask', text: 'Type a technical research question in plain English.' },
   { title: 'Find and read', text: 'PaperPilot finds up to 25 relevant papers and reads the free ones.' },
@@ -14,6 +16,7 @@ const FEATURES = [
 ]
 
 export function LandingPage() {
+  const example = useExamples().data?.[0]
   return (
     <main id="main" tabIndex={-1}>
       <p className="demo-banner" role="note">
@@ -36,9 +39,18 @@ export function LandingPage() {
             <Link to="/app/investigations/new" className="button button--primary button--large">
               Start an investigation
             </Link>
-            <Link to="/faq" className="button button--secondary button--large">
-              Read the FAQ
-            </Link>
+            {example ? (
+              <Link
+                to={`/app/investigations/${example.id}/report`}
+                className="button button--secondary button--large"
+              >
+                See a finished example
+              </Link>
+            ) : (
+              <Link to="/faq" className="button button--secondary button--large">
+                Read the FAQ
+              </Link>
+            )}
           </div>
         </div>
 

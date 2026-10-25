@@ -25,6 +25,7 @@ class InvestigationRead(BaseModel):
     id: uuid.UUID
     question: str
     status: InvestigationStatus
+    is_example: bool = False
     created_at: datetime
     updated_at: datetime
 

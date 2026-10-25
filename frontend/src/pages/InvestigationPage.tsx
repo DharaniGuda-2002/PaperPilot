@@ -7,6 +7,7 @@ import { ApiError } from '../api/client'
 import type { InvestigationTask, TaskStatus } from '../api/types'
 import { BackLink } from '../components/BackLink'
 import { ErrorState, LoadingState } from '../components/QueryState'
+import { ExampleNotice } from '../components/ExampleNotice'
 import { InfoTip } from '../components/InfoTip'
 import { StageStepper } from '../features/investigations/StageStepper'
 import { StatusBadge } from '../components/StatusBadge'
@@ -108,6 +109,7 @@ export function InvestigationPage() {
   return (
     <div className="page">
       <BackLink to="/app/investigations">Back to investigations</BackLink>
+      {data.is_example && <ExampleNotice />}
       <header className="page-header">
         <div>
           <div className="title-row">

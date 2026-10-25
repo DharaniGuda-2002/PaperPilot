@@ -12,6 +12,7 @@ export interface Investigation {
   id: string
   question: string
   status: InvestigationStatus
+  is_example?: boolean
   created_at: string
   updated_at: string
 }

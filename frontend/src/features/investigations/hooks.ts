@@ -26,6 +26,11 @@ export function useInvestigationList(limit = 10, offset = 0) {
   })
 }
 
+/** Finished runs kept on the public demo so visitors can see a real result. */
+export function useExamples() {
+  return useQuery({ queryKey: [...keys.all, 'examples'], queryFn: () => api.listExamples() })
+}
+
 export function useInvestigationStats() {
   return useQuery({ queryKey: keys.stats(), queryFn: () => api.getInvestigationStats() })
 }

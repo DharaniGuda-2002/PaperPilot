@@ -83,7 +83,21 @@ Implemented before the first public deploy:
    password. The start script migrates through `MIGRATION_DATABASE_URL`.
    Skipping this leaves the demo on the owner role, as documented in
    [security.md](security.md).
-5. **OpenAlex key (recommended):** create a free key at https://openalex.org/settings/api
+5. **Show a finished example (recommended).** The demo has no workers, so a real result has to
+   be imported once, after the API has deployed (the deploy applies migration 0008). From
+   `backend/`, with the venv active, paste the Neon string when prompted (it stays out of your
+   shell history and out of git):
+
+   ```bash
+   read -s -p "Neon connection string: " DATABASE_URL; export DATABASE_URL
+   python -m app.ops.example_data import ../data/examples/rag-hallucination.json
+   unset DATABASE_URL
+   ```
+
+   The file is a real run from a local install (25 papers, 272 evidence records, report v6). It
+   has no full text, chunks, or embeddings. Re-running replaces the same investigation. To
+   export a different finished run: `python -m app.ops.example_data export <id> <file.json>`.
+6. **OpenAlex key (recommended):** create a free key at https://openalex.org/settings/api
    and add it as `OPENALEX_API_KEY` in the `paperpilot-research-api` service's **Environment** tab.
    Without it, searches share a $0.10/day budget with every other service on Render's
    outbound IP and may fail with "provider unavailable".

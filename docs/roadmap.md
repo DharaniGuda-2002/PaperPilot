@@ -255,6 +255,12 @@ Other fixes:
   chips on the new-investigation form. Content stays real; the mocks' sample numbers and names
   were not copied. Link text uses `#1D4ED8` and body-on-page text `#4A5A6E` to keep 4.5:1; the
   contrast script covers the new pairs and passes.
+- Example investigation for the public demo: `investigations.is_example` (migration 0008),
+  `GET /api/v1/investigations/examples`, and `python -m app.ops.example_data export|import`.
+  The committed file `data/examples/rag-hallucination.json` is a real local run (no text,
+  chunks or embeddings). Tests export, wipe, import, and compare the report and evidence;
+  the real file was also imported twice into a scratch database with unchanged row counts.
+  The landing page links to it, and it carries an "Example" notice.
 - Not done: a second held-out gold set (needs a human reviewer).
 
 ### Final definition of done

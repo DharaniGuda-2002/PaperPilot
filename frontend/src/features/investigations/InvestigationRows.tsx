@@ -27,6 +27,7 @@ export function InvestigationRows({ items }: { items: Investigation[] }) {
                 </time>
               </span>
             </span>
+            {investigation.is_example && <span className="status-badge status-badge--info">Example</span>}
             <StatusBadge status={investigation.status} />
             <ChevronRight className="investigation-row__chevron" aria-hidden="true" size={18} />
           </Link>

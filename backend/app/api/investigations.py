@@ -3,12 +3,14 @@ from datetime import timedelta
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.config import Settings
 from app.core.db import get_session
 from app.core.rate_limit import SlidingWindowLimiter, client_address
 from app.investigations import service
+from app.investigations.models import Investigation
 from app.investigations.schemas import (
     DiscoveredPaperPage,
     InvestigationCreate,
@@ -69,6 +71,19 @@ def list_investigations(
         limit=limit,
         offset=offset,
     )
+
+
+@router.get("/examples")
+def list_examples(session: SessionDep) -> list[InvestigationRead]:
+    """Finished runs kept on purpose so a visitor can see a real result.
+    Declared before /{investigation_id}."""
+    rows = session.scalars(
+        select(Investigation)
+        .where(Investigation.is_example.is_(True))
+        .order_by(Investigation.created_at.desc())
+        .limit(5)
+    )
+    return [InvestigationRead.model_validate(row) for row in rows]
 
 
 @router.get("/stats")

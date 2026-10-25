@@ -63,6 +63,10 @@ export const api = {
     return request(`/api/v1/investigations?${params}`)
   },
 
+  listExamples(): Promise<Investigation[]> {
+    return request('/api/v1/investigations/examples')
+  },
+
   getInvestigationStats(): Promise<InvestigationStats> {
     return request('/api/v1/investigations/stats')
   },
