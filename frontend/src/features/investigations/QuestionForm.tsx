@@ -54,9 +54,15 @@ export function QuestionForm() {
         </p>
       )}
       <p className="hint">Ask one specific, technical question. Narrow questions give clearer evidence.</p>
+      <div className="source-chips" aria-label="Sources and limits">
+        <span className="source-chips__label">Sources and limits</span>
+        <span className="chip chip--static">Papers from OpenAlex</span>
+        <span className="chip chip--static">Up to 25 papers</span>
+        <span className="chip chip--static">Open-access PDFs only</span>
+      </div>
       <div className="form-actions">
         <button type="submit" className="button button--primary" disabled={create.isPending}>
-          {create.isPending ? 'Starting…' : 'Start investigation'}
+          {create.isPending ? 'Starting…' : 'Run investigation'}
           <ArrowRight aria-hidden="true" size={16} />
         </button>
       </div>

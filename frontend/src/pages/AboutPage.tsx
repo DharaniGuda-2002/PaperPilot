@@ -6,8 +6,8 @@ const EMAIL = 'dharaniguda2002@gmail.com'
 export function AboutPage() {
   return (
     <main id="main" tabIndex={-1} className="prose">
-      <h1 className="display display--page">About PaperPilot</h1>
-      <p className="prose__lead">
+      <h1 className="display display--page">Research you can trace</h1>
+      <p className="prose__lead">Built for careful, source-backed discovery. 
         Reading dozens of papers to answer one technical question takes days. PaperPilot is a
         project that does the first pass: it finds the papers, pulls out what they report with the
         exact quotation and page, and says plainly what it could and could not find.

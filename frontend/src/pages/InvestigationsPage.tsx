@@ -20,7 +20,7 @@ export function InvestigationsPage() {
       <header className="page-header">
         <div>
           <h1 className="page-title">Investigations</h1>
-          <p className="page-subtitle">Every research question you have asked, newest first.</p>
+          <p className="page-subtitle">Your research, organized. Queued, active, completed, and failed investigations, newest first.</p>
         </div>
         <Link to="/app/investigations/new" className="button button--primary">
           <Plus aria-hidden="true" size={16} /> New investigation

@@ -1,20 +1,18 @@
-import { CheckCircle2, Clock3, FileSearch, Loader, Plus } from 'lucide-react'
-import type { ComponentType } from 'react'
+import { Plus } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 import { ErrorState, LoadingState } from '../components/QueryState'
 import { useInvestigationList, useInvestigationStats } from '../features/investigations/hooks'
 import { InvestigationRows } from '../features/investigations/InvestigationRows'
 import { QuickStartForm } from '../features/investigations/QuickStartForm'
-import type { StatusTone } from '../features/investigations/status'
 
 export function DashboardPage() {
   return (
     <div className="page">
       <header className="page-header">
         <div>
-          <h1 className="page-title">Your research workspace</h1>
-          <p className="page-subtitle">Start an investigation or continue where you left off.</p>
+          <h1 className="page-title">Welcome to PaperPilot</h1>
+          <p className="page-subtitle">Ask a research question, then review the evidence behind every finding.</p>
         </div>
         <Link to="/app/investigations/new" className="button button--primary">
           <Plus aria-hidden="true" size={16} /> New investigation
@@ -53,31 +51,17 @@ function StatsRow() {
   const s = data.by_status
   return (
     <div className="stats" role="list" aria-label="Investigation summary">
-      <StatCard icon={FileSearch} tone="info" value={data.total} label="Investigations" />
-      <StatCard icon={Clock3} tone="neutral" value={s.queued} label="Queued" />
-      <StatCard icon={Loader} tone="warning" value={s.running} label="In progress" />
-      <StatCard
-        icon={CheckCircle2}
-        tone="success"
-        value={s.completed + s.partially_completed}
-        label="Completed"
-      />
+      <StatCard value={data.total} label="Investigations" />
+      <StatCard value={s.queued} label="Queued" />
+      <StatCard value={s.running} label="In progress" />
+      <StatCard value={s.completed + s.partially_completed} label="Completed" />
     </div>
   )
 }
 
-function StatCard(props: {
-  icon: ComponentType<{ size?: number }>
-  tone: StatusTone
-  value: number
-  label: string
-}) {
-  const { icon: Icon, tone, value, label } = props
+function StatCard({ value, label }: { value: number; label: string }) {
   return (
     <div className="stat" role="listitem">
-      <span className={`icon-tile icon-tile--${tone}`} aria-hidden="true">
-        <Icon size={18} />
-      </span>
       <span>
         <span className="stat__value">{value}</span>
         <span className="stat__label">{label}</span>

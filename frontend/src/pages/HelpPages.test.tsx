@@ -8,7 +8,7 @@ import { renderRoute } from '../test/render'
 describe('FAQ page', () => {
   it('has common and harder questions, collapsed until opened', async () => {
     renderRoute('/faq')
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Questions and answers')
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Frequently asked questions')
     expect(screen.getByRole('heading', { name: 'Common questions' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Harder questions' })).toBeInTheDocument()
     const question = screen.getByText('Does it use AI or a language model?')

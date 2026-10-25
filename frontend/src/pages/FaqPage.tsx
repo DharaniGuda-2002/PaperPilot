@@ -103,8 +103,8 @@ function Group({ title, entries }: { title: string; entries: Entry[] }) {
 export function FaqPage() {
   return (
     <main id="main" tabIndex={-1} className="prose">
-      <h1 className="display display--page">Questions and answers</h1>
-      <p className="prose__lead">Short answers first, then the harder questions about what PaperPilot can and cannot do.</p>
+      <h1 className="display display--page">Frequently asked questions</h1>
+      <p className="prose__lead">Clear answers for better research. Short answers first, then the harder questions.</p>
       <Group title="Common questions" entries={COMMON} />
       <Group title="Harder questions" entries={HARD} />
     </main>

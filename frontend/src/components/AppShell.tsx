@@ -1,6 +1,7 @@
 import { FileSearch, HelpCircle, Home, Info, Search } from 'lucide-react'
 import { NavLink, Outlet } from 'react-router-dom'
 
+import { GlobalSearch } from './GlobalSearch'
 import { Logo } from './Logo'
 
 const NAV = [
@@ -15,8 +16,11 @@ export function AppShell() {
       <a className="skip-link" href="#main">
         Skip to main content
       </a>
-      <aside className="sidebar">
+      <header className="topbar">
         <Logo to="/app" />
+        <GlobalSearch />
+      </header>
+      <aside className="sidebar">
         <nav aria-label="Main" className="sidebar__nav">
           {NAV.map(({ to, label, icon: Icon, end }) => (
             <NavLink key={to} to={to} end={end} className="sidebar__link">
@@ -25,6 +29,10 @@ export function AppShell() {
             </NavLink>
           ))}
         </nav>
+        <p className="sidebar__note">
+          Every fact links to its exact quote. On the public demo, new investigations stay &quot;Queued&quot;
+          because the analysis workers run only on a local install.
+        </p>
         <nav aria-label="Help" className="sidebar__nav sidebar__nav--help">
           <NavLink to="/faq" className="sidebar__link">
             <HelpCircle aria-hidden="true" size={18} />
@@ -35,10 +43,6 @@ export function AppShell() {
             About
           </NavLink>
         </nav>
-        <p className="sidebar__note">
-          Every fact links to its exact quote. On the public demo, new investigations stay &quot;Queued&quot;
-          because the analysis workers run only on a local install.
-        </p>
       </aside>
       <main id="main" className="app-main" tabIndex={-1}>
         <Outlet />

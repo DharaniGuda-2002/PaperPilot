@@ -249,6 +249,12 @@ Other fixes:
 - Plain-language pass: rewritten landing page, glossary tooltips (`InfoTip`) on strength,
   abstract-only, comparable, protocol, quotation and validation terms, a "How to read this
   report" panel, a FAQ page (common and harder questions) and an About page.
+- Redesign from the desktop mocks (blue palette `#246BFD` on `#F6F8FB`): top bar with global
+  search, left sidebar with help links, white cards with 1 px borders, blue primary buttons,
+  sans-serif headings (serif kept only for quotations), FAQ accordion with +/- markers, source
+  chips on the new-investigation form. Content stays real; the mocks' sample numbers and names
+  were not copied. Link text uses `#1D4ED8` and body-on-page text `#4A5A6E` to keep 4.5:1; the
+  contrast script covers the new pairs and passes.
 - Not done: a second held-out gold set (needs a human reviewer).
 
 ### Final definition of done

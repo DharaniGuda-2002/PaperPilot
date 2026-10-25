@@ -9,7 +9,7 @@ export function NewInvestigationPage() {
         <div>
           <h1 className="page-title">New investigation</h1>
           <p className="page-subtitle">
-            Define your research question. PaperPilot will track it from discovery to report.
+            Ask a focused question. Get a sourced report.
           </p>
         </div>
       </header>

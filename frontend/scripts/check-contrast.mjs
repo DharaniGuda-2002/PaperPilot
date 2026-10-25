@@ -11,6 +11,13 @@ const tokens = Object.fromEntries(
 const TEXT = 4.5
 const NON_TEXT = 3
 const PAIRS = [
+  ['color-text-inverse', 'color-primary', TEXT, 'primary button and send arrow'],
+  ['color-text-inverse', 'color-primary-hover', TEXT, 'primary button hover'],
+  ['color-brand-700', 'color-bg-selected', TEXT, 'active sidebar link'],
+  ['color-brand-700', 'color-bg-page', TEXT, 'links on the page background'],
+  ['color-primary', 'color-bg-surface', NON_TEXT, 'top-bar search focus and meter bars'],
+  ['color-text-muted', 'color-bg-surface', TEXT, 'top-bar search border and placeholder'],
+  ['color-text-secondary', 'color-bg-page', TEXT, 'subtitles on the page background'],
   ['color-text-primary', 'color-bg-page', TEXT, 'body text on page'],
   ['color-text-primary', 'color-bg-surface', TEXT, 'body text on cards'],
   ['color-text-secondary', 'color-bg-surface', TEXT, 'secondary text'],

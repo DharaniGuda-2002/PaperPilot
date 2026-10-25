@@ -10,6 +10,12 @@ const STEPS = [
   { icon: FileCheck2, title: 'Get a report', text: 'You get a short summary, how strong the evidence is, and what is missing.' },
 ]
 
+const FEATURES = [
+  { title: 'Literature search', text: 'Find up to 25 relevant papers from OpenAlex for your question.' },
+  { title: 'Evidence-backed analysis', text: 'Compare findings only where the comparison is fair.' },
+  { title: 'Transparent citations', text: 'Trace every conclusion to the exact quote and page.' },
+]
+
 const GOOD_AT = [
   'Showing where every fact comes from, so you can check it yourself.',
   'Saying clearly when something was not found, instead of guessing.',
@@ -62,6 +68,15 @@ export function LandingPage() {
             </ol>
           </section>
         </div>
+      </section>
+
+      <section className="feature-cards" aria-label="Capabilities">
+        {FEATURES.map((feature) => (
+          <div key={feature.title} className="feature-card">
+            <h2>{feature.title}</h2>
+            <p>{feature.text}</p>
+          </div>
+        ))}
       </section>
 
       <section className="expect" aria-label="What to expect">
