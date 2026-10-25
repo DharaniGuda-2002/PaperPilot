@@ -3,6 +3,8 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { RouterProvider, createBrowserRouter } from 'react-router-dom'
 
+import '@fontsource-variable/inter'
+
 import { routes } from './routes'
 import './styles/tokens.css'
 import './styles/app.css'

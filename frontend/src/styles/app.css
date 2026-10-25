@@ -478,9 +478,10 @@ button.text-link {
 
 .page-title {
   color: var(--color-brand-900);
-  font-size: 2rem;
-  font-weight: 700;
-  line-height: 1.25;
+  font-size: 1.5rem;
+  font-weight: 650;
+  line-height: 1.3;
+  letter-spacing: -0.015em;
 }
 
 .page-subtitle {
@@ -1475,10 +1476,10 @@ button.text-link {
 
 .display {
   color: var(--color-brand-900);
-  font-size: clamp(2rem, 3.6vw, 2.75rem);
+  font-size: clamp(1.75rem, 3vw, 2.25rem);
   font-weight: 700;
-  line-height: 1.15;
-  letter-spacing: -0.015em;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
 }
 
 .display__accent {
@@ -1705,7 +1706,7 @@ button.text-link {
   }
 
   .page-title {
-    font-size: 1.375rem;
+    font-size: 1.25rem;
   }
 
   .investigation-row {
@@ -2058,7 +2059,7 @@ button.text-link {
 }
 
 .display--page {
-  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  font-size: clamp(1.5rem, 3vw, 1.875rem);
   margin: 0 0 var(--space-3);
 }
 
@@ -2101,49 +2102,12 @@ button.text-link {
   color: var(--color-text-secondary);
 }
 
-.person {
-  margin-top: var(--space-8);
-  padding: var(--space-4) var(--space-6);
-  border: 1px solid var(--color-border-default);
-  border-radius: var(--radius-lg);
-  background: var(--color-bg-surface);
-  box-shadow: var(--shadow-card);
-}
 
-.person h2 {
-  margin-top: 0;
-}
 
-.person__name {
-  margin: 0;
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--color-brand-900);
-}
 
-.person__role {
-  margin: 0 0 var(--space-3);
-  color: var(--color-text-secondary);
-}
 
-.person__links {
-  display: grid;
-  gap: var(--space-2);
-  margin: 0 0 var(--space-3);
-  padding: 0;
-  list-style: none;
-}
 
-.person__links li {
-  display: flex;
-  gap: var(--space-2);
-  align-items: center;
-}
 
-.person__links a {
-  color: var(--color-brand-700);
-  text-decoration: underline;
-}
 
 @media (max-width: 640px) {
   .expect {
@@ -2237,4 +2201,133 @@ button.text-link {
 
 .chip--static:hover {
   background: var(--color-brand-50);
+}
+
+/* ---------- About page ---------- */
+.about {
+  display: grid;
+  gap: var(--space-8);
+  padding-top: var(--space-8);
+}
+
+.about__intro {
+  max-width: 720px;
+}
+
+.about__intro .prose__lead {
+  margin: 0;
+}
+
+.about__principles {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.about-card,
+.about-panel {
+  padding: var(--space-6);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+
+.about-card__icon {
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin-bottom: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-selected);
+  color: var(--color-brand-700);
+}
+
+.about-card h2,
+.about-panel h2 {
+  margin: 0 0 var(--space-2);
+  font-size: 1rem;
+  color: var(--color-brand-900);
+}
+
+.about-card p,
+.about-panel p {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.9375rem;
+}
+
+.about__split {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.stack-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.profile {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.profile__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.profile__avatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+  font-weight: 700;
+  font-size: 1.125rem;
+}
+
+.about-panel .profile__name {
+  color: var(--color-brand-900);
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.profile__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+@media (width <= 960px) {
+  .about__principles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .about__split {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (width <= 480px) {
+  .about__principles {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Public pages other than the landing page need room under the header. */
+.landing > main.about,
+.landing > main.prose {
+  padding-top: var(--space-12);
 }

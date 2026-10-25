@@ -22,7 +22,8 @@ describe('About page', () => {
   it('shows who built it with a working email link', () => {
     renderRoute('/about')
     expect(screen.getByText('Dharani Guda')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'dharaniguda2002@gmail.com' })).toHaveAttribute(
+    expect(screen.getByText('dharaniguda2002@gmail.com')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /Email me/ })).toHaveAttribute(
       'href',
       'mailto:dharaniguda2002@gmail.com',
     )

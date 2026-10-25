@@ -1,55 +1,84 @@
-import { Code2, Mail } from 'lucide-react'
+import { Code2, FileCheck2, Mail, Quote, Scale, Wallet } from 'lucide-react'
 
 const REPO_URL = 'https://github.com/DharaniGuda-2002/PaperPilot'
 const EMAIL = 'dharaniguda2002@gmail.com'
 
+const PRINCIPLES = [
+  { icon: Quote, title: 'Every fact is quoted', text: 'Each finding links to the exact sentence and page it came from.' },
+  { icon: FileCheck2, title: 'Says "not found"', text: 'When the text does not say something, PaperPilot reports that instead of guessing.' },
+  { icon: Scale, title: 'Fair comparisons only', text: 'Results are compared only when the metric, dataset and test setup match.' },
+  { icon: Wallet, title: 'Free and measured', text: 'Runs on free tiers, with accuracy and speed published, including the weak numbers.' },
+]
+
+const STACK = ['FastAPI', 'PostgreSQL + pgvector', 'Kafka', 'Transactional outbox', 'React', 'TypeScript', 'Docker Compose']
+
 export function AboutPage() {
   return (
-    <main id="main" tabIndex={-1} className="prose">
-      <h1 className="display display--page">Research you can trace</h1>
-      <p className="prose__lead">Built for careful, source-backed discovery. 
-        Reading dozens of papers to answer one technical question takes days. PaperPilot is a
-        project that does the first pass: it finds the papers, pulls out what they report with the
-        exact quotation and page, and says plainly what it could and could not find.
-      </p>
-
-      <section aria-labelledby="principles">
-        <h2 id="principles">What it stands for</h2>
-        <ul>
-          <li>Every fact points to an exact quotation you can check.</li>
-          <li>It says &quot;not found&quot; instead of guessing.</li>
-          <li>It never ranks methods it cannot compare fairly.</li>
-          <li>It runs on free services, with numbers measured and published, including the weak ones.</li>
-        </ul>
-      </section>
-
-      <section aria-labelledby="built-with">
-        <h2 id="built-with">How it is built</h2>
-        <p>
-          A FastAPI backend with Postgres and pgvector, Kafka workers coordinated through a
-          transactional outbox, and a React and TypeScript interface. The full pipeline runs locally
-          with Docker Compose; the public site runs the interface and API on free hosting.
+    <main id="main" tabIndex={-1} className="about">
+      <header className="about__intro">
+        <p className="eyebrow">About PaperPilot</p>
+        <h1 className="display display--page">Research you can trace</h1>
+        <p className="prose__lead">
+          Answering one technical question can mean reading dozens of papers. PaperPilot does the first pass: it
+          finds the papers, pulls out what they report with the exact quote and page, and says plainly what it could
+          not find.
         </p>
+      </header>
+
+      <section className="about__principles" aria-label="What PaperPilot stands for">
+        {PRINCIPLES.map(({ icon: Icon, title, text }) => (
+          <div key={title} className="about-card">
+            <span className="about-card__icon" aria-hidden="true">
+              <Icon size={20} />
+            </span>
+            <h2>{title}</h2>
+            <p>{text}</p>
+          </div>
+        ))}
       </section>
 
-      <section aria-labelledby="author" className="person">
-        <h2 id="author">Built by</h2>
-        <p className="person__name">Dharani Guda</p>
-        <p className="person__role">New graduate in software development and AI systems</p>
-        <ul className="person__links">
-          <li>
-            <Mail aria-hidden="true" size={16} />
-            <a href={`mailto:${EMAIL}`}>{EMAIL}</a>
-          </li>
-          <li>
-            <Code2 aria-hidden="true" size={16} />
-            <a href={REPO_URL} target="_blank" rel="noopener noreferrer">
-              github.com/DharaniGuda-2002/PaperPilot
+      <div className="about__split">
+        <section className="about-panel" aria-labelledby="built-with">
+          <h2 id="built-with">How it is built</h2>
+          <p>
+            An API and background workers share one database. Workers find papers, read open-access PDFs, extract
+            evidence with fixed rules, check every quotation, and write the report. The full pipeline runs locally;
+            the public site runs the interface and API on free hosting.
+          </p>
+          <ul className="stack-chips" aria-label="Technology">
+            {STACK.map((item) => (
+              <li key={item} className="chip chip--static">
+                {item}
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <section className="about-panel profile" aria-labelledby="author">
+          <h2 id="author" className="visually-hidden">
+            Built by
+          </h2>
+          <div className="profile__head">
+            <span className="profile__avatar" aria-hidden="true">
+              DG
+            </span>
+            <div>
+              <p className="profile__name">Dharani Guda</p>
+              <p className="profile__role">New graduate in software development and AI systems</p>
+            </div>
+          </div>
+          <p>Built PaperPilot end to end: backend, workers, evaluation, and interface.</p>
+          <div className="profile__actions">
+            <a href={`mailto:${EMAIL}`} className="button button--primary">
+              <Mail aria-hidden="true" size={16} /> Email me
             </a>
-          </li>
-        </ul>
-        <p className="hint">Questions, feedback, and opportunities are welcome by email.</p>
-      </section>
+            <a href={REPO_URL} target="_blank" rel="noopener noreferrer" className="button button--secondary">
+              <Code2 aria-hidden="true" size={16} /> Source code
+            </a>
+          </div>
+          <p className="hint">{EMAIL}</p>
+        </section>
+      </div>
     </main>
   )
 }
