@@ -1,0 +1,10 @@
+# Default gitleaks rules plus one narrow exception.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Task subject keys in exported example data are paper UUIDs, not secrets"
+regexTarget = "line"
+regexes = [
+  '''"subject_key": "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"''',
+]
