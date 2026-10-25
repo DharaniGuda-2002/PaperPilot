@@ -1463,9 +1463,9 @@ button.text-link {
 .hero {
   display: grid;
   grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
-  gap: var(--space-12);
+  gap: var(--space-8);
   align-items: center;
-  padding: var(--space-12) 0;
+  padding: var(--space-8) 0;
 }
 
 .hero__copy {
@@ -1495,43 +1495,29 @@ button.text-link {
   max-width: 34rem;
 }
 
-.hero__visual {
-  position: relative;
-  padding: var(--space-8) var(--space-6) var(--space-6) 0;
-  scroll-margin-top: var(--space-8);
+.hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
 }
 
-/* Decorative stacked "papers" behind the stage card. */
-.paper-stack span {
-  position: absolute;
-  inset: 0 var(--space-12) var(--space-12) var(--space-8);
-  background-color: var(--color-bg-surface);
-  background-image: repeating-linear-gradient(
-    to bottom,
-    transparent 0 22px,
-    var(--color-bg-subtle) 22px 30px
-  );
-  background-size: 70% 100%;
-  background-repeat: no-repeat;
-  background-position: var(--space-6) var(--space-8);
-  border: 1px solid var(--color-border-default);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-card);
+.button--large {
+  padding: var(--space-3) var(--space-6);
+  font-size: 1rem;
 }
 
-.paper-stack span:first-child {
-  transform: rotate(-4deg);
-}
-
-.paper-stack span:last-child {
-  transform: rotate(3deg) translate(var(--space-6), var(--space-4));
+.demo-banner {
+  margin: var(--space-4) 0 0;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-selected);
+  color: var(--color-brand-900);
+  font-size: 0.875rem;
 }
 
 .stage-card {
   position: relative;
-  margin-left: auto;
-  max-width: 360px;
-  margin-top: var(--space-12);
+  scroll-margin-top: 84px;
   padding: var(--space-6);
   background: var(--color-bg-surface);
   border: 1px solid var(--color-border-default);
@@ -1620,17 +1606,9 @@ button.text-link {
     padding-top: var(--space-6);
   }
 
-  .hero__visual {
-    padding: 0;
-  }
-
   .stage-card {
     margin: 0;
     max-width: none;
-  }
-
-  .paper-stack {
-    display: none;
   }
 
   .features,

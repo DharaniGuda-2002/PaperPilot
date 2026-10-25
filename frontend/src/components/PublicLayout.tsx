@@ -18,8 +18,8 @@ export function PublicLayout() {
           <NavLink to="/faq">FAQ</NavLink>
           <NavLink to="/about">About</NavLink>
         </nav>
-        <Link to="/app" className="button button--primary">
-          Open app
+        <Link to="/app/investigations/new" className="button button--primary">
+          Get started
         </Link>
       </header>
       <Outlet />

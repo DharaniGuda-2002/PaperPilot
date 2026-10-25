@@ -17,7 +17,7 @@ generation reduce hallucination in open-domain question answering?*
 
 ## Walkthrough
 
-1. **Landing → Open app → New investigation** (http://localhost:8080). Type
+1. **Landing → Get started → New investigation** (http://localhost:8080). Type
    the question. The API stores the investigation and an outbox event in one
    transaction and returns at once.
 2. **Investigation page.** The task list shows the pipeline: discovery,
