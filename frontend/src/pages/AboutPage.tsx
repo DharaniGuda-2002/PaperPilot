@@ -76,7 +76,6 @@ export function AboutPage() {
               <Code2 aria-hidden="true" size={16} /> Source code
             </a>
           </div>
-          <p className="hint">{EMAIL}</p>
         </section>
       </div>
     </main>

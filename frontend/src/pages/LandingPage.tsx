@@ -1,4 +1,5 @@
-import { Link } from 'react-router-dom'
+import { useEffect } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 
 import { EvidenceShowcase } from '../features/evidence/EvidenceShowcase'
 import { useExamples } from '../features/investigations/hooks'
@@ -18,6 +19,11 @@ const FEATURES = [
 
 export function LandingPage() {
   const example = useExamples().data?.[0]
+  const { hash } = useLocation()
+  // Client-side navigation does not scroll to #fragments by itself.
+  useEffect(() => {
+    if (hash) document.getElementById(hash.slice(1))?.scrollIntoView({ block: 'start' })
+  }, [hash])
   return (
     <main id="main" tabIndex={-1}>
       <p className="demo-banner" role="note">

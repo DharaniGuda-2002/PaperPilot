@@ -1,4 +1,4 @@
-import { FileSearch, HelpCircle, Home, Info, LayoutDashboard, Search } from 'lucide-react'
+import { FileSearch, HelpCircle, Home, Info, LayoutDashboard, ListOrdered, Search } from 'lucide-react'
 import { NavLink, Outlet } from 'react-router-dom'
 
 import { GlobalSearch } from './GlobalSearch'
@@ -37,6 +37,10 @@ export function AppShell() {
           <NavLink to="/" end className="sidebar__link">
             <Home aria-hidden="true" size={18} />
             PaperPilot home
+          </NavLink>
+          <NavLink to="/#how-it-works" className="sidebar__link">
+            <ListOrdered aria-hidden="true" size={18} />
+            How it works
           </NavLink>
           <NavLink to="/faq" className="sidebar__link">
             <HelpCircle aria-hidden="true" size={18} />
