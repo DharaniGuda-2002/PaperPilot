@@ -1,11 +1,11 @@
-import { FileSearch, HelpCircle, Home, Info, Search } from 'lucide-react'
+import { FileSearch, HelpCircle, Home, Info, LayoutDashboard, Search } from 'lucide-react'
 import { NavLink, Outlet } from 'react-router-dom'
 
 import { GlobalSearch } from './GlobalSearch'
 import { Logo } from './Logo'
 
 const NAV = [
-  { to: '/app', label: 'Home', icon: Home, end: true },
+  { to: '/app', label: 'Dashboard', icon: LayoutDashboard, end: true },
   { to: '/app/investigations', label: 'Investigations', icon: FileSearch, end: false },
   { to: '/app/search', label: 'Search', icon: Search, end: false },
 ]
@@ -17,7 +17,7 @@ export function AppShell() {
         Skip to main content
       </a>
       <header className="topbar">
-        <Logo to="/app" />
+        <Logo to="/" />
         <GlobalSearch />
       </header>
       <aside className="sidebar">
@@ -34,6 +34,10 @@ export function AppShell() {
           because the analysis workers run only on a local install.
         </p>
         <nav aria-label="Help" className="sidebar__nav sidebar__nav--help">
+          <NavLink to="/" end className="sidebar__link">
+            <Home aria-hidden="true" size={18} />
+            PaperPilot home
+          </NavLink>
           <NavLink to="/faq" className="sidebar__link">
             <HelpCircle aria-hidden="true" size={18} />
             Questions (FAQ)

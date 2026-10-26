@@ -41,3 +41,12 @@ describe('InfoTip', () => {
     expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
   })
 })
+
+describe('App shell', () => {
+  it('links back to the public home page from inside the app', () => {
+    renderRoute('/app/investigations/new')
+    const home = screen.getAllByRole('link', { name: /PaperPilot/ }).map((link) => link.getAttribute('href'))
+    expect(home).toEqual(['/', '/'])
+    expect(screen.getByRole('link', { name: 'Dashboard' })).toHaveAttribute('href', '/app')
+  })
+})
