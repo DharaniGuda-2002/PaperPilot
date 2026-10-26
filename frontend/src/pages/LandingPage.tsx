@@ -1,12 +1,13 @@
 import { Link } from 'react-router-dom'
 
+import { EvidenceShowcase } from '../features/evidence/EvidenceShowcase'
 import { useExamples } from '../features/investigations/hooks'
 
 const STEPS = [
-  { title: 'Ask', text: 'Type a technical research question in plain English.' },
-  { title: 'Find and read', text: 'PaperPilot finds up to 25 relevant papers and reads the free ones.' },
-  { title: 'Extract facts', text: 'It pulls out datasets, results and limitations, each with the exact sentence and page.' },
-  { title: 'Get a report', text: 'You get a short summary, how strong the evidence is, and what is missing.' },
+  { title: 'Ask', text: 'A technical question in plain English.' },
+  { title: 'Find and read', text: 'Up to 25 relevant papers, free ones read in full.' },
+  { title: 'Extract facts', text: 'Datasets, results and limits, each with its quote and page.' },
+  { title: 'Get a report', text: 'A short summary, evidence strength, and what is missing.' },
 ]
 
 const FEATURES = [
@@ -54,21 +55,24 @@ export function LandingPage() {
           </div>
         </div>
 
-        <section className="stage-card" id="how-it-works" aria-labelledby="how-heading">
-          <h2 id="how-heading" className="stage-card__title">
-            How it works
-          </h2>
-          <ol className="stage-card__list">
-            {STEPS.map((step, index) => (
-              <li key={step.title}>
-                <span className="stage-card__step">{index + 1}</span>
-                <span>
-                  <strong>{step.title}.</strong> {step.text}
-                </span>
-              </li>
-            ))}
-          </ol>
-        </section>
+        <EvidenceShowcase />
+      </section>
+
+      <section className="steps" id="how-it-works" aria-labelledby="how-heading">
+        <h2 id="how-heading" className="steps__title">
+          How it works
+        </h2>
+        <ol className="steps__list">
+          {STEPS.map((step, index) => (
+            <li key={step.title}>
+              <span className="steps__number" aria-hidden="true">
+                {index + 1}
+              </span>
+              <strong>{step.title}</strong>
+              <span>{step.text}</span>
+            </li>
+          ))}
+        </ol>
       </section>
 
       <section className="feature-cards" aria-label="Capabilities">

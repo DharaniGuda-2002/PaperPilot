@@ -11,6 +11,9 @@ const tokens = Object.fromEntries(
 const TEXT = 4.5
 const NON_TEXT = 3
 const PAIRS = [
+  ['color-success', 'color-bg-surface', TEXT, 'landing evidence card check list'],
+  ['color-text-primary', 'color-warning-bg', TEXT, 'highlighted numbers in the landing quote'],
+  ['color-text-inverse', 'color-primary', TEXT, 'step numbers on the landing page'],
   ['color-text-inverse', 'color-primary', TEXT, 'primary button and send arrow'],
   ['color-text-inverse', 'color-primary-hover', TEXT, 'primary button hover'],
   ['color-brand-700', 'color-bg-selected', TEXT, 'active sidebar link'],
