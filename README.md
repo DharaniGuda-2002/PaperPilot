@@ -18,9 +18,17 @@ idle can take about a minute). API docs: https://paperpilot-research-api.onrende
 
 PaperPilot evaluates *reported* evidence. It does not prove scientific reproducibility.
 
-| Report summary | Evidence inspector |
+| Landing page | Report summary |
 |---|---|
-| ![Report summary with bottom line, strength label, and findings](docs/screenshots/report-summary.png) | ![Evidence inspector showing the exact quotation, page, provenance, and validation checks](docs/screenshots/evidence-inspector.png) |
+| ![Landing page with a real evidence card, the four steps, and calls to action](docs/screenshots/landing.png) | ![Report summary with bottom line, evidence-strength meter, and findings](docs/screenshots/report-summary.png) |
+
+| Comparison | Evidence inspector |
+|---|---|
+| ![Comparison matrix; results are compared only when metric, dataset, and protocol match](docs/screenshots/report-comparison.png) | ![Evidence inspector showing the exact quotation, page, provenance, and validation checks](docs/screenshots/evidence-inspector.png) |
+
+The public demo has four finished example reports (real local runs) you can open from the
+landing page: "See a finished example". New questions on the public site stay queued, because
+free hosting cannot run the workers.
 
 Five-minute walkthrough: [docs/demo.md](docs/demo.md).
 

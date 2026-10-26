@@ -68,9 +68,17 @@ https://paperpilot-research.onrender.com runs the API and frontend on free tiers
 
 ## Screenshots
 
-| Investigation progress | Landing page |
+| Landing page | New investigation |
 |---|---|
-| ![Investigation progress stepper](screenshots/investigation-progress.png) | ![Landing page](screenshots/landing.png) |
+| ![Landing page](screenshots/landing.png) | ![New investigation form with sources and limits](screenshots/new-investigation.png) |
+
+| Investigation progress | FAQ |
+|---|---|
+| ![Investigation progress stepper](screenshots/investigation-progress.png) | ![FAQ accordion](screenshots/faq.png) |
+
+| About | Landing on a phone |
+|---|---|
+| ![About page](screenshots/about.png) | ![Landing page on a phone](screenshots/landing-mobile.png) |
 
 | Report summary (level 1–2) | Evidence inspector (level 3, drawer) |
 |---|---|
