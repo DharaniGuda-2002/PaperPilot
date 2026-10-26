@@ -1,7 +1,7 @@
 """Export one finished investigation to a JSON file, and import it elsewhere.
 
     python -m app.ops.example_data export <investigation_id> <file.json>
-    python -m app.ops.example_data import <file.json>
+    python -m app.ops.example_data import <file.json> [<file.json> ...]
 
 The public demo has no workers, so its investigations never finish. Importing
 a real run (made on a local install) lets visitors open a finished report.
@@ -178,7 +178,7 @@ def main(argv: list[str] | None = None) -> int:
     export.add_argument("investigation_id", type=uuid.UUID)
     export.add_argument("file")
     load = commands.add_parser("import")
-    load.add_argument("file")
+    load.add_argument("files", nargs="+")
     args = parser.parse_args(argv)
 
     engine = create_db_engine(get_settings())
@@ -190,10 +190,11 @@ def main(argv: list[str] | None = None) -> int:
                     json.dump(data, handle, indent=1, ensure_ascii=False)
                 print(f"exported {args.investigation_id} to {args.file}")
             else:
-                with open(args.file, encoding="utf-8") as handle:
-                    data = json.load(handle)
-                investigation_id = import_investigation(session, data)
-                print(f"imported investigation {investigation_id}")
+                for path in args.files:  # each file commits on its own
+                    with open(path, encoding="utf-8") as handle:
+                        data = json.load(handle)
+                    investigation_id = import_investigation(session, data)
+                    print(f"imported investigation {investigation_id} from {path}")
     except (LookupError, ValueError) as error:
         print(f"error: {error}", file=sys.stderr)
         return 2

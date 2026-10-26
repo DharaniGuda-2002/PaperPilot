@@ -89,13 +89,14 @@ Implemented before the first public deploy:
    shell history and out of git):
 
    ```bash
-   read -s -p "Neon connection string: " DATABASE_URL; export DATABASE_URL
-   python -m app.ops.example_data import ../data/examples/rag-hallucination.json
+   read -s "DATABASE_URL?Neon connection string: "; export DATABASE_URL   # zsh; in bash: read -s -p "..." DATABASE_URL
+   python -m app.ops.example_data import ../data/examples/*.json
    unset DATABASE_URL
    ```
 
-   The file is a real run from a local install (25 papers, 272 evidence records, report v6). It
-   has no full text, chunks, or embeddings. Re-running replaces the same investigation. To
+   The four files are real runs from a local install (RAG and hallucination, chain-of-thought
+   for math, vision transformers vs CNNs, small vs large code models; 23-25 papers each). They
+   have no full text, chunks, or embeddings. Re-running replaces the same investigation. To
    export a different finished run: `python -m app.ops.example_data export <id> <file.json>`.
 6. **OpenAlex key (recommended):** create a free key at https://openalex.org/settings/api
    and add it as `OPENALEX_API_KEY` in the `paperpilot-research-api` service's **Environment** tab.

@@ -257,7 +257,7 @@ Other fixes:
   contrast script covers the new pairs and passes.
 - Example investigation for the public demo: `investigations.is_example` (migration 0008),
   `GET /api/v1/investigations/examples`, and `python -m app.ops.example_data export|import`.
-  The committed file `data/examples/rag-hallucination.json` is a real local run (no text,
+  The committed files in `data/examples/` are four real local runs (no text,
   chunks or embeddings). Tests export, wipe, import, and compare the report and evidence;
   the real file was also imported twice into a scratch database with unchanged row counts.
   The landing page links to it, and it carries an "Example" notice.
