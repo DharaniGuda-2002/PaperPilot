@@ -143,4 +143,12 @@ scripts/    smoke test
 - No authentication. Creating investigations is rate limited per client and capped
   per day; see [docs/deployment.md](docs/deployment.md#public-demo-safeguards).
 - The public demo runs on free tiers (Render + Neon) and sleeps when idle; the first
-  request can take about a minute. Kafka and workers (from M3) will be local-only. Setup and limits: [docs/deployment.md](docs/deployment.md).
+  request can take about a minute. Kafka and the workers run only in the local Docker setup, so
+  new questions on the public site stay queued; four finished example reports are imported so
+  visitors can still see a real result. Setup and limits: [docs/deployment.md](docs/deployment.md).
+
+## Built by
+
+**Dharani Guda**, new graduate in software development and AI systems.
+[LinkedIn](https://www.linkedin.com/in/dharani-guda/) · [GitHub](https://github.com/DharaniGuda-2002) ·
+[Live demo](https://paperpilot-research.onrender.com) · [About page](https://paperpilot-research.onrender.com/about)
